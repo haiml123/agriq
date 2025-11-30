@@ -1,8 +1,8 @@
 'use client';
 
 import { useState, FormEvent } from 'react';
-import { Input } from '@/components/ui/Input';
-import { Button } from '@/components/ui/Button';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
 
 export function LoginForm() {
     const [email, setEmail] = useState('');
@@ -94,10 +94,8 @@ export function LoginForm() {
 
             {/* Submit Button */}
             <Button
+                className="w-full"
                 type="submit"
-                variant="primary"
-                fullWidth
-                isLoading={isLoading}
             >
                 Sign In
             </Button>

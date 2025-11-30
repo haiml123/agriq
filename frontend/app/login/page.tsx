@@ -6,7 +6,7 @@ import { ThemeToggle } from '@/theme/ThemeToggle';
 export default function LoginPage() {
     console.log("login page");
     return (
-        <div className="min-h-screen flex items-center justify-center bg-surface px-4 relative">
+        <div className="min-h-screen flex items-center justify-center px-4 relative">
             <div className="absolute top-4 right-4">
                 <ThemeToggle />
             </div>
@@ -21,7 +21,7 @@ export default function LoginPage() {
                     </p>
                 </div>
 
-                <div className="bg-background border border-border rounded-lg shadow-sm p-8">
+                <div className="bg-card border border-border rounded-lg shadow-sm p-8">
                     <LoginForm />
                     <p className="text-center text-sm text-text-secondary mt-6">
                         Quality protection, loss reduction, action at the right time.
