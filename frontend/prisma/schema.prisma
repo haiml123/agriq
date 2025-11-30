@@ -1,0 +1,358 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+//
+// ENUMS
+//
+
+enum alert_severity {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+enum alert_status {
+  OPEN
+  IN_PROGRESS
+  RESOLVED
+  DISMISSED
+}
+
+enum metric_type {
+  TEMPERATURE
+  HUMIDITY
+}
+
+enum trigger_scope {
+  GLOBAL
+  ORGANIZATION
+  SITE
+}
+
+enum condition_type {
+  ABOVE
+  BELOW
+  OUTSIDE_RANGE
+  CHANGE_RATE
+}
+
+//
+// ORGANIZATION & ACCESS CONTROL
+//
+
+model organization {
+  id   String @id @default(cuid())
+  name String
+
+  users          user[]
+  sites          site[]
+  roles          user_role[]
+  event_triggers event_trigger[]
+
+  created_by String?
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+}
+
+model user {
+  id                  String  @id @default(cuid())
+  email               String  @unique
+  phone               String?
+  name                String
+  language_preference String?
+
+  organization_id String?
+  organization    organization? @relation(fields: [organization_id], references: [id])
+
+  roles user_role[]
+
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+}
+
+model role {
+  id    Int         @id @default(autoincrement())
+  name  String      @unique
+  users user_role[]
+}
+
+model user_role {
+  id Int @id @default(autoincrement())
+
+  user_id String
+  user    user   @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  role_id Int
+  role    role @relation(fields: [role_id], references: [id], onDelete: Cascade)
+
+  organization_id String?
+  organization    organization? @relation(fields: [organization_id], references: [id])
+
+  site_id String?
+  site    site?   @relation(fields: [site_id], references: [id])
+
+  granted_by_user_id String?
+
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  @@unique([user_id, role_id, organization_id, site_id])
+}
+
+//
+// STRUCTURE: SITE → COMPOUND → CELL
+//
+
+model site {
+  id   String @id @default(cuid())
+  name String
+
+  organization_id String
+  organization    organization @relation(fields: [organization_id], references: [id])
+
+  compounds compound[]
+  alerts    alert[]
+  trades    trade[]
+  roles     user_role[]
+  triggers  event_trigger[]
+
+  created_by String?
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+}
+
+model compound {
+  id   String @id @default(cuid())
+  name String
+
+  site_id String
+  site    site   @relation(fields: [site_id], references: [id])
+
+  cells  cell[]
+  alerts alert[]
+  trades trade[]
+
+  created_by String?
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+}
+
+model cell {
+  id   String @id @default(cuid())
+  name String
+
+  compound_id String
+  compound    compound @relation(fields: [compound_id], references: [id])
+
+  sensors  sensor[]
+  alerts   alert[]
+  readings sensor_reading[]
+  trades   trade[]
+
+  created_by String?
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+}
+
+//
+// SENSORS
+//
+
+model sensor {
+  id          String  @id @default(cuid())
+  external_id String  @unique
+  name        String?
+  is_active   Boolean @default(true)
+
+  cell_id String
+  cell    cell   @relation(fields: [cell_id], references: [id])
+
+  readings sensor_reading[]
+
+  created_by String?
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+}
+
+model sensor_reading {
+  id        String @id @default(cuid())
+  sensor_id String
+  sensor    sensor @relation(fields: [sensor_id], references: [id])
+
+  cell_id String
+  cell    cell   @relation(fields: [cell_id], references: [id])
+
+  metric      metric_type
+  value       Float
+  recorded_at DateTime
+  created_at  DateTime    @default(now())
+
+  @@index([sensor_id, metric, recorded_at])
+  @@index([cell_id, recorded_at])
+}
+
+//
+// EVENT TRIGGERS & ALERTS
+//
+
+model event_trigger {
+  id          String  @id @default(cuid())
+  name        String
+  description String?
+
+  scope_type trigger_scope
+
+  organization_id String?
+  organization    organization? @relation(fields: [organization_id], references: [id])
+
+  site_id String?
+  site    site?   @relation(fields: [site_id], references: [id])
+
+  metric_type    metric_type
+  condition_type condition_type
+
+  threshold_value           Float?
+  secondary_threshold_value Float?
+  time_window_minutes       Int?
+
+  severity_on_trigger alert_severity
+  is_active           Boolean        @default(true)
+
+  created_by String?
+  updated_by String?
+
+  alerts alert[]
+
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+}
+
+model alert {
+  id String @id @default(cuid())
+
+  trigger_id String?
+  trigger    event_trigger? @relation(fields: [trigger_id], references: [id])
+
+  site_id String
+  site    site   @relation(fields: [site_id], references: [id])
+
+  compound_id String?
+  compound    compound? @relation(fields: [compound_id], references: [id])
+
+  cell_id String?
+  cell    cell?   @relation(fields: [cell_id], references: [id])
+
+  title        String?
+  description  String
+  trigger_type metric_type
+  severity     alert_severity
+  status       alert_status   @default(OPEN)
+
+  threshold_value Float?
+  unit            String?
+
+  started_at  DateTime  @default(now())
+  resolved_at DateTime?
+
+  resolved_by_user_id String?
+
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  @@index([site_id])
+  @@index([cell_id])
+}
+
+//
+// GOODS / COMMODITIES / TRADES
+//
+model commodity_type {
+  id          String  @id @default(cuid())
+  name        String  @unique // e.g., "Wheat", "Corn", "Soybeans"
+  description String?
+  is_active   Boolean @default(true) // Soft delete / hide from dropdown
+
+  commodities   commodity[]
+  lookup_tables lookup_table[]
+
+  created_by String?
+  updated_by String?
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+}
+
+model lookup_table {
+  id          String  @id @default(cuid())
+  name        String
+  description String?
+
+  // Link to commodity type
+  commodity_type_id String
+  commodity_type    commodity_type @relation(fields: [commodity_type_id], references: [id])
+
+  data Json // { tempRanges: [], humidityRanges: [], values: [][] }
+
+  created_by String?
+  updated_by String?
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  @@index([commodity_type_id])
+}
+
+model commodity {
+  id     String  @id @default(cuid())
+  name   String
+  origin String?
+  type   String?
+
+  trades trade[]
+
+  // Replace 'type String?' with proper relation
+
+  created_by String?
+  updated_by String?
+
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  commodity_type_id String?
+  commodity_type    commodity_type? @relation(fields: [commodity_type_id], references: [id])
+
+  @@index([name])
+}
+
+model trade {
+  id String @id @default(cuid())
+
+  commodity_id String
+  commodity    commodity @relation(fields: [commodity_id], references: [id])
+
+  site_id String
+  site    site   @relation(fields: [site_id], references: [id])
+
+  compound_id String?
+  compound    compound? @relation(fields: [compound_id], references: [id])
+
+  cell_id String?
+  cell    cell?   @relation(fields: [cell_id], references: [id])
+
+  amount_kg Float
+  traded_at DateTime
+  notes     String?
+
+  created_by String?
+  updated_by String?
+
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  @@index([site_id, traded_at])
+}
