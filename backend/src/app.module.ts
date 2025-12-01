@@ -9,6 +9,7 @@ import configuration from './config/configuration';
 import { PrismaModule } from './prisma/prisma.module';
 import { AuthModule } from './auth/auth.module';
 import { OrganizationModule } from './organization';
+import { UserModule } from './user/user.module';
 
 @Module({
   imports: [
@@ -23,6 +24,7 @@ import { OrganizationModule } from './organization';
       envFilePath: '.env',
     }),
     OrganizationModule,
+    UserModule,
   ],
   controllers: [AppController],
   providers: [AppService],

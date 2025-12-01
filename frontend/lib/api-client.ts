@@ -49,6 +49,7 @@ export async function apiGet<T>(
         }
 
         const data = await response.json().catch(() => null);
+        console.log('data', data);
         return { data, error: null, status: response.status };
     } catch (error) {
         return {
