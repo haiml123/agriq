@@ -29,7 +29,6 @@ export default function UsersPage() {
 
     const fetchUsers = async () => {
         const response = await getList();
-        debugger;
         if (response?.data?.items) {
             setUsers(response.data.items)
         }

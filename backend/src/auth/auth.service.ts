@@ -6,11 +6,11 @@ import {
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
-import { UsersService } from '../users/users.service';
 import { PrismaService } from '../prisma/prisma.service';
-import { RegisterDto } from './dto/register.dto';
+import { RegisterDto } from './dto';
 import * as bcrypt from 'bcryptjs';
 import { User } from '@prisma/client';
+import { UserService } from '../user/user.service';
 
 export interface JwtPayload {
   sub: string;
@@ -35,7 +35,7 @@ export interface AuthResponse extends Tokens {
 @Injectable()
 export class AuthService {
   constructor(
-    private usersService: UsersService,
+    private userService: UserService,
     private jwtService: JwtService,
     private prisma: PrismaService,
     private configService: ConfigService,
@@ -45,7 +45,7 @@ export class AuthService {
     email: string,
     password: string,
   ): Promise<Omit<User, 'password'> | null> {
-    const user = await this.usersService.findByEmail(email);
+    const user = await this.userService.findByEmail(email);
 
     if (!user) {
       return null;
@@ -86,7 +86,7 @@ export class AuthService {
 
   async register(registerDto: RegisterDto): Promise<AuthResponse> {
     // Check if email already exists
-    const existingUser = await this.usersService.findByEmail(registerDto.email);
+    const existingUser = await this.userService.findByEmail(registerDto.email);
 
     if (existingUser) {
       throw new ConflictException('Email already in use');
@@ -96,11 +96,12 @@ export class AuthService {
     const hashedPassword = await bcrypt.hash(registerDto.password, 10);
 
     // Create user
-    const user = await this.usersService.create({
+    const user = await this.userService.create({
       name: registerDto.name,
       email: registerDto.email,
       password: hashedPassword,
       phone: registerDto.phone,
+      role: registerDto.role,
       organizationId: registerDto.organizationId,
     });
 

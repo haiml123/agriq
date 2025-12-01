@@ -1,4 +1,10 @@
-import { IsEmail, IsEnum, IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import {
+  IsEmail,
+  IsEnum,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+} from 'class-validator';
 
 export enum RoleType {
   SUPER_ADMIN = 'SUPER_ADMIN',
@@ -9,7 +15,7 @@ export enum RoleType {
 export class CreateUserDto {
   @IsString()
   @IsNotEmpty()
-  organizationId: string;
+  organizationId?: string;
 
   @IsEmail()
   @IsNotEmpty()
@@ -19,8 +25,8 @@ export class CreateUserDto {
   @IsNotEmpty()
   name: string;
 
+  @IsOptional()
   @IsEnum(RoleType)
-  @IsNotEmpty()
   role: RoleType;
 
   @IsOptional()

@@ -5,7 +5,8 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateUserDto, ListUsersQueryDto } from './dto';
-import { Prisma } from '@prisma/client';
+import { Prisma, User } from '@prisma/client';
+import { UpdateUserDto } from './dto/update-user.dto';
 
 @Injectable()
 export class UserService {
@@ -112,6 +113,45 @@ export class UserService {
     };
   }
 
+  async update(id: string, dto: UpdateUserDto) {
+    const user = await this.prisma.user.findUnique({
+      where: { id },
+      include: { roles: true },
+    });
+
+    if (!user) {
+      throw new NotFoundException(`User with ID "${id}" not found`);
+    }
+
+    const { role, ...userData } = dto;
+
+    // Only include password if provided
+    if (userData.password === undefined || userData.password === '') {
+      delete userData.password;
+    }
+
+    const updatedUser = await this.prisma.user.update({
+      where: { id },
+      data: userData as Prisma.UserUpdateInput,
+      include: {
+        organization: {
+          select: { id: true, name: true },
+        },
+        roles: true,
+      },
+    });
+
+    // Update role if provided
+    if (role && user.roles.length > 0) {
+      await this.prisma.userRole.update({
+        where: { id: user.roles[0].id },
+        data: { role },
+      });
+    }
+
+    return this.findOne(id);
+  }
+
   async findOne(id: string) {
     const user = await this.prisma.user.findUnique({
       where: { id },
@@ -128,5 +168,21 @@ export class UserService {
     }
 
     return user;
+  }
+
+  async findByEmail(email: string): Promise<User | null> {
+    return this.prisma.user.findUnique({
+      where: { email },
+    });
+  }
+
+  async findById(id: string): Promise<User | null> {
+    return this.prisma.user.findUnique({
+      where: { id },
+      include: {
+        organization: true,
+        roles: true,
+      },
+    });
   }
 }

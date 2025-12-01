@@ -1,10 +1,12 @@
 import {
   IsEmail,
-  IsString,
-  MinLength,
+  IsEnum,
   IsOptional,
+  IsString,
   MaxLength,
+  MinLength,
 } from 'class-validator';
+import { RoleType } from '../../user/dto';
 
 export class RegisterDto {
   @IsString()
@@ -27,4 +29,8 @@ export class RegisterDto {
   @IsOptional()
   @IsString()
   organizationId?: string;
+
+  @IsOptional()
+  @IsEnum(RoleType)
+  role: RoleType;
 }

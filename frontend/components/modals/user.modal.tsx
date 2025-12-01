@@ -14,7 +14,7 @@ interface UserModalProps {
 }
 
 export function UserModal({ user, onClose }: UserModalProps) {
-    const { create, isCreating } = useUserApi()
+    const { create, update, isCreating } = useUserApi()
     const { getList: getOrganizations } = useOrganizationApi()
 
     const [organizations, setOrganizations] = useState<Organization[]>([])
@@ -22,6 +22,7 @@ export function UserModal({ user, onClose }: UserModalProps) {
         name: user?.name || '',
         email: user?.email || '',
         phone: user?.phone || '',
+        password: '',
         organizationId: user?.organizationId || '',
         role: (user?.roles?.[0]?.role as RoleType) || 'OPERATOR',
         languagePreference: user?.languagePreference || '',
@@ -39,13 +40,22 @@ export function UserModal({ user, onClose }: UserModalProps) {
 
     const handleSubmit = async () => {
         if (isEditing) {
-            // TODO: implement update
-            onClose(user)
+            const response = await update(user.id, {
+                name: formData.name,
+                phone: formData.phone || undefined,
+                password: formData.password || undefined,
+                role: formData.role,
+                languagePreference: formData.languagePreference || undefined,
+            })
+            if (response?.data) {
+                onClose(response.data)
+            }
         } else {
             const response = await create({
                 name: formData.name,
                 email: formData.email,
                 phone: formData.phone || undefined,
+                password: formData.password,
                 organizationId: formData.organizationId,
                 role: formData.role,
                 languagePreference: formData.languagePreference || undefined,
@@ -56,7 +66,12 @@ export function UserModal({ user, onClose }: UserModalProps) {
         }
     }
 
-    const isValid = formData.name.trim() && formData.email.trim() && formData.organizationId && formData.role
+    const isValid =
+        formData.name.trim() &&
+        formData.email.trim() &&
+        formData.organizationId &&
+        formData.role &&
+        (isEditing || formData.password.trim())
 
     return (
         <>
@@ -87,6 +102,18 @@ export function UserModal({ user, onClose }: UserModalProps) {
                         value={formData.email}
                         onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                         disabled={isEditing}
+                    />
+                </div>
+
+                <div className="space-y-2">
+                    <label className="text-sm font-medium text-foreground">
+                        {isEditing ? 'New Password' : 'Password *'}
+                    </label>
+                    <Input
+                        type="password"
+                        placeholder={isEditing ? 'Leave empty to keep current password' : 'Enter password'}
+                        value={formData.password}
+                        onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                     />
                 </div>
 
