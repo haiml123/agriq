@@ -10,6 +10,11 @@ datasource db {
 //
 // ENUMS
 //
+enum role_type {
+  SUPER_ADMIN
+  ORG_ADMIN
+  OPERATOR
+}
 
 enum alert_severity {
   LOW
@@ -53,416 +58,499 @@ enum notification_status {
   BOUNCED
 }
 
+enum invite_status {
+  PENDING
+  ACCEPTED
+  EXPIRED
+  REVOKED
+}
+
+// NEW: Entity status enum for Organization and User
+enum entity_status {
+  ACTIVE
+  BLOCKED
+  DELETED
+}
+
 //
 // ORGANIZATION & ACCESS CONTROL
 //
 
-model organization {
-  id   String @id @default(cuid())
-  name String
+model Organization {
+  id     String        @id @default(cuid())
+  name   String
+  status entity_status @default(ACTIVE)
 
-  users          user[]
-  sites          site[]
-  roles          user_role[]
-  event_triggers event_trigger[]
+  // Relations
+  users         User[]
+  sites         Site[]
+  roles         UserRole[]
+  eventTriggers EventTrigger[]
+  invites       Invite[]
 
-  created_by String?
-  created_at DateTime @default(now())
-  updated_at DateTime @updatedAt
+  // Audit
+  createdBy String?  @map("created_by")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([status])
+  @@map("organization")
 }
 
-model user {
-  id                  String  @id @default(cuid())
-  email               String  @unique
-  phone               String?
-  name                String
-  language_preference String?
+model User {
+  id       String        @id @default(cuid())
+  email    String        @unique
+  password String?
+  phone    String?
+  name     String
+  status   entity_status @default(ACTIVE)
 
-  organization_id String?
-  organization    organization? @relation(fields: [organization_id], references: [id])
+  languagePreference String? @map("language_preference")
 
-  roles user_role[]
+  organizationId String?       @map("organization_id")
+  organization   Organization? @relation(fields: [organizationId], references: [id])
 
-  // Triggers
-  created_triggers event_trigger[] @relation("trigger_creator")
-  updated_triggers event_trigger[] @relation("trigger_updater")
+  // Roles
+  roles UserRole[]
+
+  // Auth - Refresh tokens
+  refreshTokens RefreshToken[]
+
+  // Invites created by this user
+  createdInvites Invite[] @relation("invite_creator")
+  acceptedInvite Invite?  @relation("invite_acceptor")
+
+  // Triggers (creator/updater relations)
+  createdTriggers EventTrigger[] @relation("trigger_creator")
+  updatedTriggers EventTrigger[] @relation("trigger_updater")
 
   // Alerts
-  resolved_alerts alert[]
+  resolvedAlerts Alert[]
 
   // Notifications received
-  notifications alert_notification[]
+  notifications AlertNotification[]
 
-  created_at DateTime @default(now())
-  updated_at DateTime @updatedAt
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([status])
+  @@map("user")
 }
 
-model role {
-  id    Int         @id @default(autoincrement())
-  name  String      @unique
-  users user_role[]
+// Refresh token model for JWT auth
+model RefreshToken {
+  id    String @id @default(cuid())
+  token String @unique
+
+  userId String @map("user_id")
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  expiresAt DateTime @map("expires_at")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([userId])
+  @@index([expiresAt])
+  @@map("refresh_token")
 }
 
-model user_role {
+// Invite model for user invitations
+model Invite {
+  id    String @id @default(cuid())
+  token String @unique
+  email String
+
+  // Pre-configured role
+  roleId Int  @map("role_id")
+  role   Role @relation(fields: [roleId], references: [id])
+
+  // Organization the user is invited to
+  organizationId String       @map("organization_id")
+  organization   Organization @relation(fields: [organizationId], references: [id])
+
+  // Optional: Site-level access
+  siteId String? @map("site_id")
+  site   Site?   @relation(fields: [siteId], references: [id])
+
+  // Invite status
+  status    invite_status @default(PENDING)
+  expiresAt DateTime      @map("expires_at")
+
+  // Who created the invite
+  createdById String @map("created_by_id")
+  createdBy   User   @relation("invite_creator", fields: [createdById], references: [id])
+
+  // Who accepted (links to the created user)
+  acceptedById String?   @unique @map("accepted_by_id")
+  acceptedBy   User?     @relation("invite_acceptor", fields: [acceptedById], references: [id])
+  acceptedAt   DateTime? @map("accepted_at")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([email])
+  @@index([status])
+  @@index([organizationId])
+  @@map("invite")
+}
+
+model Role {
+  id   Int    @id @default(autoincrement())
+  name String @unique
+
+  users   UserRole[]
+  invites Invite[]
+
+  @@map("role")
+}
+
+model UserRole {
   id Int @id @default(autoincrement())
 
-  user_id String
-  user    user   @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  userId String @map("user_id")
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  role_id Int
-  role    role @relation(fields: [role_id], references: [id], onDelete: Cascade)
+  role role_type
 
-  organization_id String?
-  organization    organization? @relation(fields: [organization_id], references: [id])
+  organizationId String?       @map("organization_id")
+  organization   Organization? @relation(fields: [organizationId], references: [id])
 
-  site_id String?
-  site    site?   @relation(fields: [site_id], references: [id])
+  siteId String? @map("site_id")
+  site   Site?   @relation(fields: [siteId], references: [id])
 
-  granted_by_user_id String?
+  grantedByUserId String? @map("granted_by_user_id")
 
-  created_at DateTime @default(now())
-  updated_at DateTime @updatedAt
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  Role      Role?    @relation(fields: [roleId], references: [id])
+  roleId    Int?
 
-  @@unique([user_id, role_id, organization_id, site_id])
+  @@unique([userId, role, organizationId, siteId])
+  @@map("user_role")
 }
 
 //
 // STRUCTURE: SITE → COMPOUND → CELL
 //
 
-model site {
+model Site {
   id   String @id @default(cuid())
   name String
 
-  organization_id String
-  organization    organization @relation(fields: [organization_id], references: [id])
+  organizationId String       @map("organization_id")
+  organization   Organization @relation(fields: [organizationId], references: [id])
 
-  compounds compound[]
-  alerts    alert[]
-  trades    trade[]
-  roles     user_role[]
-  triggers  event_trigger[]
+  // Relations
+  compounds Compound[]
+  alerts    Alert[]
+  trades    Trade[]
+  roles     UserRole[]
+  triggers  EventTrigger[]
+  invites   Invite[]
 
-  created_by String?
-  created_at DateTime @default(now())
-  updated_at DateTime @updatedAt
+  // Audit
+  createdBy String?  @map("created_by")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("site")
 }
 
-model compound {
+model Compound {
   id   String @id @default(cuid())
   name String
 
-  site_id String
-  site    site   @relation(fields: [site_id], references: [id])
+  siteId String @map("site_id")
+  site   Site   @relation(fields: [siteId], references: [id])
 
-  cells    cell[]
-  alerts   alert[]
-  trades   trade[]
-  triggers event_trigger[]
+  // Relations
+  cells    Cell[]
+  alerts   Alert[]
+  trades   Trade[]
+  triggers EventTrigger[]
 
-  created_by String?
-  created_at DateTime @default(now())
-  updated_at DateTime @updatedAt
+  // Audit
+  createdBy String?  @map("created_by")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("compound")
 }
 
-model cell {
+model Cell {
   id   String @id @default(cuid())
   name String
 
-  compound_id String
-  compound    compound @relation(fields: [compound_id], references: [id])
+  compoundId String   @map("compound_id")
+  compound   Compound @relation(fields: [compoundId], references: [id])
 
-  sensors  sensor[]
-  alerts   alert[]
-  readings sensor_reading[]
-  trades   trade[]
-  triggers event_trigger[]
+  // Relations
+  sensors  Sensor[]
+  alerts   Alert[]
+  readings SensorReading[]
+  trades   Trade[]
+  triggers EventTrigger[]
 
-  created_by String?
-  created_at DateTime @default(now())
-  updated_at DateTime @updatedAt
+  // Audit
+  createdBy String?  @map("created_by")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("cell")
 }
 
 //
-// SENSORS
+// SENSORS & READINGS
 //
 
-model sensor {
-  id          String  @id @default(cuid())
-  external_id String  @unique
-  name        String?
-  is_active   Boolean @default(true)
+model Sensor {
+  id         String  @id @default(cuid())
+  externalId String  @unique @map("external_id")
+  name       String?
+  isActive   Boolean @default(true) @map("is_active")
 
-  cell_id String
-  cell    cell   @relation(fields: [cell_id], references: [id])
+  cellId String @map("cell_id")
+  cell   Cell   @relation(fields: [cellId], references: [id])
 
-  readings sensor_reading[]
+  readings SensorReading[]
 
-  created_by String?
-  created_at DateTime @default(now())
-  updated_at DateTime @updatedAt
+  createdBy String?  @map("created_by")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("sensor")
 }
 
-model sensor_reading {
-  id        String @id @default(cuid())
-  sensor_id String
-  sensor    sensor @relation(fields: [sensor_id], references: [id])
+model SensorReading {
+  id String @id @default(cuid())
 
-  cell_id String
-  cell    cell   @relation(fields: [cell_id], references: [id])
+  sensorId String @map("sensor_id")
+  sensor   Sensor @relation(fields: [sensorId], references: [id])
 
-  metric      metric_type
-  value       Float
-  recorded_at DateTime
-  created_at  DateTime    @default(now())
+  cellId String @map("cell_id")
+  cell   Cell   @relation(fields: [cellId], references: [id])
 
-  @@index([sensor_id, metric, recorded_at])
-  @@index([cell_id, metric, recorded_at])
+  metric     metric_type
+  value      Float
+  recordedAt DateTime    @map("recorded_at")
+  createdAt  DateTime    @default(now()) @map("created_at")
+
+  @@index([sensorId, metric, recordedAt])
+  @@index([cellId, metric, recordedAt])
+  @@map("sensor_reading")
 }
 
 //
-// EVENT TRIGGERS - with JSON conditions and actions
+// EVENT TRIGGERS
 //
 
-model event_trigger {
+model EventTrigger {
   id          String  @id @default(cuid())
   name        String
   description String?
 
-  // Scope - where does this trigger apply?
-  scope_type      trigger_scope
-  organization_id String?
-  organization    organization? @relation(fields: [organization_id], references: [id])
-  site_id         String?
-  site            site?         @relation(fields: [site_id], references: [id])
-  compound_id     String?
-  compound        compound?     @relation(fields: [compound_id], references: [id])
-  cell_id         String?
-  cell            cell?         @relation(fields: [cell_id], references: [id])
+  scopeType trigger_scope @map("scope_type")
 
-  // ============================================
-  // CONDITIONS - stored as JSON
-  // ============================================
-  // {
-  //   "logic": "AND" | "OR",
-  //   "items": [
-  //     {
-  //       "metric": "TEMPERATURE" | "HUMIDITY",
-  //       "type": "THRESHOLD",
-  //       "operator": "ABOVE" | "BELOW" | "EQUALS" | "BETWEEN",
-  //       "value": 30,
-  //       "secondaryValue": 40  // only for BETWEEN
-  //     },
-  //     {
-  //       "metric": "TEMPERATURE",
-  //       "type": "CHANGE",
-  //       "direction": "INCREASE" | "DECREASE" | "ANY",
-  //       "amount": 5,
-  //       "timeWindowDays": 7
-  //     }
-  //   ]
-  // }
+  organizationId String?       @map("organization_id")
+  organization   Organization? @relation(fields: [organizationId], references: [id])
+
+  siteId String? @map("site_id")
+  site   Site?   @relation(fields: [siteId], references: [id])
+
+  compoundId String?   @map("compound_id")
+  compound   Compound? @relation(fields: [compoundId], references: [id])
+
+  cellId String? @map("cell_id")
+  cell   Cell?   @relation(fields: [cellId], references: [id])
+
   conditions Json
+  actions    Json
 
-  // ============================================
-  // ACTIONS - stored as JSON
-  // ============================================
-  // [
-  //   { "type": "EMAIL", "recipients": ["user-id-1"] },
-  //   { "type": "SMS", "recipients": ["user-id-1"] },
-  //   { "type": "PUSH" },
-  //   { "type": "WEBHOOK", "url": "https://..." }
-  // ]
-  actions Json
-
-  // Severity when triggered
   severity alert_severity @default(MEDIUM)
+  isActive Boolean        @default(true) @map("is_active")
 
-  // Is this trigger active?
-  is_active Boolean @default(true)
+  alerts Alert[]
 
-  // Alerts generated by this trigger
-  alerts alert[]
+  createdBy     String @map("created_by")
+  createdByUser User   @relation("trigger_creator", fields: [createdBy], references: [id])
 
-  // Audit
-  created_by      String
-  created_by_user user    @relation("trigger_creator", fields: [created_by], references: [id])
-  updated_by      String?
-  updated_by_user user?   @relation("trigger_updater", fields: [updated_by], references: [id])
+  updatedBy     String? @map("updated_by")
+  updatedByUser User?   @relation("trigger_updater", fields: [updatedBy], references: [id])
 
-  created_at DateTime @default(now())
-  updated_at DateTime @updatedAt
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
-  @@index([is_active, scope_type])
-  @@index([site_id])
-  @@index([organization_id])
+  @@index([isActive, scopeType])
+  @@index([siteId])
+  @@index([organizationId])
+  @@map("event_trigger")
 }
 
 //
 // ALERTS
 //
 
-model alert {
+model Alert {
   id String @id @default(cuid())
 
-  trigger_id String?
-  trigger    event_trigger? @relation(fields: [trigger_id], references: [id])
+  triggerId String?       @map("trigger_id")
+  trigger   EventTrigger? @relation(fields: [triggerId], references: [id])
 
-  site_id String
-  site    site   @relation(fields: [site_id], references: [id])
+  siteId String @map("site_id")
+  site   Site   @relation(fields: [siteId], references: [id])
 
-  compound_id String?
-  compound    compound? @relation(fields: [compound_id], references: [id])
+  compoundId String?   @map("compound_id")
+  compound   Compound? @relation(fields: [compoundId], references: [id])
 
-  cell_id String?
-  cell    cell?   @relation(fields: [cell_id], references: [id])
+  cellId String? @map("cell_id")
+  cell   Cell?   @relation(fields: [cellId], references: [id])
 
-  title        String?
-  description  String
-  trigger_type metric_type
-  severity     alert_severity
-  status       alert_status   @default(OPEN)
+  title       String?
+  description String
 
-  threshold_value Float?
-  unit            String?
+  triggerType metric_type    @map("trigger_type")
+  severity    alert_severity
+  status      alert_status   @default(OPEN)
 
-  started_at  DateTime  @default(now())
-  resolved_at DateTime?
+  thresholdValue Float?  @map("threshold_value")
+  unit           String?
 
-  resolved_by_user_id String?
-  resolved_by_user    user?   @relation(fields: [resolved_by_user_id], references: [id])
+  startedAt  DateTime  @default(now()) @map("started_at")
+  resolvedAt DateTime? @map("resolved_at")
 
-  // Notifications sent for this alert
-  notifications alert_notification[]
+  resolvedByUserId String? @map("resolved_by_user_id")
+  resolvedByUser   User?   @relation(fields: [resolvedByUserId], references: [id])
 
-  created_at DateTime @default(now())
-  updated_at DateTime @updatedAt
+  notifications AlertNotification[]
 
-  @@index([site_id, status])
-  @@index([cell_id, status])
-  @@index([trigger_id, status])
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([siteId, status])
+  @@index([cellId, status])
+  @@index([triggerId, status])
+  @@map("alert")
 }
 
 //
-// NOTIFICATION LOG - tracks every notification sent
+// NOTIFICATION LOG
 //
 
-model alert_notification {
+model AlertNotification {
   id String @id @default(cuid())
 
-  alert_id String
-  alert    alert  @relation(fields: [alert_id], references: [id], onDelete: Cascade)
+  alertId String @map("alert_id")
+  alert   Alert  @relation(fields: [alertId], references: [id], onDelete: Cascade)
 
-  // Who was notified (null for webhooks)
-  user_id String?
-  user    user?   @relation(fields: [user_id], references: [id])
+  userId String? @map("user_id")
+  user   User?   @relation(fields: [userId], references: [id])
 
-  // How they were notified
   channel notification_channel
 
-  // Delivery details
-  recipient String // email address, phone number, webhook URL
+  recipient String
   status    notification_status @default(PENDING)
 
-  // For retries
-  attempts   Int     @default(0)
-  last_error String?
+  attempts  Int     @default(0)
+  lastError String? @map("last_error")
 
-  // External provider reference (SendGrid message ID, Twilio SID, etc.)
-  external_id String?
+  externalId String? @map("external_id")
 
-  // Timestamps
-  sent_at      DateTime?
-  delivered_at DateTime?
-  failed_at    DateTime?
+  sentAt      DateTime? @map("sent_at")
+  deliveredAt DateTime? @map("delivered_at")
+  failedAt    DateTime? @map("failed_at")
 
-  created_at DateTime @default(now())
-  updated_at DateTime @updatedAt
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
-  @@index([alert_id])
-  @@index([user_id])
+  @@index([alertId])
+  @@index([userId])
   @@index([status, attempts])
+  @@map("alert_notification")
 }
 
 //
 // GOODS / COMMODITIES / TRADES
 //
 
-model commodity_type {
+model CommodityType {
   id          String  @id @default(cuid())
   name        String  @unique
   description String?
-  is_active   Boolean @default(true)
+  isActive    Boolean @default(true) @map("is_active")
 
-  commodities   commodity[]
-  lookup_tables lookup_table[]
+  commodities  Commodity[]
+  lookupTables LookupTable[]
 
-  created_by String?
-  updated_by String?
-  created_at DateTime @default(now())
-  updated_at DateTime @updatedAt
+  createdBy String?  @map("created_by")
+  updatedBy String?  @map("updated_by")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("commodity_type")
 }
 
-model lookup_table {
+model LookupTable {
   id          String  @id @default(cuid())
   name        String
   description String?
 
-  commodity_type_id String         @unique
-  commodity_type    commodity_type @relation(fields: [commodity_type_id], references: [id])
+  commodityTypeId String        @unique @map("commodity_type_id")
+  commodityType   CommodityType @relation(fields: [commodityTypeId], references: [id])
 
-  // { tempRanges: [], humidityRanges: [], values: [][] }
   data Json
 
-  created_by String?
-  updated_by String?
-  created_at DateTime @default(now())
-  updated_at DateTime @updatedAt
+  createdBy String?  @map("created_by")
+  updatedBy String?  @map("updated_by")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("lookup_table")
 }
 
-model commodity {
+model Commodity {
   id     String  @id @default(cuid())
   name   String
   origin String?
 
-  commodity_type_id String?
-  commodity_type    commodity_type? @relation(fields: [commodity_type_id], references: [id])
+  commodityTypeId String?        @map("commodity_type_id")
+  commodityType   CommodityType? @relation(fields: [commodityTypeId], references: [id])
 
-  trades trade[]
+  trades Trade[]
 
-  created_by String?
-  updated_by String?
-  created_at DateTime @default(now())
-  updated_at DateTime @updatedAt
+  createdBy String?  @map("created_by")
+  updatedBy String?  @map("updated_by")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   @@index([name])
-  @@index([commodity_type_id])
+  @@index([commodityTypeId])
+  @@map("commodity")
 }
 
-model trade {
+model Trade {
   id String @id @default(cuid())
 
-  commodity_id String
-  commodity    commodity @relation(fields: [commodity_id], references: [id])
+  commodityId String    @map("commodity_id")
+  commodity   Commodity @relation(fields: [commodityId], references: [id])
 
-  site_id String
-  site    site   @relation(fields: [site_id], references: [id])
+  siteId String @map("site_id")
+  site   Site   @relation(fields: [siteId], references: [id])
 
-  compound_id String?
-  compound    compound? @relation(fields: [compound_id], references: [id])
+  compoundId String?   @map("compound_id")
+  compound   Compound? @relation(fields: [compoundId], references: [id])
 
-  cell_id String?
-  cell    cell?   @relation(fields: [cell_id], references: [id])
+  cellId String? @map("cell_id")
+  cell   Cell?   @relation(fields: [cellId], references: [id])
 
-  amount_kg Float
-  traded_at DateTime
-  notes     String?
+  amountKg Float    @map("amount_kg")
+  tradedAt DateTime @map("traded_at")
+  notes    String?
 
-  created_by String?
-  updated_by String?
+  createdBy String? @map("created_by")
+  updatedBy String? @map("updated_by")
 
-  created_at DateTime @default(now())
-  updated_at DateTime @updatedAt
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
-  @@index([site_id, traded_at])
+  @@index([siteId, tradedAt])
+  @@map("trade")
 }
