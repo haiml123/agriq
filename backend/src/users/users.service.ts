@@ -17,11 +17,7 @@ export class UsersService {
       where: { id },
       include: {
         organization: true,
-        roles: {
-          include: {
-            role: true,
-          },
-        },
+        roles: true,
       },
     });
   }
@@ -57,11 +53,7 @@ export class UsersService {
       where: organizationId ? { organizationId } : undefined,
       include: {
         organization: true,
-        roles: {
-          include: {
-            role: true,
-          },
-        },
+        roles: true,
       },
       orderBy: {
         createdAt: 'desc',

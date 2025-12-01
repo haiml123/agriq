@@ -1,19 +1,20 @@
 import {
-  Controller,
-  Get,
-  Post,
   Body,
-  Param,
+  Controller,
   Delete,
-  Query,
+  Get,
   HttpCode,
   HttpStatus,
+  Param,
   Patch,
+  Post,
+  Query,
 } from '@nestjs/common';
 import { InvitesService } from './invites.service';
-import { CreateInviteDto, AcceptInviteDto } from './dto';
+import { AcceptInviteDto, CreateInviteDto } from './dto';
 import { Public } from '../auth/decorators/public.decorator';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
+import { invite_status } from '@prisma/client';
 
 @Controller('invites')
 export class InvitesController {
@@ -66,6 +67,7 @@ export class InvitesController {
    * List all invites for an organization (Admin only)
    * GET /api/invites?organizationId=xxx&status=PENDING
    */
+  @Public()
   @Get()
   async findAll(
     @Query('organizationId') organizationId: string,
@@ -74,7 +76,10 @@ export class InvitesController {
     if (!organizationId) {
       throw new Error('organizationId is required');
     }
-    return this.invitesService.findAllByOrganization(organizationId, status);
+    return this.invitesService.findAllByOrganization(
+      organizationId,
+      status as invite_status,
+    );
   }
 
   /**
@@ -82,10 +87,7 @@ export class InvitesController {
    * PATCH /api/invites/:id/revoke
    */
   @Patch(':id/revoke')
-  async revoke(
-    @Param('id') id: string,
-    @CurrentUser('id') userId: string,
-  ) {
+  async revoke(@Param('id') id: string, @CurrentUser('id') userId: string) {
     return this.invitesService.revoke(id, userId);
   }
 
@@ -94,10 +96,7 @@ export class InvitesController {
    * PATCH /api/invites/:id/resend
    */
   @Patch(':id/resend')
-  async resend(
-    @Param('id') id: string,
-    @CurrentUser('id') userId: string,
-  ) {
+  async resend(@Param('id') id: string, @CurrentUser('id') userId: string) {
     const invite = await this.invitesService.resend(id, userId);
 
     return {

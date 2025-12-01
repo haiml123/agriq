@@ -1,15 +1,15 @@
 import {
-  Injectable,
-  NotFoundException,
   BadRequestException,
   ConflictException,
+  Injectable,
   Logger,
+  NotFoundException,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { EmailService } from '../email/email.service';
-import { CreateInviteDto, AcceptInviteDto } from './dto';
+import { AcceptInviteDto, CreateInviteDto } from './dto';
 import * as bcrypt from 'bcryptjs';
-import { Site } from '@prisma/client';
+import { invite_status, role_type, Site } from '@prisma/client';
 
 @Injectable()
 export class InvitesService {
@@ -24,7 +24,13 @@ export class InvitesService {
    * Create a new invite and send email (Admin only)
    */
   async create(createInviteDto: CreateInviteDto, createdById: string) {
-    const { email, roleId, organizationId, siteId, expiresInDays = 7 } = createInviteDto;
+    const {
+      email,
+      roleId,
+      organizationId,
+      siteId,
+      expiresInDays = 7,
+    } = createInviteDto;
 
     // Check if organization exists
     const organization = await this.prisma.organization.findUnique({
@@ -47,7 +53,9 @@ export class InvitesService {
       }
 
       if (site.organizationId !== organizationId) {
-        throw new BadRequestException('Site does not belong to this organization');
+        throw new BadRequestException(
+          'Site does not belong to this organization',
+        );
       }
     }
 
@@ -132,7 +140,9 @@ export class InvitesService {
     });
 
     if (!emailSent) {
-      this.logger.warn(`Failed to send invite email to ${email}, but invite was created`);
+      this.logger.warn(
+        `Failed to send invite email to ${email}, but invite was created`,
+      );
     }
 
     return {
@@ -160,7 +170,9 @@ export class InvitesService {
     }
 
     if (invite.status !== 'PENDING') {
-      throw new BadRequestException(`This invite has already been ${invite.status.toLowerCase()}`);
+      throw new BadRequestException(
+        `This invite has already been ${invite.status.toLowerCase()}`,
+      );
     }
 
     if (invite.expiresAt < new Date()) {
@@ -201,7 +213,9 @@ export class InvitesService {
     }
 
     if (invite.status !== 'PENDING') {
-      throw new BadRequestException(`This invite has already been ${invite.status.toLowerCase()}`);
+      throw new BadRequestException(
+        `This invite has already been ${invite.status.toLowerCase()}`,
+      );
     }
 
     if (invite.expiresAt < new Date()) {
@@ -240,6 +254,7 @@ export class InvitesService {
           organizationId: invite.organizationId,
           siteId: invite.siteId,
           grantedByUserId: invite.createdById,
+          role: role_type.OPERATOR,
         },
       });
 
@@ -255,6 +270,7 @@ export class InvitesService {
       return user;
     });
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { password: _, ...userWithoutPassword } = result;
     return {
       user: userWithoutPassword,
@@ -266,15 +282,12 @@ export class InvitesService {
   /**
    * List all invites for an organization (Admin only)
    */
-  async findAllByOrganization(organizationId: string, status?: string) {
-    const where: any = { organizationId };
-
-    if (status) {
-      where.status = status.toUpperCase();
-    }
-
+  async findAllByOrganization(organizationId: string, status?: invite_status) {
     return this.prisma.invite.findMany({
-      where,
+      where: {
+        organizationId,
+        ...(status && { status }),
+      },
       include: {
         role: true,
         site: true,

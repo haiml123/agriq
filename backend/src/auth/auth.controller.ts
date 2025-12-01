@@ -12,6 +12,7 @@ import { AuthResponse, AuthService, Tokens } from './auth.service';
 import { LocalAuthGuard } from './guards';
 import { CurrentUser, Public } from './decorators';
 import { LoginDto, RegisterDto } from './dto';
+import { entity_status } from '@prisma/client';
 
 @Controller('auth')
 export class AuthController {
@@ -37,6 +38,7 @@ export class AuthController {
         languagePreference: string | null;
         createdAt: Date;
         updatedAt: Date;
+        status: entity_status;
       };
     },
     @Body() loginDto: LoginDto,

@@ -10,6 +10,11 @@ datasource db {
 //
 // ENUMS
 //
+enum role_type {
+  SUPER_ADMIN
+  ORG_ADMIN
+  OPERATOR
+}
 
 enum alert_severity {
   LOW
@@ -53,7 +58,6 @@ enum notification_status {
   BOUNCED
 }
 
-// NEW: Invite status enum
 enum invite_status {
   PENDING
   ACCEPTED
@@ -61,13 +65,21 @@ enum invite_status {
   REVOKED
 }
 
+// NEW: Entity status enum for Organization and User
+enum entity_status {
+  ACTIVE
+  BLOCKED
+  DELETED
+}
+
 //
 // ORGANIZATION & ACCESS CONTROL
 //
 
 model Organization {
-  id   String @id @default(cuid())
-  name String
+  id     String        @id @default(cuid())
+  name   String
+  status entity_status @default(ACTIVE)
 
   // Relations
   users         User[]
@@ -81,15 +93,17 @@ model Organization {
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
+  @@index([status])
   @@map("organization")
 }
 
 model User {
-  id       String  @id @default(cuid())
-  email    String  @unique
-  password String? // NEW: For authentication (null if invited but not yet registered)
+  id       String        @id @default(cuid())
+  email    String        @unique
+  password String?
   phone    String?
   name     String
+  status   entity_status @default(ACTIVE)
 
   languagePreference String? @map("language_preference")
 
@@ -99,12 +113,12 @@ model User {
   // Roles
   roles UserRole[]
 
-  // NEW: Auth - Refresh tokens
+  // Auth - Refresh tokens
   refreshTokens RefreshToken[]
 
-  // NEW: Invites created by this user
-  createdInvites  Invite[] @relation("invite_creator")
-  acceptedInvite  Invite?  @relation("invite_acceptor")
+  // Invites created by this user
+  createdInvites Invite[] @relation("invite_creator")
+  acceptedInvite Invite?  @relation("invite_acceptor")
 
   // Triggers (creator/updater relations)
   createdTriggers EventTrigger[] @relation("trigger_creator")
@@ -119,17 +133,18 @@ model User {
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
+  @@index([status])
   @@map("user")
 }
 
-// NEW: Refresh token model for JWT auth
+// Refresh token model for JWT auth
 model RefreshToken {
-  id        String   @id @default(cuid())
-  token     String   @unique
-  
-  userId    String   @map("user_id")
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
+  id    String @id @default(cuid())
+  token String @unique
+
+  userId String @map("user_id")
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
   expiresAt DateTime @map("expires_at")
   createdAt DateTime @default(now()) @map("created_at")
 
@@ -138,11 +153,11 @@ model RefreshToken {
   @@map("refresh_token")
 }
 
-// NEW: Invite model for user invitations
+// Invite model for user invitations
 model Invite {
   id    String @id @default(cuid())
-  token String @unique // The unique invite token (UUID)
-  email String // Email address of the invited user
+  token String @unique
+  email String
 
   // Pre-configured role
   roleId Int  @map("role_id")
@@ -165,8 +180,8 @@ model Invite {
   createdBy   User   @relation("invite_creator", fields: [createdById], references: [id])
 
   // Who accepted (links to the created user)
-  acceptedById String? @unique @map("accepted_by_id")
-  acceptedBy   User?   @relation("invite_acceptor", fields: [acceptedById], references: [id])
+  acceptedById String?   @unique @map("accepted_by_id")
+  acceptedBy   User?     @relation("invite_acceptor", fields: [acceptedById], references: [id])
   acceptedAt   DateTime? @map("accepted_at")
 
   createdAt DateTime @default(now()) @map("created_at")
@@ -188,18 +203,13 @@ model Role {
   @@map("role")
 }
 
-/**
- * Junction model for assigning roles to users,
- * optionally scoped to an organization and/or site.
- */
 model UserRole {
   id Int @id @default(autoincrement())
 
   userId String @map("user_id")
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  roleId Int  @map("role_id")
-  role   Role @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  role role_type
 
   organizationId String?       @map("organization_id")
   organization   Organization? @relation(fields: [organizationId], references: [id])
@@ -211,8 +221,10 @@ model UserRole {
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
+  Role      Role?    @relation(fields: [roleId], references: [id])
+  roleId    Int?
 
-  @@unique([userId, roleId, organizationId, siteId])
+  @@unique([userId, role, organizationId, siteId])
   @@map("user_role")
 }
 
@@ -328,7 +340,7 @@ model SensorReading {
 }
 
 //
-// EVENT TRIGGERS - with JSON conditions and actions
+// EVENT TRIGGERS
 //
 
 model EventTrigger {
@@ -336,7 +348,6 @@ model EventTrigger {
   name        String
   description String?
 
-  // Scope - where does this trigger apply?
   scopeType trigger_scope @map("scope_type")
 
   organizationId String?       @map("organization_id")
@@ -351,22 +362,14 @@ model EventTrigger {
   cellId String? @map("cell_id")
   cell   Cell?   @relation(fields: [cellId], references: [id])
 
-  // CONDITIONS - stored as JSON
   conditions Json
+  actions    Json
 
-  // ACTIONS - stored as JSON
-  actions Json
-
-  // Severity when triggered
   severity alert_severity @default(MEDIUM)
+  isActive Boolean        @default(true) @map("is_active")
 
-  // Is this trigger active?
-  isActive Boolean @default(true) @map("is_active")
-
-  // Alerts generated by this trigger
   alerts Alert[]
 
-  // Audit
   createdBy     String @map("created_by")
   createdByUser User   @relation("trigger_creator", fields: [createdBy], references: [id])
 
@@ -417,7 +420,6 @@ model Alert {
   resolvedByUserId String? @map("resolved_by_user_id")
   resolvedByUser   User?   @relation(fields: [resolvedByUserId], references: [id])
 
-  // Notifications sent for this alert
   notifications AlertNotification[]
 
   createdAt DateTime @default(now()) @map("created_at")
@@ -430,7 +432,7 @@ model Alert {
 }
 
 //
-// NOTIFICATION LOG - tracks every notification sent
+// NOTIFICATION LOG
 //
 
 model AlertNotification {
@@ -439,25 +441,19 @@ model AlertNotification {
   alertId String @map("alert_id")
   alert   Alert  @relation(fields: [alertId], references: [id], onDelete: Cascade)
 
-  // Who was notified (null for webhooks)
   userId String? @map("user_id")
   user   User?   @relation(fields: [userId], references: [id])
 
-  // How they were notified
   channel notification_channel
 
-  // Delivery details
   recipient String
   status    notification_status @default(PENDING)
 
-  // For retries
   attempts  Int     @default(0)
   lastError String? @map("last_error")
 
-  // External provider reference (SendGrid message ID, Twilio SID, etc.)
   externalId String? @map("external_id")
 
-  // Timestamps
   sentAt      DateTime? @map("sent_at")
   deliveredAt DateTime? @map("delivered_at")
   failedAt    DateTime? @map("failed_at")
@@ -481,11 +477,9 @@ model CommodityType {
   description String?
   isActive    Boolean @default(true) @map("is_active")
 
-  // Relations
   commodities  Commodity[]
   lookupTables LookupTable[]
 
-  // Audit
   createdBy String?  @map("created_by")
   updatedBy String?  @map("updated_by")
   createdAt DateTime @default(now()) @map("created_at")
@@ -502,10 +496,8 @@ model LookupTable {
   commodityTypeId String        @unique @map("commodity_type_id")
   commodityType   CommodityType @relation(fields: [commodityTypeId], references: [id])
 
-  // { tempRanges: [], humidityRanges: [], values: [][] }
   data Json
 
-  // Audit
   createdBy String?  @map("created_by")
   updatedBy String?  @map("updated_by")
   createdAt DateTime @default(now()) @map("created_at")

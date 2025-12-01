@@ -1,98 +1,140 @@
-'use client';
+'use client'
 
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import { ThemeToggle } from '@/theme/ThemeToggle';
+import Link from 'next/link'
+import { usePathname } from 'next/navigation'
+import { ThemeToggle } from '@/theme/ThemeToggle'
+import { useState } from 'react'
+import { Button } from '@/components/ui/button'
+import { BarChart3, Menu, X } from 'lucide-react'
 
 interface Tab {
-    label: string;
-    href: string;
+    label: string
+    href: string
 }
 
 interface AppHeaderProps {
-    title: string;
-    subtitle?: string;
-    tabs?: Tab[];
+    title: string
+    subtitle?: string
+    tabs?: Tab[]
 }
 
 const defaultTabs: Tab[] = [
-    { label: 'Dashboard', href: '/dashboard' },
-    { label: 'Sites', href: '/sites' },
-    { label: 'Alerts', href: '/alerts' },
-    { label: 'Settings', href: '/settings' },
-];
+    { label: "Dashboard", href: "/dashboard" },
+    { label: "Sites", href: "/sites" },
+    { label: "Alerts", href: "/alerts" },
+    { label: "Settings", href: "/settings" },
+]
 
 export function AppHeader({ title, subtitle, tabs = defaultTabs }: AppHeaderProps) {
-    const pathname = usePathname();
+    const pathname = usePathname()
+    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
 
     const isActiveTab = (href: string) => {
-        if (href === '/dashboard') {
-            return pathname === '/dashboard' || pathname === '/';
+        if (href === "/dashboard") {
+            return pathname === "/dashboard" || pathname === "/"
         }
-        return pathname.startsWith(href);
-    };
+        return pathname.startsWith(href)
+    }
 
     return (
-        <header className="border-b border-border bg-background">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                {/* Top section with title and theme toggle */}
-                <div className="flex items-center justify-between py-4">
-                    <div className="flex items-center gap-3">
-                        {/* Logo/Icon */}
-                        <div className="w-10 h-10 rounded-full bg-primary/10 border border-primary/30 flex items-center justify-center">
-                            <svg
-                                className="w-5 h-5 text-primary"
-                                fill="none"
-                                viewBox="0 0 24 24"
-                                stroke="currentColor"
-                            >
-                                <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth={2}
-                                    d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
-                                />
-                            </svg>
+        <>
+            {/* Top section - scrolls away */}
+            <div className="border-b border-border bg-background shrink-0">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <div className="flex items-center justify-between py-4">
+                        <div className="flex items-center gap-3">
+                            {/* Logo/Icon */}
+                            <div className="w-10 h-10 rounded-full bg-primary/10 border border-primary/30 flex items-center justify-center">
+                                <BarChart3 className="w-5 h-5 text-primary" />
+                            </div>
+                            <div>
+                                <h1 className="text-xl font-semibold text-foreground">{title}</h1>
+                                {subtitle && <p className="text-sm text-muted-foreground">{subtitle}</p>}
+                            </div>
                         </div>
-                        <div>
-                            <h1 className="text-xl font-semibold text-foreground">
-                                {title}
-                            </h1>
-                            {subtitle && (
-                                <p className="text-sm text-muted-foreground">
-                                    {subtitle}
-                                </p>
-                            )}
+                        <div className="flex items-center gap-2">
+                            <ThemeToggle />
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                className="md:hidden"
+                                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                                aria-label="Toggle menu"
+                            >
+                                <Menu className="h-5 w-5" />
+                            </Button>
                         </div>
                     </div>
-                    <ThemeToggle />
                 </div>
+            </div>
 
-                {/* Navigation Tabs */}
-                <nav className="flex gap-1">
+            <nav className="hidden md:block sticky top-0 z-50 border-b border-border bg-background">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex gap-1">
                     {tabs.map((tab) => {
-                        const isActive = isActiveTab(tab.href);
+                        const isActive = isActiveTab(tab.href)
                         return (
                             <Link
                                 key={tab.href}
                                 href={tab.href}
                                 className={`
-                                    px-4 py-3 text-sm font-medium transition-colors relative
-                                    ${isActive
-                                    ? 'text-primary'
-                                    : 'text-muted-foreground hover:text-foreground'
-                                }
-                                `}
+                  px-4 py-3 text-sm font-medium transition-colors relative
+                  ${isActive ? "text-primary" : "text-muted-foreground hover:text-foreground"}
+                `}
                             >
                                 {tab.label}
-                                {isActive && (
-                                    <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary" />
-                                )}
+                                {isActive && <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary" />}
                             </Link>
-                        );
+                        )
                     })}
-                </nav>
-            </div>
-        </header>
-    );
+                </div>
+            </nav>
+
+            {isMobileMenuOpen && (
+                <>
+                    {/* Backdrop */}
+                    <div
+                        className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 md:hidden"
+                        onClick={() => setIsMobileMenuOpen(false)}
+                    />
+
+                    {/* Side Menu */}
+                    <div className="fixed top-0 right-0 bottom-0 w-64 bg-background border-l border-border z-50 md:hidden shadow-lg">
+                        <div className="flex flex-col h-full">
+                            {/* Menu Header */}
+                            <div className="flex items-center justify-between p-4 border-b border-border">
+                                <h2 className="text-lg font-semibold text-foreground">Menu</h2>
+                                <Button variant="ghost" size="icon" onClick={() => setIsMobileMenuOpen(false)} aria-label="Close menu">
+                                    <X className="h-5 w-5" />
+                                </Button>
+                            </div>
+
+                            {/* Menu Items */}
+                            <nav className="flex flex-col p-2 gap-1">
+                                {tabs.map((tab) => {
+                                    const isActive = isActiveTab(tab.href)
+                                    return (
+                                        <Link
+                                            key={tab.href}
+                                            href={tab.href}
+                                            onClick={() => setIsMobileMenuOpen(false)}
+                                            className={`
+                                                px-4 py-3 rounded-md text-sm font-medium transition-colors
+                                                ${
+                                                isActive
+                                                    ? "bg-primary text-primary-foreground"
+                                                    : "text-foreground hover:bg-accent"
+                                            }
+                                            `}
+                                        >
+                                            {tab.label}
+                                        </Link>
+                                    )
+                                })}
+                            </nav>
+                        </div>
+                    </div>
+                </>
+            )}
+        </>
+    )
 }
