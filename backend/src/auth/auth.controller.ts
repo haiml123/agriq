@@ -32,12 +32,16 @@ export class AuthController {
         id: string;
         email: string;
         name: string;
-        phone?: string;
-        organizationId?: string;
+        phone: string | null;
+        organizationId: string | null;
+        languagePreference: string | null;
+        createdAt: Date;
+        updatedAt: Date;
       };
     },
     @Body() loginDto: LoginDto,
   ): Promise<AuthResponse> {
+    console.log('login user', req.user);
     return this.authService.login(req.user);
   }
 

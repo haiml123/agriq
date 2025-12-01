@@ -1,14 +1,28 @@
-// auth.ts
-import NextAuth from "next-auth";
-import Credentials from "next-auth/providers/credentials";
-import { PrismaAdapter } from "@auth/prisma-adapter";
-import { PrismaClient } from "@prisma/client";
-import bcrypt from "bcryptjs";
+import type { LoggerInstance } from 'next-auth';
+import NextAuth from 'next-auth';
+import Credentials from 'next-auth/providers/credentials';
 
-const prisma = new PrismaClient();
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3005";
+
+const logger: LoggerInstance = {
+    error: (code: any, ...message: any[]) => {
+        if (code.name === 'CredentialsSignin') {
+            return;
+        }
+        console.error('[auth][error]', code, ...message);
+    },
+    warn: (code: any, ...message: any[]) => {
+        console.warn('[auth][warn]', code, ...message);
+    },
+    debug: (code: any, ...message: any[]) => {
+        if (process.env.NODE_ENV === 'development') {
+            console.debug('[auth][debug]', code, ...message);
+        }
+    },
+};
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
-    adapter: PrismaAdapter(prisma),
+    logger,
     session: { strategy: "jwt" },
     pages: {
         signIn: "/login",
@@ -25,28 +39,34 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                     return null;
                 }
 
-                const user = await prisma.user.findUnique({
-                    where: { email: credentials.email as string },
-                });
+                try {
+                    const response = await fetch(`${API_URL}/auth/login`, {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                        },
+                        body: JSON.stringify({
+                            email: credentials.email,
+                            password: credentials.password,
+                        }),
+                    });
 
-                if (!user || !user.password) {
+                    if (!response.ok) {
+                        return null;
+                    }
+
+                    const data = await response.json();
+
+                    return {
+                        id: data.user.id,
+                        email: data.user.email,
+                        name: data.user.name,
+                        accessToken: data.accessToken,
+                    };
+                } catch (error) {
+                    console.error("Auth error:", error);
                     return null;
                 }
-
-                const passwordMatch = await bcrypt.compare(
-                    credentials.password as string,
-                    user.password
-                );
-
-                if (!passwordMatch) {
-                    return null;
-                }
-
-                return {
-                    id: user.id,
-                    email: user.email,
-                    name: user.name,
-                };
             },
         }),
     ],
@@ -54,12 +74,16 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         async jwt({ token, user }) {
             if (user) {
                 token.id = user.id;
+                token.accessToken = user.accessToken;
             }
             return token;
         },
         async session({ session, token }) {
             if (session.user) {
                 session.user.id = token.id as string;
+            }
+            if (token.accessToken) {
+                session.accessToken = token.accessToken as string;
             }
             return session;
         },

@@ -1,41 +1,38 @@
 'use client';
 
-import { useState, FormEvent } from 'react';
+import { FormEvent, useState } from 'react';
+import { signIn } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 
 export function LoginForm() {
+    const router = useRouter();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState('');
 
+   console.log('login page rendered');
     const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         setError('');
         setIsLoading(true);
 
         try {
-            // TODO: Implement your authentication logic here
-            // Example:
-            // const response = await fetch('/api/auth/login', {
-            //   method: 'POST',
-            //   headers: { 'Content-Type': 'application/json' },
-            //   body: JSON.stringify({ email, password }),
-            // });
+            const result = await signIn('credentials', {
+                email,
+                password,
+                redirect: false,
+            });
 
-            // if (!response.ok) {
-            //   throw new Error('Invalid credentials');
-            // }
+            if (result?.error) {
+                setError('Invalid email or password');
+                return;
+            }
 
-            // const data = await response.json();
-            // Redirect or handle successful login
-
-            console.log('Login attempt:', { email, password });
-
-            // Simulate API call
-            await new Promise(resolve => setTimeout(resolve, 1000));
-
+            router.push('/dashboard');
+            router.refresh();
         } catch (err) {
             setError(err instanceof Error ? err.message : 'An error occurred');
         } finally {
@@ -87,7 +84,8 @@ export function LoginForm() {
 
             {/* Error Message */}
             {error && (
-                <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 px-4 py-3 rounded-lg text-sm">
+                <div
+                    className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 px-4 py-3 rounded-lg text-sm">
                     {error}
                 </div>
             )}
@@ -96,16 +94,16 @@ export function LoginForm() {
             <Button
                 className="w-full"
                 type="submit"
+                disabled={isLoading}
             >
-                Sign In
+                {isLoading ? 'Signing in...' : 'Sign In'}
             </Button>
 
             {/* Forgot Password Link */}
             <div className="text-center">
-                <a
-                    href="/forgot-password"
-                    className="text-sm text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300"
-                >
+
+                <a href="/forgot-password"
+                   className="text-sm text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300">
                     Forgot your password?
                 </a>
             </div>

@@ -1,8 +1,8 @@
 import {
+  BadRequestException,
+  ConflictException,
   Injectable,
   UnauthorizedException,
-  ConflictException,
-  BadRequestException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
@@ -10,6 +10,7 @@ import { UsersService } from '../users/users.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { RegisterDto } from './dto/register.dto';
 import * as bcrypt from 'bcryptjs';
+import { User } from '@prisma/client';
 
 export interface JwtPayload {
   sub: string;
@@ -40,7 +41,10 @@ export class AuthService {
     private configService: ConfigService,
   ) {}
 
-  async validateUser(email: string, password: string): Promise<any> {
+  async validateUser(
+    email: string,
+    password: string,
+  ): Promise<Omit<User, 'password'> | null> {
     const user = await this.usersService.findByEmail(email);
 
     if (!user) {
@@ -53,11 +57,12 @@ export class AuthService {
       return null;
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { password: _, ...result } = user;
     return result;
   }
 
-  async login(user: any): Promise<AuthResponse> {
+  async login(user: Omit<User, 'password'>): Promise<AuthResponse> {
     const payload: JwtPayload = { sub: user.id, email: user.email };
 
     const accessToken = this.jwtService.sign(payload, {
@@ -73,8 +78,8 @@ export class AuthService {
         id: user.id,
         email: user.email,
         name: user.name,
-        phone: user.phone,
-        organizationId: user.organizationId,
+        phone: user.phone ?? undefined,
+        organizationId: user.organizationId ?? undefined,
       },
     };
   }

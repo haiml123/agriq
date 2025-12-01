@@ -29,16 +29,20 @@ export class EmailService {
   private readonly frontendUrl: string;
 
   constructor(private configService: ConfigService) {
-    this.fromEmail = this.configService.get<string>('EMAIL_FROM') || 'noreply@agriq.com';
-    this.fromName = this.configService.get<string>('EMAIL_FROM_NAME') || 'AgriQ';
-    this.frontendUrl = this.configService.get<string>('FRONTEND_URL') || 'http://localhost:3000';
+    this.fromEmail =
+      this.configService.get<string>('EMAIL_FROM') || 'noreply@agriq.com';
+    this.fromName =
+      this.configService.get<string>('EMAIL_FROM_NAME') || 'AgriQ';
+    this.frontendUrl =
+      this.configService.get<string>('FRONTEND_URL') || 'http://localhost:3000';
 
     // Initialize transporter based on environment
-    this.initializeTransporter();
+    // this.initializeTransporter();
   }
 
   private initializeTransporter() {
-    const emailProvider = this.configService.get<string>('EMAIL_PROVIDER') || 'smtp';
+    const emailProvider =
+      this.configService.get<string>('EMAIL_PROVIDER') || 'smtp';
 
     switch (emailProvider) {
       case 'sendgrid':
@@ -188,7 +192,14 @@ export class EmailService {
     inviteUrl: string;
     expiresFormatted: string;
   }): string {
-    const { organizationName, roleName, siteName, inviterName, inviteUrl, expiresFormatted } = data;
+    const {
+      organizationName,
+      roleName,
+      siteName,
+      inviterName,
+      inviteUrl,
+      expiresFormatted,
+    } = data;
 
     const scopeText = siteName
       ? `as a <strong>${roleName}</strong> for <strong>${siteName}</strong>`
