@@ -1,18 +1,17 @@
 import {
-  Controller,
-  Post,
   Body,
-  UseGuards,
-  Request,
+  Controller,
+  Get,
   HttpCode,
   HttpStatus,
-  Get,
+  Post,
+  Request,
+  UseGuards,
 } from '@nestjs/common';
-import { AuthService, AuthResponse, Tokens } from './auth.service';
-import { LocalAuthGuard } from './guards/local-auth.guard';
-import { Public } from './decorators/public.decorator';
-import { CurrentUser } from './decorators/current-user.decorator';
-import { RegisterDto, LoginDto } from './dto';
+import { AuthResponse, AuthService, Tokens } from './auth.service';
+import { LocalAuthGuard } from './guards';
+import { CurrentUser, Public } from './decorators';
+import { LoginDto, RegisterDto } from './dto';
 
 @Controller('auth')
 export class AuthController {
@@ -27,7 +26,16 @@ export class AuthController {
   @Post('login')
   @HttpCode(HttpStatus.OK)
   async login(
-    @Request() req,
+    @Request()
+    req: {
+      user: {
+        id: string;
+        email: string;
+        name: string;
+        phone?: string;
+        organizationId?: string;
+      };
+    },
     @Body() loginDto: LoginDto,
   ): Promise<AuthResponse> {
     return this.authService.login(req.user);
@@ -86,7 +94,7 @@ export class AuthController {
    * GET /api/auth/me
    */
   @Get('me')
-  getProfile(@CurrentUser() user) {
+  getProfile(@CurrentUser() user: { id: string; email: string }) {
     return user;
   }
 
@@ -95,7 +103,10 @@ export class AuthController {
    * GET /api/auth/verify
    */
   @Get('verify')
-  verify(@CurrentUser() user): { valid: boolean; user: any } {
+  verify(@CurrentUser() user: { id: string; email: string }): {
+    valid: boolean;
+    user: { id: string; email: string };
+  } {
     return {
       valid: true,
       user,
