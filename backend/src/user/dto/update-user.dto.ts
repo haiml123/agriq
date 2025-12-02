@@ -1,0 +1,34 @@
+import { IsEnum, IsOptional, IsString, MinLength } from 'class-validator';
+import { role_type as RoleType } from '@prisma/client';
+import { EntityStatus } from '../../../consts';
+
+export class UpdateUserDto {
+  @IsOptional()
+  @IsString()
+  name?: string;
+
+  @IsOptional()
+  @IsString()
+  phone?: string;
+
+  @IsOptional()
+  @IsString()
+  @MinLength(6)
+  password?: string;
+
+  @IsOptional()
+  @IsString()
+  languagePreference?: string;
+
+  @IsOptional()
+  @IsEnum(RoleType)
+  role?: RoleType;
+
+  @IsOptional()
+  @IsString()
+  status?: EntityStatus;
+
+  @IsOptional()
+  @IsString()
+  organizationId?: string;
+}

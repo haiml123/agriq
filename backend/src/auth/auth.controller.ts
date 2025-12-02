@@ -5,58 +5,41 @@ import {
   HttpCode,
   HttpStatus,
   Post,
-  Request,
   UseGuards,
 } from '@nestjs/common';
 import { AuthResponse, AuthService, Tokens } from './auth.service';
 import { LocalAuthGuard } from './guards';
 import { CurrentUser, Public } from './decorators';
-import { LoginDto, RegisterDto } from './dto';
-import { entity_status } from '@prisma/client';
+import type { UserWithRoles } from '../user/user.type';
 
 @Controller('auth')
 export class AuthController {
-  constructor(private authService: AuthService) {}
+  constructor(private authService: AuthService) {
+    console.log('auth controller');
+  }
 
   /**
    * Login with email and password
    * POST /api/auth/login
    */
-  @Public()
   @UseGuards(LocalAuthGuard)
   @Post('login')
   @HttpCode(HttpStatus.OK)
-  async login(
-    @Request()
-    req: {
-      user: {
-        id: string;
-        email: string;
-        name: string;
-        phone: string | null;
-        organizationId: string | null;
-        languagePreference: string | null;
-        createdAt: Date;
-        updatedAt: Date;
-        status: entity_status;
-      };
-    },
-    @Body() loginDto: LoginDto,
-  ): Promise<AuthResponse> {
-    console.log('login user', req.user);
-    return this.authService.login(req.user);
+  async login(@CurrentUser() user: UserWithRoles): Promise<AuthResponse> {
+    console.log('login user', user);
+    return this.authService.login(user);
   }
 
   /**
    * Register a new user
    * POST /api/auth/register
    */
-  @Public()
-  @Post('register')
-  @HttpCode(HttpStatus.CREATED)
-  async register(@Body() registerDto: RegisterDto): Promise<AuthResponse> {
-    return this.authService.register(registerDto);
-  }
+  // @Public()
+  // @Post('register')
+  // @HttpCode(HttpStatus.CREATED)
+  // async register(@Body() registerDto: RegisterDto): Promise<AuthResponse> {
+  //    return this.authService.register(registerDto);
+  // }
 
   /**
    * Refresh access token using refresh token

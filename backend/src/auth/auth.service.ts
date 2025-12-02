@@ -1,16 +1,15 @@
 import {
   BadRequestException,
-  ConflictException,
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../prisma/prisma.service';
-import { RegisterDto } from './dto';
 import * as bcrypt from 'bcryptjs';
 import { User } from '@prisma/client';
 import { UserService } from '../user/user.service';
+import { UserWithRoles } from '../user/user.type';
 
 export interface JwtPayload {
   sub: string;
@@ -23,13 +22,7 @@ export interface Tokens {
 }
 
 export interface AuthResponse extends Tokens {
-  user: {
-    id: string;
-    email: string;
-    name: string;
-    phone?: string;
-    organizationId?: string;
-  };
+  user: Partial<UserWithRoles>;
 }
 
 @Injectable()
@@ -62,52 +55,46 @@ export class AuthService {
     return result;
   }
 
-  async login(user: Omit<User, 'password'>): Promise<AuthResponse> {
+  async login(user: Omit<UserWithRoles, 'password'>): Promise<AuthResponse> {
     const payload: JwtPayload = { sub: user.id, email: user.email };
 
     const accessToken = this.jwtService.sign(payload, {
-      expiresIn: '15m',
+      expiresIn: '1005m',
     });
 
     const refreshToken = await this.createRefreshToken(user.id);
 
     return {
+      user: {
+        ...user,
+        password: undefined,
+      },
       accessToken,
       refreshToken,
-      user: {
-        id: user.id,
-        email: user.email,
-        name: user.name,
-        phone: user.phone ?? undefined,
-        organizationId: user.organizationId ?? undefined,
-      },
     };
   }
 
-  async register(registerDto: RegisterDto): Promise<AuthResponse> {
-    // Check if email already exists
-    const existingUser = await this.userService.findByEmail(registerDto.email);
-
-    if (existingUser) {
-      throw new ConflictException('Email already in use');
-    }
-
-    // Hash password
-    const hashedPassword = await bcrypt.hash(registerDto.password, 10);
-
-    // Create user
-    const user = await this.userService.create({
-      name: registerDto.name,
-      email: registerDto.email,
-      password: hashedPassword,
-      phone: registerDto.phone,
-      role: registerDto.role,
-      organizationId: registerDto.organizationId,
-    });
-
-    // Generate tokens
-    return this.login(user);
-  }
+  // async register(registerDto: RegisterDto): Promise<AuthResponse> {
+  //   // Check if email already exists
+  //   const existingUser = await this.userService.findByEmail(registerDto.email);
+  //
+  //   if (existingUser) {
+  //     throw new ConflictException('Email already in use');
+  //   }
+  //
+  //   // Create user
+  //   const user = await this.userService.create({
+  //     name: registerDto.name,
+  //     email: registerDto.email,
+  //     password: registerDto.password,
+  //     phone: registerDto.phone,
+  //     role: registerDto.role,
+  //     organizationId: registerDto.organizationId,
+  //   });
+  //
+  //   // Generate tokens
+  //   return this.login(user);
+  // }
 
   async refreshTokens(refreshToken: string): Promise<Tokens> {
     if (!refreshToken) {
