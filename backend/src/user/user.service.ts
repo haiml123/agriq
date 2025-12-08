@@ -12,11 +12,9 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import * as bcrypt from 'bcryptjs';
 import type { UserWithRoles } from './user.type';
 import {
-  canAccessOrganization,
-  getAdminOrganizationIds,
   getOrganizationFilter,
-  isOrgAdmin,
   isSuperAdmin,
+  validateUserManagementPermission,
 } from './user.utils';
 
 @Injectable()
@@ -25,40 +23,34 @@ export class UserService {
     console.log('UserService created');
   }
 
-  async create(
-    user: UserWithRoles,
-    dto: CreateUserDto,
-    createdByUserId?: string,
-  ) {
+  async create(currentUser: UserWithRoles, dto: CreateUserDto) {
+    const { siteIds, role, organizationId, password, ...userData } = dto;
+
     // Validate password is provided
-    if (!dto.password || dto.password.trim() === '') {
+    if (!password || password.trim() === '') {
       throw new BadRequestException('Password is required');
     }
 
     // Organization is always required
-    if (!dto.organizationId) {
+    if (!organizationId) {
       throw new BadRequestException('Organization is required');
     }
 
-    // Check if user has access to create users in this organization
-    if (!isSuperAdmin(user)) {
-      const adminOrgIds = getAdminOrganizationIds(user);
-
-      if (!adminOrgIds.includes(dto.organizationId)) {
-        throw new ForbiddenException(
-          'You do not have permission to create users in this organization',
-        );
-      }
-    }
+    // Validate permissions
+    validateUserManagementPermission({
+      currentUser,
+      targetOrganizationId: organizationId,
+      targetRole: role,
+    });
 
     // Check if organization exists
     const organization = await this.prisma.organization.findUnique({
-      where: { id: dto.organizationId },
+      where: { id: organizationId },
     });
 
     if (!organization) {
       throw new NotFoundException(
-        `Organization with ID "${dto.organizationId}" not found`,
+        `Organization with ID "${organizationId}" not found`,
       );
     }
 
@@ -68,40 +60,168 @@ export class UserService {
     });
 
     if (existingUser) {
-      throw new ConflictException(
-        `User with email "${dto.email}" already exists`,
-      );
+      throw new ConflictException('User with this email already exists');
     }
 
-    // Hash password
-    const hashedPassword = await bcrypt.hash(dto.password, 10);
+    // Validate siteIds if provided
+    if (siteIds && siteIds.length > 0) {
+      const sites = await this.prisma.site.findMany({
+        where: {
+          id: { in: siteIds },
+          organizationId: organizationId,
+        },
+      });
 
-    // Create user with role
-    const newUser = await this.prisma.user.create({
+      if (sites.length !== siteIds.length) {
+        throw new NotFoundException(
+          'One or more sites not found or do not belong to this organization',
+        );
+      }
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    // Build role records
+    let roleRecords: Prisma.UserRoleCreateWithoutUserInput[];
+
+    if (role === role_type.OPERATOR && siteIds && siteIds.length > 0) {
+      // Site-level access: create one UserRole per site
+      roleRecords = siteIds.map((siteId) => ({
+        role,
+        organization: { connect: { id: organizationId } },
+        site: { connect: { id: siteId } },
+        grantedByUserId: currentUser.id,
+      }));
+    } else {
+      // Org-level access (all sites): siteId = null
+      roleRecords = [
+        {
+          role,
+          organization: organizationId
+            ? { connect: { id: organizationId } }
+            : undefined,
+          site: undefined,
+          grantedByUserId: currentUser.id,
+        },
+      ];
+    }
+
+    return this.prisma.user.create({
       data: {
-        email: dto.email,
-        name: dto.name,
-        phone: dto.phone,
+        ...userData,
         password: hashedPassword,
-        languagePreference: dto.languagePreference,
-        organizationId: dto.organizationId,
+        organizationId,
         roles: {
-          create: {
-            role: dto.role,
-            organizationId: dto.organizationId,
-            grantedByUserId: createdByUserId,
-          },
+          create: roleRecords,
         },
       },
       include: {
-        organization: {
-          select: { id: true, name: true },
-        },
         roles: true,
+        organization: { select: { id: true, name: true } },
       },
     });
+  }
 
-    return newUser;
+  async update(currentUser: UserWithRoles, id: string, dto: UpdateUserDto) {
+    const { siteIds, role, password, ...userData } = dto;
+
+    // Find existing user
+    const user = await this.prisma.user.findUnique({
+      where: { id },
+      include: { roles: true },
+    });
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    // Validate permissions
+    validateUserManagementPermission({
+      currentUser,
+      targetOrganizationId: user.organizationId,
+      targetRole: role ?? user.roles[0]?.role,
+      existingUserRoles: user.roles,
+    });
+
+    // Validate siteIds if provided
+    if (siteIds && siteIds.length > 0 && user.organizationId) {
+      const sites = await this.prisma.site.findMany({
+        where: {
+          id: { in: siteIds },
+          organizationId: user.organizationId,
+        },
+      });
+
+      if (sites.length !== siteIds.length) {
+        throw new NotFoundException(
+          'One or more sites not found or do not belong to this organization',
+        );
+      }
+    }
+
+    // Prepare update data
+    const updateData: Prisma.UserUpdateInput = { ...userData };
+
+    if (password) {
+      updateData.password = await bcrypt.hash(password, 10);
+    }
+
+    // Only update roles if role or siteIds were explicitly provided
+    if (role || siteIds) {
+      const newRole = role ?? user.roles[0]?.role;
+      const organizationId = user.organizationId;
+
+      // Extra safety: org admins should never reach here with SUPER_ADMIN
+      if (!isSuperAdmin(currentUser) && newRole === role_type.SUPER_ADMIN) {
+        throw new ForbiddenException(
+          'You do not have permission to assign super admin role',
+        );
+      }
+
+      // Delete existing roles
+      await this.prisma.userRole.deleteMany({
+        where: { userId: id },
+      });
+
+      // Create new roles using createMany (accepts direct IDs)
+      let roleRecords: Prisma.UserRoleCreateManyInput[];
+
+      if (newRole === role_type.OPERATOR && siteIds && siteIds.length > 0) {
+        // Site-level access: create one UserRole per site
+        roleRecords = siteIds.map((siteId) => ({
+          userId: id,
+          role: newRole,
+          organizationId,
+          siteId,
+          grantedByUserId: currentUser.id,
+        }));
+      } else {
+        // Org-level access (all sites): siteId = null
+        roleRecords = [
+          {
+            userId: id,
+            role: newRole,
+            organizationId:
+              newRole === role_type.SUPER_ADMIN ? null : organizationId,
+            siteId: null,
+            grantedByUserId: currentUser.id,
+          },
+        ];
+      }
+
+      await this.prisma.userRole.createMany({
+        data: roleRecords,
+      });
+    }
+
+    return this.prisma.user.update({
+      where: { id },
+      data: updateData,
+      include: {
+        roles: true,
+        organization: { select: { id: true, name: true } },
+      },
+    });
   }
 
   async findAll(user: UserWithRoles, query: ListUsersQueryDto) {
@@ -159,106 +279,6 @@ export class UserService {
       limit,
       totalPages: Math.ceil(total / limit),
     };
-  }
-
-  async update(currentUser: UserWithRoles, id: string, dto: UpdateUserDto) {
-    const targetUser = await this.prisma.user.findUnique({
-      where: { id },
-      include: { roles: true },
-    });
-
-    if (!targetUser) {
-      throw new NotFoundException(`User with ID "${id}" not found`);
-    }
-
-    const isSuper = isSuperAdmin(currentUser);
-    const isAdmin = isOrgAdmin(currentUser);
-    const isOwnAccount = currentUser.id === id;
-
-    // Operator can only update their own account
-    if (!isSuper && !isAdmin && !isOwnAccount) {
-      throw new ForbiddenException(
-        'You do not have permission to update this user',
-      );
-    }
-
-    // Org admin can only update users in their organization
-    if (!isSuper && isAdmin && targetUser.organizationId) {
-      if (!canAccessOrganization(currentUser, targetUser.organizationId)) {
-        throw new ForbiddenException(
-          'You do not have permission to update this user',
-        );
-      }
-    }
-
-    // Organization can only be changed by super admin
-    if (
-      dto.organizationId &&
-      dto.organizationId !== targetUser.organizationId
-    ) {
-      if (!isSuper) {
-        throw new ForbiddenException(
-          'Only super admin can change organization',
-        );
-      }
-    }
-
-    // Build allowed update data based on role
-    const updateData: Prisma.UserUpdateInput = {};
-
-    if (isSuper) {
-      // Super admin can update: name, password, status, organization, role, phone, languagePreference
-      if (dto.name !== undefined) updateData.name = dto.name;
-      if (dto.phone !== undefined) updateData.phone = dto.phone;
-      if (dto.status !== undefined) updateData.status = dto.status;
-      if (dto.languagePreference !== undefined)
-        updateData.languagePreference = dto.languagePreference;
-      if (dto.organizationId !== undefined)
-        updateData.organization = { connect: { id: dto.organizationId } };
-    } else if (isAdmin) {
-      // Org admin can update: name, password, status, role, phone, languagePreference
-      if (dto.name !== undefined) updateData.name = dto.name;
-      if (dto.phone !== undefined) updateData.phone = dto.phone;
-      if (dto.status !== undefined) updateData.status = dto.status;
-      if (dto.languagePreference !== undefined)
-        updateData.languagePreference = dto.languagePreference;
-    } else if (isOwnAccount) {
-      // Operator can only update their own: name, password
-      if (dto.name !== undefined) updateData.name = dto.name;
-    }
-
-    // Handle password (allowed for all who can update)
-    if (dto.password?.trim()) {
-      updateData.password = await bcrypt.hash(dto.password, 10);
-    }
-
-    const updatedUser = await this.prisma.user.update({
-      where: { id },
-      data: updateData,
-      include: {
-        organization: {
-          select: { id: true, name: true },
-        },
-        roles: true,
-      },
-    });
-
-    // Update role if provided (only super admin and org admin)
-    if (dto.role && (isSuper || isAdmin) && targetUser.roles.length > 0) {
-      // Org admin cannot assign SUPER_ADMIN role
-      if (!isSuper && dto.role === role_type.SUPER_ADMIN) {
-        throw new ForbiddenException(
-          'Only super admin can assign super admin role',
-        );
-      }
-
-      await this.prisma.userRole.update({
-        where: { id: targetUser.roles[0].id },
-        data: { role: dto.role },
-      });
-    }
-
-    return this.findOne(id);
   }
 
   async findOne(id: string) {

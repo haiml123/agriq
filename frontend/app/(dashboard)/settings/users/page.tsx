@@ -7,10 +7,11 @@ import { SidebarTrigger } from '@/components/layout/app-sidebar-layout'
 import { useModal } from '@/components/providers/modal-provider'
 import { UserModal } from '@/components/modals/user.modal'
 import { useUserApi } from '@/hooks/use-user-api'
-import { RoleType, User as UserType } from '@/schemas/user.schema'
+import { User as UserType } from '@/schemas/user.schema'
 import { Badge } from '@/components/ui/badge'
 import { useCurrentUser } from '@/hooks';
 import { OrganizationSelect } from '@/components/select/organization-select';
+import { RoleTypeEnum } from '@/schemas/common.schema';
 
 const roleLabels: Record<string, string> = {
     SUPER_ADMIN: 'Super Admin',
@@ -19,9 +20,9 @@ const roleLabels: Record<string, string> = {
 }
 
 const roleStyles: Record<string, string> = {
-    [RoleType.SUPER_ADMIN]: 'bg-purple-500/10 text-purple-500 border-purple-500/30',
-    [RoleType.ORG_ADMIN]: 'bg-emerald-500/10 text-emerald-500 border-emerald-500/30',
-    [RoleType.OPERATOR]: 'bg-blue-500/10 text-blue-500 border-blue-500/30',
+    [RoleTypeEnum.SUPER_ADMIN]: 'bg-purple-500/10 text-purple-500 border-purple-500/30',
+    [RoleTypeEnum.ORG_ADMIN]: 'bg-emerald-500/10 text-emerald-500 border-emerald-500/30',
+    [RoleTypeEnum.OPERATOR]: 'bg-blue-500/10 text-blue-500 border-blue-500/30',
 }
 
 export default function UsersPage() {
@@ -90,7 +91,6 @@ export default function UsersPage() {
             <div className="bg-card border border-border rounded-lg overflow-hidden">
                 <div className="flex items-center justify-between gap-4 p-4 border-b border-border">
                     <div>
-                        <h2 className="font-semibold text-foreground">All Users</h2>
                         <p className="text-sm text-muted-foreground">
                             {users.length} user{users.length !== 1 ? 's' : ''} registered
                         </p>

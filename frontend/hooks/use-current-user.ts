@@ -1,8 +1,9 @@
 'use client'
 
 import { useSession } from 'next-auth/react'
-import { RoleTypeEnum, User } from '@/schemas/user.schema'
+import { User } from '@/schemas/user.schema'
 import { useMemo } from 'react'
+import { RoleTypeEnum } from '@/schemas/common.schema'
 
 export function useCurrentUser() {
     const { data: session, status } = useSession()

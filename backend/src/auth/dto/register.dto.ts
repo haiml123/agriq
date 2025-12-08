@@ -6,7 +6,7 @@ import {
   MaxLength,
   MinLength,
 } from 'class-validator';
-import { RoleType } from '../../user/dto';
+import { role_type } from '@prisma/client';
 
 export class RegisterDto {
   @IsString()
@@ -31,6 +31,6 @@ export class RegisterDto {
   organizationId?: string;
 
   @IsOptional()
-  @IsEnum(RoleType)
-  role: RoleType;
+  @IsEnum(role_type)
+  role: role_type;
 }

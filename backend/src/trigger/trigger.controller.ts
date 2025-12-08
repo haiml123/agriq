@@ -12,9 +12,13 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { TriggerService } from './trigger.service';
-import { CreateTriggerDto, UpdateTriggerDto, ListTriggersQueryDto } from './dto';
 import { JwtAuthGuard } from '../auth/guards';
 import { CurrentUser, Public } from '../auth/decorators';
+import {
+  CreateTriggerDto,
+  ListTriggersQueryDto,
+  UpdateTriggerDto,
+} from './dto';
 
 @Controller('triggers')
 @UseGuards(JwtAuthGuard)
@@ -26,10 +30,7 @@ export class TriggerController {
    * POST /triggers
    */
   @Post()
-  create(
-    @Body() dto: CreateTriggerDto,
-    @CurrentUser('id') userId: string,
-  ) {
+  create(@Body() dto: CreateTriggerDto, @CurrentUser('id') userId: string) {
     return this.triggerService.create(dto, userId);
   }
 
@@ -85,10 +86,7 @@ export class TriggerController {
    */
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
-  async remove(
-    @Param('id') id: string,
-    @CurrentUser('id') userId: string,
-  ) {
+  async remove(@Param('id') id: string, @CurrentUser('id') userId: string) {
     await this.triggerService.remove(id, userId);
   }
 }

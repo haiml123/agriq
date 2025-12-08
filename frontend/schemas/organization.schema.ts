@@ -1,44 +1,43 @@
 import { z } from 'zod';
+import { entityStatusSchema } from '@/schemas/common.schema';
+import { siteSchema } from '@/schemas/sites.schema';
+import { userRoleSchema, userSchema } from '@/schemas/user.schema';
+import { triggerSchema } from '@/schemas/trigger.schema';
 
-export const EntityStatus = {
-    ACTIVE: 'ACTIVE',
-    BLOCKED: 'BLOCKED',
-    DELETED: 'DELETED',
-} as const;
-
-export type EntityStatus = (typeof EntityStatus)[keyof typeof EntityStatus];
-
-export const EntityStatusSchema = z.enum(['ACTIVE', 'BLOCKED', 'DELETED']);
-
-export const OrganizationSchema = z.object({
+export const organizationSchema = z.object({
     id: z.string(),
     name: z.string(),
-    status: EntityStatusSchema,
-    createdBy: z.string().nullable(),
-    createdAt: z.string(),
-    updatedAt: z.string(),
+    status: entityStatusSchema,
+    createdBy: z.string().optional(),
+    createdAt: z.string().optional(),
+    updatedAt: z.string().optional(),
+
+    users: z.array(z.lazy(() => userSchema)).optional(),
+    sites: z.array(z.lazy(() => siteSchema)).optional(),
+    roles: z.array(z.lazy(() => userRoleSchema)).optional(),
+    eventTriggers: z.array(z.lazy(() => triggerSchema)).optional(),
 });
 
-export const CreateOrganizationSchema = z.object({
+export const createOrganizationSchema = z.object({
     name: z.string().min(2).max(100),
 });
 
-export const UpdateOrganizationSchema = z.object({
+export const updateOrganizationSchema = z.object({
     name: z.string().min(2).max(100).optional(),
 });
 
-export const ChangeStatusSchema = z.object({
-    status: EntityStatusSchema,
+export const changeStatusSchema = z.object({
+    status: entityStatusSchema,
 });
 
-export const OrganizationListParamsSchema = z.object({
+export const organizationListParamsSchema = z.object({
     page: z.number().optional(),
     limit: z.number().optional(),
     search: z.string().optional(),
-    status: EntityStatusSchema.optional(),
+    status: entityStatusSchema.optional(),
 });
 
-export const PaginatedResponseSchema = <T extends z.ZodTypeAny>(itemSchema: T) =>
+export const paginatedResponseSchema = <T extends z.ZodTypeAny>(itemSchema: T) =>
     z.object({
         items: z.array(itemSchema),
         total: z.number(),
@@ -47,14 +46,14 @@ export const PaginatedResponseSchema = <T extends z.ZodTypeAny>(itemSchema: T) =
         totalPages: z.number(),
     });
 
-export const PaginatedOrganizationsSchema = PaginatedResponseSchema(OrganizationSchema);
+export const paginatedOrganizationsSchema = paginatedResponseSchema(organizationSchema);
 
-export type Organization = z.infer<typeof OrganizationSchema>;
-export type CreateOrganizationDto = z.infer<typeof CreateOrganizationSchema>;
-export type UpdateOrganizationDto = z.infer<typeof UpdateOrganizationSchema>;
-export type ChangeStatusDto = z.infer<typeof ChangeStatusSchema>;
-export type OrganizationListParams = z.infer<typeof OrganizationListParamsSchema>;
-export type PaginatedOrganizations = z.infer<typeof PaginatedOrganizationsSchema>;
+export type Organization = z.infer<typeof organizationSchema>;
+export type CreateOrganizationDto = z.infer<typeof createOrganizationSchema>;
+export type UpdateOrganizationDto = z.infer<typeof updateOrganizationSchema>;
+export type ChangeStatusDto = z.infer<typeof changeStatusSchema>;
+export type OrganizationListParams = z.infer<typeof organizationListParamsSchema>;
+export type PaginatedOrganizations = z.infer<typeof paginatedOrganizationsSchema>;
 export type PaginatedResponse<T> = {
     items: T[];
     total: number;

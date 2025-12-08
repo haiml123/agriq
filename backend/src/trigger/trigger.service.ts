@@ -5,7 +5,7 @@ import {
   ListTriggersQueryDto,
   UpdateTriggerDto,
 } from './dto';
-import { Prisma } from '@prisma/client';
+import { Prisma, trigger_scope } from '@prisma/client';
 
 @Injectable()
 export class TriggerService {
@@ -16,6 +16,7 @@ export class TriggerService {
       data: {
         name: dto.name,
         description: dto.description,
+        // @ts-ignore
         scopeType: dto.scopeType,
         organizationId: dto.organizationId,
         siteId: dto.siteId,
@@ -60,7 +61,7 @@ export class TriggerService {
       ...(siteId && { siteId }),
       ...(compoundId && { compoundId }),
       ...(cellId && { cellId }),
-      ...(scopeType && { scopeType }),
+      ...(scopeType && { scopeType: scopeType as trigger_scope }),
       ...(severity && { severity }),
       ...(isActive !== undefined && { isActive }),
       ...(search && {
@@ -184,53 +185,6 @@ export class TriggerService {
       data: {
         isActive: false,
         updatedBy: userId,
-      },
-    });
-  }
-
-  // Hard delete (for admin use only)
-  async hardDelete(id: string) {
-    await this.findOne(id);
-    return this.prisma.eventTrigger.delete({ where: { id } });
-  }
-
-  // Find triggers that apply to a specific scope (for alert processing)
-  async findTriggersForScope(params: {
-    organizationId: string;
-    siteId?: string;
-    compoundId?: string;
-    cellId?: string;
-  }) {
-    const { organizationId, siteId, compoundId, cellId } = params;
-
-    return this.prisma.eventTrigger.findMany({
-      where: {
-        isActive: true,
-        OR: [
-          // Organization-level triggers
-          {
-            scopeType: 'ORGANIZATION',
-            organizationId,
-          },
-          // Site-level triggers (if siteId provided)
-          ...(siteId
-            ? [
-                {
-                  scopeType: 'SITE' as const,
-                  siteId,
-                },
-              ]
-            : []),
-          // Compound-level triggers (if compoundId provided)
-          ...(compoundId
-            ? [
-                {
-                  scopeType: 'COMPOUND' as const,
-                  compoundId,
-                },
-              ]
-            : []),
-        ],
       },
     });
   }

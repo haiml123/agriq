@@ -1,20 +1,19 @@
 import { z } from 'zod'
-import { CommunicationType, MetricSchema } from '@/schemas/common.schema';
+import { CommunicationType, metricSchema, severitySchema } from '@/schemas/common.schema';
 
-export const ConditionTypeSchema = z.enum(["THRESHOLD", "CHANGE"])
-export const OperatorSchema = z.enum(["ABOVE", "BELOW", "EQUALS", "BETWEEN"])
-export const ChangeDirectionSchema = z.enum(["INCREASE", "DECREASE", "ANY"])
-export const ConditionLogicSchema = z.enum(["AND", "OR"])
-export const SeveritySchema = z.enum(["LOW", "MEDIUM", "HIGH", "CRITICAL"])
-export const ActionTypeSchema = z.enum(["EMAIL", "SMS", "PUSH"])
-export const ScopeTypeSchema = z.enum(["ALL", "ORGANIZATION", "SITE"])
+export const conditionTypeSchema = z.enum(["THRESHOLD", "CHANGE"])
+export const operatorSchema = z.enum(["ABOVE", "BELOW", "EQUALS", "BETWEEN"])
+export const changeDirectionSchema = z.enum(["INCREASE", "DECREASE", "ANY"])
+export const conditionLogicSchema = z.enum(["AND", "OR"])
+export const actionTypeSchema = z.enum(["EMAIL", "SMS", "PUSH"])
+export const scopeTypeSchema = z.enum(["ALL", "ORGANIZATION", "SITE"])
 
-export const ConditionTypeEnum = ConditionTypeSchema.enum;
-export const OperatorEnum = OperatorSchema.enum;
-export const ScopeTypeEnum = ScopeTypeSchema.enum;
+export const ConditionTypeEnum = conditionTypeSchema.enum;
+export const OperatorEnum = operatorSchema.enum;
+export const ScopeTypeEnum = scopeTypeSchema.enum;
 
 // Commodity Type Schema - values will come from DB in production
-export const CommodityTypeSchema = z.enum([
+export const commodityTypeSchema = z.enum([
     "WHEAT",
     "CORN",
     "SOYBEANS",
@@ -42,65 +41,63 @@ export const COMMODITY_OPTIONS = [
 ] as const
 
 // Condition Schema - matches Prisma JSON structure for conditions.items
-export const ConditionSchema = z.object({
+export const conditionSchema = z.object({
     id: z.string(),
-    metric: MetricSchema,
-    type: ConditionTypeSchema,
-    operator: OperatorSchema.optional(),
+    metric: metricSchema,
+    type: conditionTypeSchema,
+    operator: operatorSchema.optional(),
     value: z.number().optional(),
     secondaryValue: z.number().optional(),
-    changeDirection: ChangeDirectionSchema.optional(),
+    changeDirection: changeDirectionSchema.optional(),
     changeAmount: z.number().optional(),
     timeWindowDays: z.number().optional(),
 })
 
-export const NotificationTemplateSchema = z.object({
+export const notificationTemplateSchema = z.object({
     subject: z.string().optional(), // Only for email
     body: z.string(),
 })
 
-export const ActionSchema = z.object({
-    type: ConditionTypeSchema,
-    template: NotificationTemplateSchema.optional(),
+export const actionSchema = z.object({
+    type: conditionTypeSchema,
+    template: notificationTemplateSchema.optional(),
     webhookUrl: z.string().url().optional(), // Only for WEBHOOK type
     recipients: z.array(z.string()).optional(), // User IDs for EMAIL/SMS
 })
 
-export const TriggerSchema = z.object({
+export const triggerSchema = z.object({
     id: z.string(),
     name: z.string().min(1, "Name is required"),
     description: z.string(),
     isActive: z.boolean(),
     // Commodity type
-    commodityType: CommodityTypeSchema.optional(),
+    commodityType: commodityTypeSchema.optional(),
     // Scope fields matching Prisma
-    scopeType: ScopeTypeSchema,
+    scopeType: scopeTypeSchema,
     organizationId: z.string().optional(),
     siteId: z.string().optional(),
     compoundId: z.string().optional(),
     cellId: z.string().optional(),
     // Conditions stored as JSON in Prisma
-    conditionLogic: ConditionLogicSchema,
-    conditions: z.array(ConditionSchema).min(1, "At least one condition is required"),
+    conditionLogic: conditionLogicSchema,
+    conditions: z.array(conditionSchema).min(1, "At least one condition is required"),
     // Actions stored as JSON in Prisma
-    actions: z.array(ActionSchema).min(1, "At least one action is required"),
-    severity: SeveritySchema,
+    actions: z.array(actionSchema).min(1, "At least one action is required"),
+    severity: severitySchema,
 })
 
 // Infer types from schemas
-export type Metric = z.infer<typeof MetricSchema>
-export type ConditionType = z.infer<typeof ConditionTypeSchema>
-export type Operator = z.infer<typeof OperatorSchema>
-export type ChangeDirection = z.infer<typeof ChangeDirectionSchema>
-export type ConditionLogic = z.infer<typeof ConditionLogicSchema>
-export type Severity = z.infer<typeof SeveritySchema>
-export type ActionType = z.infer<typeof ActionTypeSchema>
-export type ScopeType = z.infer<typeof ScopeTypeSchema>
-export type CommodityType = z.infer<typeof CommodityTypeSchema>
-export type Condition = z.infer<typeof ConditionSchema>
-export type NotificationTemplate = z.infer<typeof NotificationTemplateSchema>
-export type Action = z.infer<typeof ActionSchema>
-export type Trigger = z.infer<typeof TriggerSchema>
+export type ConditionType = z.infer<typeof conditionTypeSchema>
+export type Operator = z.infer<typeof operatorSchema>
+export type ChangeDirection = z.infer<typeof changeDirectionSchema>
+export type ConditionLogic = z.infer<typeof conditionLogicSchema>
+export type ActionType = z.infer<typeof actionTypeSchema>
+export type ScopeType = z.infer<typeof scopeTypeSchema>
+export type CommodityType = z.infer<typeof commodityTypeSchema>
+export type Condition = z.infer<typeof conditionSchema>
+export type NotificationTemplate = z.infer<typeof notificationTemplateSchema>
+export type Action = z.infer<typeof actionSchema>
+export type Trigger = z.infer<typeof triggerSchema>
 
 export const TEMPLATE_VARIABLES = [
     { key: "{site_name}", description: "Name of the site" },

@@ -1,4 +1,10 @@
-import { IsEnum, IsOptional, IsString, MinLength } from 'class-validator';
+import {
+  IsArray,
+  IsEnum,
+  IsOptional,
+  IsString,
+  MinLength,
+} from 'class-validator';
 import { role_type as RoleType } from '@prisma/client';
 import { EntityStatus } from '../../../consts';
 
@@ -23,6 +29,11 @@ export class UpdateUserDto {
   @IsOptional()
   @IsEnum(RoleType)
   role?: RoleType;
+
+  @IsArray()
+  @IsString({ each: true })
+  @IsOptional()
+  siteIds?: string[];
 
   @IsOptional()
   @IsString()

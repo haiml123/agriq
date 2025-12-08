@@ -12,6 +12,7 @@ import {
   ValidateNested,
 } from 'class-validator';
 import { Type } from 'class-transformer';
+import { trigger_scope } from '@prisma/client';
 
 // Enums
 export enum Severity {
@@ -135,7 +136,7 @@ export class CreateTriggerDto {
   @MaxLength(1000)
   description?: string;
 
-  @IsEnum(ScopeType)
+  @IsEnum(trigger_scope)
   scopeType: ScopeType;
 
   @IsString()

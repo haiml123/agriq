@@ -9,13 +9,14 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { UserService } from './user.service';
-import { CreateUserDto, ListUsersQueryDto, RoleType } from './dto';
+import { CreateUserDto, ListUsersQueryDto } from './dto';
 import { JwtAuthGuard } from '../auth/guards';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { CurrentUser } from '../auth/decorators';
 import type { UserWithRoles } from './user.type';
+import { role_type } from '@prisma/client';
 
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('users')
@@ -24,7 +25,7 @@ export class UserController {
     console.log('user controller');
   }
 
-  @Roles(RoleType.SUPER_ADMIN, RoleType.ORG_ADMIN)
+  @Roles(role_type.SUPER_ADMIN, role_type.ORG_ADMIN)
   @Get()
   findAll(
     @Query() query: ListUsersQueryDto,
@@ -34,7 +35,7 @@ export class UserController {
     return this.userService.findAll(user, query);
   }
 
-  @Roles(RoleType.SUPER_ADMIN, RoleType.ORG_ADMIN)
+  @Roles(role_type.SUPER_ADMIN, role_type.ORG_ADMIN)
   @Post()
   create(@Body() dto: CreateUserDto, @CurrentUser() user: UserWithRoles) {
     return this.userService.create(user, dto);

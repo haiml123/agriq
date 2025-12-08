@@ -1,5 +1,6 @@
 import { role_type } from '@prisma/client';
 import { UserWithRoles } from './user.type';
+import { ForbiddenException } from '@nestjs/common';
 
 export function isSuperAdmin(user: UserWithRoles): boolean {
   return user.roles.some((role) => role.role === role_type.SUPER_ADMIN);
@@ -42,6 +43,48 @@ export function getOrganizationFilter(
 
   // Return single org or multiple
   return adminOrgIds.length === 1 ? adminOrgIds[0] : { in: adminOrgIds };
+}
+
+/**
+ * Validates if current user can manage (create/update) a user in the given organization
+ * with the specified role. Throws ForbiddenException if not allowed.
+ */
+export function validateUserManagementPermission(params: {
+  currentUser: UserWithRoles;
+  targetOrganizationId: string | null;
+  targetRole: role_type;
+  existingUserRoles?: { role: role_type }[]; // For update: existing user's roles
+}): void {
+  const { currentUser, targetOrganizationId, targetRole, existingUserRoles } =
+    params;
+
+  // Super admins can do anything
+  if (isSuperAdmin(currentUser)) {
+    return;
+  }
+
+  const adminOrgIds = getAdminOrganizationIds(currentUser);
+
+  // Check organization access
+  if (!targetOrganizationId || !adminOrgIds.includes(targetOrganizationId)) {
+    throw new ForbiddenException(
+      'You do not have permission to manage users in this organization',
+    );
+  }
+
+  // Org admins cannot assign super admin role
+  if (targetRole === role_type.SUPER_ADMIN) {
+    throw new ForbiddenException(
+      'You do not have permission to assign super admin role',
+    );
+  }
+
+  // Org admins cannot edit existing super admins
+  if (existingUserRoles?.some((r) => r.role === role_type.SUPER_ADMIN)) {
+    throw new ForbiddenException(
+      'You do not have permission to edit super admin users',
+    );
+  }
 }
 
 // In your role utils file

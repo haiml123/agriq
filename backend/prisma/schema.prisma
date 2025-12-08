@@ -67,6 +67,7 @@ enum invite_status {
 // NEW: Entity status enum for Organization and User
 enum entity_status {
   ACTIVE
+  PENDING
   BLOCKED
   DELETED
 }
@@ -238,6 +239,11 @@ model Site {
   organizationId String       @map("organization_id")
   organization   Organization @relation(fields: [organizationId], references: [id])
 
+  // Location
+  address   String?
+  latitude  Float?
+  longitude Float?
+
   // Relations
   compounds Compound[]
   alerts    Alert[]
@@ -255,8 +261,9 @@ model Site {
 }
 
 model Compound {
-  id   String @id @default(cuid())
-  name String
+  id     String        @id @default(cuid())
+  name   String
+  status entity_status
 
   siteId String @map("site_id")
   site   Site   @relation(fields: [siteId], references: [id])
@@ -276,17 +283,18 @@ model Compound {
 }
 
 model Cell {
-  id   String @id @default(cuid())
-  name String
+  id       String        @id @default(cuid())
+  name     String
+  status   entity_status
+  capacity Float
 
-  compoundId String   @map("compound_id")
-  compound   Compound @relation(fields: [compoundId], references: [id])
-
+  compoundId String          @map("compound_id")
+  compound   Compound        @relation(fields: [compoundId], references: [id])
   // Relations
-  sensors  Sensor[]
-  alerts   Alert[]
-  readings SensorReading[]
-  trades   Trade[]
+  sensors    Sensor[]
+  alerts     Alert[]
+  readings   SensorReading[]
+  trades     Trade[]
 
   // Audit
   createdBy String?  @map("created_by")
@@ -301,10 +309,10 @@ model Cell {
 //
 
 model Sensor {
-  id         String  @id @default(cuid())
-  externalId String  @unique @map("external_id")
+  id         String        @id @default(cuid())
+  externalId String        @unique @map("external_id")
   name       String?
-  isActive   Boolean @default(true) @map("is_active")
+  status     entity_status
 
   cellId String @map("cell_id")
   cell   Cell   @relation(fields: [cellId], references: [id])
@@ -327,9 +335,10 @@ model SensorReading {
   cellId String @map("cell_id")
   cell   Cell   @relation(fields: [cellId], references: [id])
 
-  value      Json
-  recordedAt DateTime @map("recorded_at")
-  createdAt  DateTime @default(now()) @map("created_at")
+  metric     metric_type
+  value      Float
+  recordedAt DateTime    @map("recorded_at")
+  createdAt  DateTime    @default(now()) @map("created_at")
 
   @@index([sensorId, metric, recordedAt])
   @@index([cellId, metric, recordedAt])
@@ -470,10 +479,10 @@ model AlertNotification {
 //
 
 model CommodityType {
-  id          String  @id @default(cuid())
-  name        String  @unique
+  id          String        @id @default(cuid())
+  name        String        @unique
   description String?
-  isActive    Boolean @default(true) @map("is_active")
+  status      entity_status
 
   commodities  Commodity[]
   lookupTables LookupTable[]

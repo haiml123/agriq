@@ -1,8 +1,8 @@
 "use client";
-import { Building2, Info, Languages, Shield, Users } from 'lucide-react'
+import { Building2, Info, Languages, Users, Warehouse } from 'lucide-react'
 import { AppSidebarLayout, NavItem } from '@/components/layout/app-sidebar-layout';
 import { ReactNode } from 'react';
-import { RoleTypeEnum } from '@/schemas/user.schema';
+import { RoleTypeEnum } from '@/schemas/common.schema';
 
 interface SettingsLayoutProps {
     children: ReactNode
@@ -13,7 +13,11 @@ const settingsMenuItems: NavItem[] = [
         label: "Organizations",
         href: "/settings/organizations",
         icon: Building2,
-        badge: <Shield className="ml-auto size-3 text-primary" />,
+    },
+    {
+        label: 'Sites',
+        href: '/settings/sites',
+        icon: Warehouse,
     },
     {
         label: "Users and Roles",
