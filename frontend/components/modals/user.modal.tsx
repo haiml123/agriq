@@ -7,6 +7,7 @@ import { useUserApi } from '@/hooks/use-user-api'
 import { useOrganizationApi } from '@/hooks/use-organization-api'
 import { RoleType, User } from '@/schemas/user.schema'
 import { Organization } from '@/schemas/organization.schema'
+import { useSession } from 'next-auth/react';
 
 interface UserModalProps {
     user?: User
@@ -14,6 +15,8 @@ interface UserModalProps {
 }
 
 export function UserModal({ user, onClose }: UserModalProps) {
+    const { data: session } = useSession();
+    console.log('session', session);
     const { create, update, isCreating } = useUserApi()
     const { getList: getOrganizations } = useOrganizationApi()
 

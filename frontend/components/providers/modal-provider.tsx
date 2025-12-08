@@ -33,7 +33,7 @@ export function ModalProvider({ children }: { children: ReactNode }) {
         content: ReactNode | ((onClose: (result?: T) => void) => ReactNode)
     ): Promise<T | undefined> => {
         return new Promise((resolve) => {
-            const id = ++modalId;
+            const id = modalId++;
             const onClose = (result?: T) => {
                 setModals((prev) => prev.filter((m) => m.id !== id));
                 resolve(result);

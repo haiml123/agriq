@@ -111,7 +111,11 @@ export class UserService {
 
     const where: Prisma.UserWhereInput = {};
 
-    if (!isRootAdmin) {
+    if (isRootAdmin) {
+      if (organizationId) {
+        where.organizationId = organizationId;
+      }
+    } else {
       const organizationFilter = getOrganizationFilter(user, organizationId);
       if (!organizationFilter) {
         throw new BadRequestException('You are not authorized for this action');

@@ -9,6 +9,8 @@ import { PrismaModule } from './prisma/prisma.module';
 import { AuthModule } from './auth/auth.module';
 import { OrganizationModule } from './organization';
 import { UserModule } from './user/user.module';
+import { TriggerModule } from './trigger';
+import { CommodityTypeModule } from './commodity-type';
 
 @Module({
   imports: [
@@ -23,6 +25,8 @@ import { UserModule } from './user/user.module';
     }),
     OrganizationModule,
     UserModule,
+    TriggerModule,
+    CommodityTypeModule,
   ],
   controllers: [AppController],
   providers: [AppService],

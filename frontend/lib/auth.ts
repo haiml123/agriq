@@ -34,6 +34,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                 email: { label: "Email", type: "email" },
                 password: { label: "Password", type: "password" },
             },
+            // @ts-ignore
             async authorize(credentials) {
                 if (!credentials?.email || !credentials?.password) {
                     return null;
@@ -61,6 +62,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                         id: data.user.id,
                         email: data.user.email,
                         name: data.user.name,
+                        roles: data.user.roles,
+                        organizationId: data.user.organizationId,
                         accessToken: data.accessToken,
                     };
                 } catch (error) {
@@ -75,12 +78,20 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             if (user) {
                 token.id = user.id;
                 token.accessToken = user.accessToken;
+                token.roles = user.roles;
+                token.organizationId = user.organizationId;
             }
             return token;
         },
         async session({ session, token }) {
             if (session.user) {
                 session.user.id = token.id as string;
+            }
+            if (token?.organizationId) {
+                session.user.organizationId = token.organizationId as string;
+            }
+            if (token?.roles) {
+                session.user.roles = token.roles as string[];
             }
             if (token.accessToken) {
                 session.accessToken = token.accessToken as string;

@@ -59,6 +59,7 @@ export const UserListParamsSchema = z.object({
 });
 
 export type User = z.infer<typeof UserSchema>;
-export type UserRole = z.infer<typeof UserRoleSchema>;
 export type CreateUserDto = z.infer<typeof CreateUserSchema>;
 export type UserListParams = z.infer<typeof UserListParamsSchema>;
+
+export const RoleTypeEnum = RoleTypeSchema.enum;

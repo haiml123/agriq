@@ -1,14 +1,16 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Pencil, Plus, Trash2, Users } from 'lucide-react'
 import { SidebarTrigger } from '@/components/layout/app-sidebar-layout'
 import { useModal } from '@/components/providers/modal-provider'
 import { UserModal } from '@/components/modals/user.modal'
 import { useUserApi } from '@/hooks/use-user-api'
-import { User as UserType } from '@/schemas/user.schema'
+import { RoleType, User as UserType } from '@/schemas/user.schema'
 import { Badge } from '@/components/ui/badge'
+import { useCurrentUser } from '@/hooks';
+import { OrganizationSelect } from '@/components/select/organization-select';
 
 const roleLabels: Record<string, string> = {
     SUPER_ADMIN: 'Super Admin',
@@ -17,27 +19,40 @@ const roleLabels: Record<string, string> = {
 }
 
 const roleStyles: Record<string, string> = {
-    SUPER_ADMIN: 'bg-purple-500/10 text-purple-500 border-purple-500/30',
-    ORG_ADMIN: 'bg-emerald-500/10 text-emerald-500 border-emerald-500/30',
-    OPERATOR: 'bg-blue-500/10 text-blue-500 border-blue-500/30',
+    [RoleType.SUPER_ADMIN]: 'bg-purple-500/10 text-purple-500 border-purple-500/30',
+    [RoleType.ORG_ADMIN]: 'bg-emerald-500/10 text-emerald-500 border-emerald-500/30',
+    [RoleType.OPERATOR]: 'bg-blue-500/10 text-blue-500 border-blue-500/30',
 }
 
 export default function UsersPage() {
-    const modal = useModal()
-    const { getList, create, isLoading, isCreating } = useUserApi()
-    const [users, setUsers] = useState<UserType[]>([])
+    const modal = useModal();
+    const { user, isSuperAdmin, isLoading: isCurrentUserLoading } = useCurrentUser();
+    const { getList, create, isLoading, isCreating } = useUserApi();
+    const [users, setUsers] = useState<UserType[]>([]);
+    const [selectedOrganizationId, setSelectedOrganizationId] = useState<string>('all')
 
-    const fetchUsers = async () => {
-        const response = await getList();
-        if (response?.data?.items) {
-            setUsers(response.data.items)
+    const fetchUsers = useCallback(async () => {
+        console.log('fetchUsers');
+        if (isCurrentUserLoading || !user) return
+
+        try {
+            const response = await getList({
+                organizationId: isSuperAdmin && selectedOrganizationId !== 'all' ? selectedOrganizationId : undefined,
+            });
+            if (response?.data?.items) {
+                setUsers(response.data.items)
+            }
+        } catch (error) {
+            console.error('Failed to fetch users:', error);
         }
-    }
+    }, [getList, isCurrentUserLoading, isSuperAdmin, selectedOrganizationId, user]);
 
     useEffect(() => {
-        // eslint-disable-next-line react-hooks/set-state-in-effect
-        fetchUsers();
-    }, [])
+        const loadUsers = async () => {
+            await fetchUsers();
+        };
+        loadUsers();
+    }, [fetchUsers])
 
     const openUserModal = async (user?: UserType) => {
         const result = await modal.open<UserType | null>((onClose) => (
@@ -73,13 +88,23 @@ export default function UsersPage() {
             </div>
 
             <div className="bg-card border border-border rounded-lg overflow-hidden">
-                <div className="p-4 border-b border-border">
-                    <h2 className="font-semibold text-foreground">All Users</h2>
-                    <p className="text-sm text-muted-foreground">
-                        {users.length} user{users.length !== 1 ? 's' : ''} registered
-                    </p>
+                <div className="flex items-center justify-between gap-4 p-4 border-b border-border">
+                    <div>
+                        <h2 className="font-semibold text-foreground">All Users</h2>
+                        <p className="text-sm text-muted-foreground">
+                            {users.length} user{users.length !== 1 ? 's' : ''} registered
+                        </p>
+                    </div>
+                    {isSuperAdmin && (
+                        <div>
+                            <OrganizationSelect
+                                value={selectedOrganizationId}
+                                onChange={setSelectedOrganizationId}
+                                className="w-full md:w-64"
+                            />
+                        </div>
+                    )}
                 </div>
-
                 <div className="divide-y divide-border">
                     {users.map((user) => {
                         const role = getUserRole(user)

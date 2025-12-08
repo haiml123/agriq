@@ -2,6 +2,7 @@
 import { Building2, Info, Languages, Shield, Users } from 'lucide-react'
 import { AppSidebarLayout, NavItem } from '@/components/layout/app-sidebar-layout';
 import { ReactNode } from 'react';
+import { RoleTypeEnum } from '@/schemas/user.schema';
 
 interface SettingsLayoutProps {
     children: ReactNode
@@ -18,6 +19,7 @@ const settingsMenuItems: NavItem[] = [
         label: "Users and Roles",
         href: "/settings/users",
         icon: Users,
+        roles: [RoleTypeEnum.SUPER_ADMIN, RoleTypeEnum.ORG_ADMIN]
     },
     {
         label: "Languages",

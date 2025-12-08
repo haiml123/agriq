@@ -6,7 +6,7 @@ import { CreateUserDto, User, UserListParams, } from '@/schemas/user.schema';
 import { PaginatedResponse } from '@/schemas/organization.schema';
 
 export function useUserApi() {
-    const { get, post } = useApi();
+    const { get, post, patch} = useApi();
 
     const [isLoading, setIsLoading] = useState(false);
     const [isCreating, setIsCreating] = useState(false);
@@ -47,10 +47,23 @@ export function useUserApi() {
         [post]
     );
 
+    const update = useCallback(
+        async (id: string, data: Partial<CreateUserDto>) => {
+            setIsCreating(true);
+            try {
+                return await patch<User>(`/users/${id}`, data);
+            } finally {
+                setIsCreating(false);
+            }
+        },
+        [patch]
+    );
+
     return {
         getList,
         getById,
         create,
+        update,
         isLoading,
         isCreating,
     };

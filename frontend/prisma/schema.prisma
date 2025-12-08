@@ -34,6 +34,7 @@ enum alert_status {
 enum metric_type {
   TEMPERATURE
   HUMIDITY
+  EMC
 }
 
 enum trigger_scope {

@@ -7,12 +7,14 @@ import { Menu } from 'lucide-react'
 import { Sheet, SheetContent } from '@/components/ui/sheet'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link';
+import { RoleType } from '@/schemas/user.schema';
 
 export interface NavItem {
     label: string
     href: string
     icon: React.ComponentType<{ className?: string }>
     badge?: React.ReactNode
+    roles?: RoleType[]
 }
 
 interface SidebarContextValue {

@@ -1,0 +1,90 @@
+'use client';
+
+import { useCallback, useState } from 'react';
+import { useApi } from './use-api';
+import {
+    CommodityType,
+    CommodityTypeListParams,
+    CreateCommodityTypeDto,
+    UpdateCommodityTypeDto,
+} from '@/schemas/commodity-type.schema';
+import { PaginatedResponse } from '@/schemas/organization.schema';
+
+export function useCommodityTypeApi() {
+    const { get, post, patch } = useApi();
+
+    const [isLoading, setIsLoading] = useState(false);
+    const [isCreating, setIsCreating] = useState(false);
+    const [isUpdating, setIsUpdating] = useState(false);
+
+    const getList = useCallback(
+        async (params?: CommodityTypeListParams) => {
+            setIsLoading(true);
+            try {
+                return await get<PaginatedResponse<CommodityType>>('/commodity-types', params);
+            } finally {
+                setIsLoading(false);
+            }
+        },
+        [get]
+    );
+
+    const getById = useCallback(
+        async (id: string) => {
+            setIsLoading(true);
+            try {
+                return await get<CommodityType>(`/commodity-types/${id}`);
+            } finally {
+                setIsLoading(false);
+            }
+        },
+        [get]
+    );
+
+    const create = useCallback(
+        async (data: CreateCommodityTypeDto) => {
+            setIsCreating(true);
+            try {
+                return await post<CommodityType>('/commodity-types', data);
+            } finally {
+                setIsCreating(false);
+            }
+        },
+        [post]
+    );
+
+    const update = useCallback(
+        async (id: string, data: UpdateCommodityTypeDto) => {
+            setIsUpdating(true);
+            try {
+                return await patch<CommodityType>(`/commodity-types/${id}`, data);
+            } finally {
+                setIsUpdating(false);
+            }
+        },
+        [patch]
+    );
+
+    const toggleActive = useCallback(
+        async (id: string, isActive: boolean) => {
+            setIsUpdating(true);
+            try {
+                return await patch<CommodityType>(`/commodity-types/${id}`, { isActive });
+            } finally {
+                setIsUpdating(false);
+            }
+        },
+        [patch]
+    );
+
+    return {
+        getList,
+        getById,
+        create,
+        update,
+        toggleActive,
+        isLoading,
+        isCreating,
+        isUpdating,
+    };
+}

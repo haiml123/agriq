@@ -34,13 +34,12 @@ enum alert_status {
 enum metric_type {
   TEMPERATURE
   HUMIDITY
+  EMC
 }
 
 enum trigger_scope {
   ORGANIZATION
-  SITE
-  COMPOUND
-  CELL
+  ALL
 }
 
 enum notification_channel {
@@ -288,7 +287,6 @@ model Cell {
   alerts   Alert[]
   readings SensorReading[]
   trades   Trade[]
-  triggers EventTrigger[]
 
   // Audit
   createdBy String?  @map("created_by")
@@ -329,10 +327,9 @@ model SensorReading {
   cellId String @map("cell_id")
   cell   Cell   @relation(fields: [cellId], references: [id])
 
-  metric     metric_type
-  value      Float
-  recordedAt DateTime    @map("recorded_at")
-  createdAt  DateTime    @default(now()) @map("created_at")
+  value      Json
+  recordedAt DateTime @map("recorded_at")
+  createdAt  DateTime @default(now()) @map("created_at")
 
   @@index([sensorId, metric, recordedAt])
   @@index([cellId, metric, recordedAt])
@@ -348,7 +345,10 @@ model EventTrigger {
   name        String
   description String?
 
-  scopeType trigger_scope @map("scope_type")
+  scopeType trigger_scope @default(ALL) @map("scope_type")
+
+  commodityTypeId String?        @map("commodity_type_id")
+  commodityType   CommodityType? @relation(fields: [commodityTypeId], references: [id])
 
   organizationId String?       @map("organization_id")
   organization   Organization? @relation(fields: [organizationId], references: [id])
@@ -359,14 +359,13 @@ model EventTrigger {
   compoundId String?   @map("compound_id")
   compound   Compound? @relation(fields: [compoundId], references: [id])
 
-  cellId String? @map("cell_id")
-  cell   Cell?   @relation(fields: [cellId], references: [id])
-
-  conditions Json
-  actions    Json
+  conditionLogic String @default("AND") // Add this line
+  conditions     Json
+  actions        Json
 
   severity alert_severity @default(MEDIUM)
   isActive Boolean        @default(true) @map("is_active")
+  status   entity_status  @default(ACTIVE)
 
   alerts Alert[]
 
@@ -407,9 +406,8 @@ model Alert {
   title       String?
   description String
 
-  triggerType metric_type    @map("trigger_type")
-  severity    alert_severity
-  status      alert_status   @default(OPEN)
+  severity alert_severity
+  status   alert_status   @default(OPEN)
 
   thresholdValue Float?  @map("threshold_value")
   unit           String?
@@ -479,6 +477,7 @@ model CommodityType {
 
   commodities  Commodity[]
   lookupTables LookupTable[]
+  triggers     EventTrigger[]
 
   createdBy String?  @map("created_by")
   updatedBy String?  @map("updated_by")
