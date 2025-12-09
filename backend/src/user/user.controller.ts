@@ -1,13 +1,4 @@
-import {
-  Body,
-  Controller,
-  Get,
-  Param,
-  Patch,
-  Post,
-  Query,
-  UseGuards,
-} from '@nestjs/common';
+import { Body, Controller, Get, Param, Patch, Post, Query, UseGuards, } from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto, ListUsersQueryDto } from './dto';
 import { JwtAuthGuard } from '../auth/guards';
@@ -15,8 +6,7 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { CurrentUser } from '../auth/decorators';
-import type { UserWithRoles } from './user.type';
-import { role_type } from '@prisma/client';
+import { role_type, User } from '@prisma/client';
 
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('users')
@@ -29,7 +19,7 @@ export class UserController {
   @Get()
   findAll(
     @Query() query: ListUsersQueryDto,
-    @CurrentUser() user: UserWithRoles,
+    @CurrentUser() user: User,
   ) {
     console.log('users query:', query);
     return this.userService.findAll(user, query);
@@ -37,7 +27,7 @@ export class UserController {
 
   @Roles(role_type.SUPER_ADMIN, role_type.ORG_ADMIN)
   @Post()
-  create(@Body() dto: CreateUserDto, @CurrentUser() user: UserWithRoles) {
+  create(@Body() dto: CreateUserDto, @CurrentUser() user: User) {
     return this.userService.create(user, dto);
   }
 
@@ -50,7 +40,7 @@ export class UserController {
   update(
     @Param('id') id: string,
     @Body() dto: UpdateUserDto,
-    @CurrentUser() user: UserWithRoles,
+    @CurrentUser() user: User,
   ) {
     return this.userService.update(user, id, dto);
   }

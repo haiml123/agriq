@@ -1,15 +1,10 @@
-import {
-  BadRequestException,
-  Injectable,
-  UnauthorizedException,
-} from '@nestjs/common';
+import { BadRequestException, Injectable, UnauthorizedException, } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../prisma/prisma.service';
 import * as bcrypt from 'bcryptjs';
 import { User } from '@prisma/client';
 import { UserService } from '../user/user.service';
-import { UserWithRoles } from '../user/user.type';
 
 export interface JwtPayload {
   sub: string;
@@ -22,7 +17,7 @@ export interface Tokens {
 }
 
 export interface AuthResponse extends Tokens {
-  user: Partial<UserWithRoles>;
+  user: Partial<User>;
 }
 
 @Injectable()
@@ -55,7 +50,7 @@ export class AuthService {
     return result;
   }
 
-  async login(user: Omit<UserWithRoles, 'password'>): Promise<AuthResponse> {
+  async login(user: Omit<User, 'password'>): Promise<AuthResponse> {
     const payload: JwtPayload = { sub: user.id, email: user.email };
 
     const accessToken = this.jwtService.sign(payload, {

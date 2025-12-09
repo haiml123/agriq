@@ -10,12 +10,7 @@ import { CreateUserDto, ListUsersQueryDto } from './dto';
 import { Prisma, role_type, User } from '@prisma/client';
 import { UpdateUserDto } from './dto/update-user.dto';
 import * as bcrypt from 'bcryptjs';
-import type { UserWithRoles } from './user.type';
-import {
-  getOrganizationFilter,
-  isSuperAdmin,
-  validateUserManagementPermission,
-} from './user.utils';
+import { getOrganizationFilter, isSuperAdmin, validateUserManagementPermission, } from './user.utils';
 
 @Injectable()
 export class UserService {
@@ -23,7 +18,7 @@ export class UserService {
     console.log('UserService created');
   }
 
-  async create(currentUser: UserWithRoles, dto: CreateUserDto) {
+  async create(currentUser: User, dto: CreateUserDto) {
     const { siteIds, role, organizationId, password, ...userData } = dto;
 
     // Validate password is provided
@@ -122,7 +117,7 @@ export class UserService {
     });
   }
 
-  async update(currentUser: UserWithRoles, id: string, dto: UpdateUserDto) {
+  async update(currentUser: User, id: string, dto: UpdateUserDto) {
     const { siteIds, role, password, ...userData } = dto;
 
     // Find existing user
@@ -224,7 +219,7 @@ export class UserService {
     });
   }
 
-  async findAll(user: UserWithRoles, query: ListUsersQueryDto) {
+  async findAll(user: User, query: ListUsersQueryDto) {
     const { organizationId, status, search, page = 1, limit = 10 } = query;
 
     const isRootAdmin = isSuperAdmin(user);
