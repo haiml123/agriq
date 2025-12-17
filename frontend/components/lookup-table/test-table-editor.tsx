@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useMemo, useEffect } from 'react'
-import type { LookupTableData } from './LookupTableEditor'
+import type { LookupTableData } from '@/schemas/lookup-table.schema'
 
 interface LookupResult {
   value: number

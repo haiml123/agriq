@@ -12,7 +12,7 @@ import { formatDate } from '@/lib/utils';
 
 export default function CommodityTypesPage() {
     const modal = useModal();
-    const { getList, toggleActive, isLoading, isUpdating } = useCommodityTypeApi();
+    const { getList, toggleActive, remove, isLoading, isUpdating, isDeleting } = useCommodityTypeApi();
     const [commodityTypes, setCommodityTypes] = useState<CommodityType[]>([]);
 
     const refreshList = async () => {
@@ -31,9 +31,9 @@ export default function CommodityTypesPage() {
         await refreshList();
     };
 
-    const handleDeleteCommodityType = (id: string) => {
-        // TODO: Implement delete API call
-        setCommodityTypes(commodityTypes.filter((type) => type.id !== id));
+    const handleDeleteCommodityType = async (id: string) => {
+        await remove(id);
+        await refreshList();
     };
 
     const openCommodityTypeModal = async (commodityType?: CommodityType) => {
@@ -129,6 +129,7 @@ export default function CommodityTypesPage() {
                                             size="icon"
                                             onClick={() => handleDeleteCommodityType(type.id)}
                                             className="text-destructive hover:text-destructive"
+                                            disabled={isDeleting}
                                         >
                                             <Trash2 className="w-4 h-4" />
                                         </Button>

@@ -21,7 +21,7 @@ import { JwtAuthGuard } from '../auth/guards';
 import { CurrentUser, Public } from '../auth/decorators';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { RolesGuard } from '../auth/guards/roles.guard';
-import { role_type } from '@prisma/client';
+import { user_role } from '@prisma/client';
 
 @Controller('commodity-types')
 @UseGuards(JwtAuthGuard, RolesGuard)
@@ -29,7 +29,7 @@ export class CommodityTypeController {
   constructor(private readonly commodityTypeService: CommodityTypeService) {}
 
   @Post()
-  @Roles(role_type.SUPER_ADMIN)
+  @Roles(user_role.SUPER_ADMIN)
   create(
     @Body() dto: CreateCommodityTypeDto,
     @CurrentUser('id') userId: string,
@@ -49,7 +49,7 @@ export class CommodityTypeController {
   }
 
   @Patch(':id')
-  @Roles(role_type.SUPER_ADMIN)
+  @Roles(user_role.SUPER_ADMIN)
   update(
     @Param('id') id: string,
     @Body() dto: UpdateCommodityTypeDto,
@@ -59,7 +59,7 @@ export class CommodityTypeController {
   }
 
   @Delete(':id')
-  @Roles(role_type.SUPER_ADMIN)
+  @Roles(user_role.SUPER_ADMIN)
   remove(@Param('id') id: string) {
     return this.commodityTypeService.remove(id);
   }
@@ -70,7 +70,7 @@ export class CommodityTypeController {
   }
 
   @Post(':id/lookup-table')
-  @Roles(role_type.SUPER_ADMIN)
+  @Roles(user_role.SUPER_ADMIN)
   createLookupTable(
     @Param('id') id: string,
     @Body() dto: CreateLookupTableDto,
@@ -80,7 +80,7 @@ export class CommodityTypeController {
   }
 
   @Patch(':id/lookup-table')
-  @Roles(role_type.SUPER_ADMIN)
+  @Roles(user_role.SUPER_ADMIN)
   updateLookupTable(
     @Param('id') id: string,
     @Body() dto: UpdateLookupTableDto,
@@ -90,7 +90,7 @@ export class CommodityTypeController {
   }
 
   @Delete(':id/lookup-table')
-  @Roles(role_type.SUPER_ADMIN)
+  @Roles(user_role.SUPER_ADMIN)
   deleteLookupTable(@Param('id') id: string) {
     return this.commodityTypeService.deleteLookupTable(id);
   }

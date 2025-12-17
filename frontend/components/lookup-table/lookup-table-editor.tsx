@@ -1,20 +1,7 @@
 'use client'
 
 import { Minus, ArrowUp, ArrowDown, ArrowLeft, ArrowRight } from 'lucide-react'
-
-export interface LookupTableData {
-  tempRanges: number[]
-  humidityRanges: number[]
-  values: number[][]
-}
-
-export interface LookupTable {
-  id: string
-  name: string
-  description?: string | null
-  commodityTypeId: string
-  data: LookupTableData
-}
+import type { LookupTable } from '@/schemas/lookup-table.schema'
 
 interface LookupTableEditorProps {
   tableData: LookupTable

@@ -1,3 +1,3 @@
-export { LookupTableEditor } from './LookupTableEditor'
-export type { LookupTable, LookupTableData } from './LookupTableEditor'
-export { TestLookup } from './TestLookup'
+export { LookupTableEditor } from './lookup-table-editor'
+export { TestLookup } from './test-table-editor'
+export type { LookupTable, LookupTableData } from '@/schemas/lookup-table.schema'
