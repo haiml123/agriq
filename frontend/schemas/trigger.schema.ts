@@ -59,7 +59,7 @@ export const notificationTemplateSchema = z.object({
 })
 
 export const actionSchema = z.object({
-    type: conditionTypeSchema,
+    type: actionTypeSchema,
     template: notificationTemplateSchema.optional(),
     webhookUrl: z.string().url().optional(), // Only for WEBHOOK type
     recipients: z.array(z.string()).optional(), // User IDs for EMAIL/SMS
@@ -98,6 +98,9 @@ export type Condition = z.infer<typeof conditionSchema>
 export type NotificationTemplate = z.infer<typeof notificationTemplateSchema>
 export type Action = z.infer<typeof actionSchema>
 export type Trigger = z.infer<typeof triggerSchema>
+
+// Alias used by trigger editor hooks
+export const TriggerSchema = triggerSchema;
 
 export const TEMPLATE_VARIABLES = [
     { key: "{site_name}", description: "Name of the site" },

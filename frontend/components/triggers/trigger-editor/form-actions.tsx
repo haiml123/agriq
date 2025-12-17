@@ -5,7 +5,7 @@ interface FormActionsProps {
     isLoading?: boolean;
     isValid: boolean;
     onCancel: () => void;
-    onSubmit: () => void;
+    onSubmit: () => void | Promise<void>;
 }
 
 export function FormActions({

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { SidebarTrigger } from '@/components/layout/app-sidebar-layout';
@@ -9,43 +9,91 @@ import { TriggerModal } from '@/components/modals/trigger.modal';
 import { TriggerList } from '@/components/triggers';
 import type { Trigger } from '@/schemas/trigger.schema';
 import { useTriggerApi } from '@/hooks/use-trigger-api';
+import { useOrganizationApi } from '@/hooks/use-organization-api';
+import type { Organization } from '@/schemas/organization.schema';
 
 export default function TriggersPage() {
     const modal = useModal();
-    const {create} = useTriggerApi();
+    const { getList, create, update, toggleActive, remove, isLoading: isApiLoading } = useTriggerApi();
+    const { getList: getOrganizationList, isLoading: isOrgLoading } = useOrganizationApi();
     const [triggers, setTriggers] = useState<Trigger[]>([]);
     const [isLoading, setIsLoading] = useState(false);
+    const [organizations, setOrganizations] = useState<Organization[]>([]);
+
+    const loadTriggers = useCallback(async () => {
+        setIsLoading(true);
+        try {
+            const response = await getList();
+            if (response?.data?.items) {
+                setTriggers(response.data.items);
+            }
+        } finally {
+            setIsLoading(false);
+        }
+    }, [getList]);
+
+    useEffect(() => {
+        void loadTriggers();
+    }, [loadTriggers]);
+
+    useEffect(() => {
+        const loadOrganizations = async () => {
+            const response = await getOrganizationList();
+            if (response?.data?.items) {
+                setOrganizations(response.data.items);
+            }
+        };
+        void loadOrganizations();
+    }, [getOrganizationList]);
+
+    const saveTrigger = useCallback(
+        async (payload: Trigger, existing?: Trigger | null) => {
+            const response = existing
+                ? await update(existing.id, payload)
+                : await create(payload);
+            return response?.data ?? null;
+        },
+        [create, update]
+    );
 
     const openTriggerModal = async (trigger?: Trigger) => {
         const result = await modal.open<Trigger | null>(
-            (onClose) => <TriggerModal trigger={trigger} onClose={onClose} />,
+            (onClose) => (
+                <TriggerModal
+                    trigger={trigger}
+                    onSubmit={(data) => saveTrigger(data, trigger ?? null)}
+                    onClose={onClose}
+                    organizations={organizations}
+                />
+            ),
             // { size: 'xl' }
         );
-
-        await create(result);
-
         if (result) {
-            if (trigger) {
-                // Update existing trigger
-                setTriggers((prev) => prev.map((t) => (t.id === result.id ? result : t)));
-            } else {
-                // Add new trigger
-                setTriggers((prev) => [...prev, result]);
-            }
+            setTriggers((prev) => {
+                const exists = prev.some((t) => t.id === result.id);
+                if (exists) {
+                    return prev.map((t) => (t.id === result.id ? result : t));
+                }
+                return [...prev, result];
+            });
         }
     };
 
     const handleDelete = async (trigger: Trigger) => {
-        // TODO: Add confirmation dialog
-        // TODO: Call API to delete
-        setTriggers((prev) => prev.filter((t) => t.id !== trigger.id));
+        const response = await remove(trigger.id);
+        if (!response?.error) {
+            setTriggers((prev) => prev.filter((t) => t.id !== trigger.id));
+        }
     };
 
     const handleToggleActive = async (trigger: Trigger) => {
-        // TODO: Call API to toggle
-        setTriggers((prev) =>
-            prev.map((t) => (t.id === trigger.id ? { ...t, isActive: !t.isActive } : t))
-        );
+        const response = await toggleActive(trigger.id, !trigger.isActive);
+        if (response?.data) {
+            const updatedTrigger = response.data;
+            setTriggers((prev) =>
+                prev.map((t) => (t.id === trigger.id ? updatedTrigger : t))
+            );
+        }
     };
 
     return (
@@ -79,13 +127,17 @@ export default function TriggersPage() {
                 </div>
 
                 <div className="p-4">
-                    <TriggerList
-                        triggers={triggers}
-                        onEdit={openTriggerModal}
-                        onDelete={handleDelete}
-                        onToggleActive={handleToggleActive}
-                        onCreateTrigger={() => openTriggerModal()}
-                    />
+                    {isLoading || isApiLoading || isOrgLoading ? (
+                        <p className="text-sm text-muted-foreground">Loading triggers...</p>
+                    ) : (
+                        <TriggerList
+                            triggers={triggers}
+                            onEdit={openTriggerModal}
+                            onDelete={handleDelete}
+                            onToggleActive={handleToggleActive}
+                            onCreateTrigger={() => openTriggerModal()}
+                        />
+                    )}
                 </div>
             </div>
         </div>

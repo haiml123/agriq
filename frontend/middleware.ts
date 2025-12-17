@@ -31,7 +31,8 @@ export default auth((req) => {
         req.nextUrl.pathname.startsWith('/dashboard') ||
         req.nextUrl.pathname.startsWith('/sites') ||
         req.nextUrl.pathname.startsWith('/alerts') ||
-        req.nextUrl.pathname.startsWith('/settings');
+        req.nextUrl.pathname.startsWith('/settings') ||
+        req.nextUrl.pathname.startsWith('/admin');
     const isAuthRoute = req.nextUrl.pathname === '/login';
 
     if (isProtectedRoute && !isLoggedIn) {

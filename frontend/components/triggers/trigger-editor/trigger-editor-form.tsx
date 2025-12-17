@@ -9,12 +9,14 @@ import { MessageTemplatesSection } from './message-templates-section';
 import { RulePreview } from './rule-preview';
 import { FormActions } from './form-actions';
 import { useTriggerForm } from '@/components/triggers/trigger-editor/hooks/use-trigger-form';
+import type { Organization } from '@/schemas/organization.schema';
 
 interface TriggerEditorFormProps {
     trigger: Trigger | null;
-    onSave: (trigger: Trigger) => void;
+    onSave: (trigger: Trigger) => Promise<void> | void;
     onCancel: () => void;
     isLoading?: boolean;
+    organizations?: Organization[];
 }
 
 export function TriggerEditorForm({
@@ -22,6 +24,7 @@ export function TriggerEditorForm({
     onSave,
     onCancel,
     isLoading,
+    organizations,
 }: TriggerEditorFormProps) {
     const {
         formData,
@@ -35,10 +38,10 @@ export function TriggerEditorForm({
         validateAndSubmit,
     } = useTriggerForm(trigger);
 
-    const handleSubmit = () => {
+    const handleSubmit = async () => {
         const validatedTrigger = validateAndSubmit();
         if (validatedTrigger) {
-            onSave(validatedTrigger);
+            await onSave(validatedTrigger);
         }
     };
 
@@ -69,6 +72,7 @@ export function TriggerEditorForm({
                 formData={formData}
                 onUpdate={updateField}
                 onScopeChange={handleScopeChange}
+                organizations={organizations}
             />
 
             <ConditionsSection
