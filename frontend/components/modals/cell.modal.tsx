@@ -2,14 +2,14 @@ import { DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/co
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useForm } from 'react-hook-form';
-import { Cell, UpdateCellDto, updateCellSchema } from '@/schemas/sites.schema';
+import { Cell, CreateCellDto, UpdateCellDto, updateCellSchema } from '@/schemas/sites.schema';
 import { zodResolver } from '@hookform/resolvers/zod';
 
 
 interface CellModalProps {
     compoundName: string;
     cell?: Cell | null;
-    onClose: (result?: UpdateCellDto | null) => void;
+    onClose: (result?: CreateCellDto | UpdateCellDto | null) => void;
 }
 
 export function CellModal({ compoundName, cell, onClose }: CellModalProps) {
