@@ -8,11 +8,12 @@ import { useModal } from '@/components/providers/modal-provider';
 import { CommodityTypeModal } from '@/components/modals/commodity-type.modal';
 import { useCommodityTypeApi } from '@/hooks/use-commodity-type-api';
 import { CommodityType } from '@/schemas/commodity-type.schema';
+import { EntityStatus } from '@/schemas/common.schema';
 import { formatDate } from '@/lib/utils';
 
 export default function CommodityTypesPage() {
     const modal = useModal();
-    const { getList, toggleActive, remove, isLoading, isUpdating, isDeleting } = useCommodityTypeApi();
+    const { getList, setStatus, remove, isLoading, isUpdating, isDeleting } = useCommodityTypeApi();
     const [commodityTypes, setCommodityTypes] = useState<CommodityType[]>([]);
 
     const refreshList = async () => {
@@ -26,8 +27,9 @@ export default function CommodityTypesPage() {
         refreshList();
     }, []);
 
-    const handleToggleActive = async (id: string, currentStatus: boolean) => {
-        await toggleActive(id, !currentStatus);
+    const handleToggleStatus = async (type: CommodityType) => {
+        const nextStatus: EntityStatus = type.status === 'ACTIVE' ? 'BLOCKED' : 'ACTIVE';
+        await setStatus(type.id, nextStatus);
         await refreshList();
     };
 
@@ -81,9 +83,9 @@ export default function CommodityTypesPage() {
                                     <div className="min-w-0">
                                         <div className="flex items-center gap-2">
                                             <h3 className="font-medium text-foreground truncate">{type.name}</h3>
-                                            {!type.isActive && (
+                                            {type.status !== 'ACTIVE' && (
                                                 <span className="text-xs px-2 py-0.5 rounded-full bg-muted text-muted-foreground">
-                                                    Inactive
+                                                    {type.status}
                                                 </span>
                                             )}
                                         </div>
@@ -107,11 +109,11 @@ export default function CommodityTypesPage() {
                                         <Button
                                             variant="ghost"
                                             size="icon"
-                                            onClick={() => handleToggleActive(type.id, type.isActive)}
+                                            onClick={() => handleToggleStatus(type)}
                                             disabled={isUpdating}
-                                            title={type.isActive ? 'Deactivate' : 'Activate'}
+                                            title={type.status === 'ACTIVE' ? 'Deactivate' : 'Activate'}
                                         >
-                                            {type.isActive ? (
+                                            {type.status === 'ACTIVE' ? (
                                                 <Power className="w-4 h-4 text-emerald-500" />
                                             ) : (
                                                 <PowerOff className="w-4 h-4 text-muted-foreground" />

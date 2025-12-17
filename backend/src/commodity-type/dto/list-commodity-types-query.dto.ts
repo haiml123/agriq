@@ -4,9 +4,10 @@ import {
   IsInt,
   Min,
   Max,
-  IsBoolean,
+  IsEnum,
 } from 'class-validator';
 import { Type, Transform } from 'class-transformer';
+import { entity_status } from '@prisma/client';
 
 export class ListCommodityTypesQueryDto {
   @IsOptional()
@@ -14,9 +15,11 @@ export class ListCommodityTypesQueryDto {
   search?: string;
 
   @IsOptional()
-  @Transform(({ value }) => value === 'true' || value === true)
-  @IsBoolean()
-  isActive?: boolean;
+  @Transform(({ value }) =>
+    typeof value === 'string' ? value.toUpperCase() : value,
+  )
+  @IsEnum(entity_status)
+  status?: entity_status;
 
   @IsOptional()
   @Type(() => Number)

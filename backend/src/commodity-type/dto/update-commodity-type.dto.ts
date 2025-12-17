@@ -3,8 +3,9 @@ import {
   IsOptional,
   MinLength,
   MaxLength,
-  IsBoolean,
+  IsEnum,
 } from 'class-validator';
+import { entity_status } from '@prisma/client';
 
 export class UpdateCommodityTypeDto {
   @IsString()
@@ -18,7 +19,7 @@ export class UpdateCommodityTypeDto {
   @MaxLength(500)
   description?: string;
 
-  @IsBoolean()
+  @IsEnum(entity_status)
   @IsOptional()
-  isActive?: boolean;
+  status?: entity_status;
 }
