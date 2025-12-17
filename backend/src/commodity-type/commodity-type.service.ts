@@ -70,7 +70,6 @@ export class CommodityTypeService {
       this.prisma.commodityType.findMany({
         where,
         skip,
-        take: limit,
         orderBy: { createdAt: 'desc' },
         include: {
           _count: {

@@ -50,7 +50,7 @@ export function TriggerEditorForm({
 
     useEffect(() => {
         const loadCommodityTypes = async () => {
-            const response = await getCommodityTypes({ limit: 100, isActive: true });
+            const response = await getCommodityTypes({ limit: 100 });
             if (response?.data?.items) {
                 setCommodityTypes(response.data.items);
             }
