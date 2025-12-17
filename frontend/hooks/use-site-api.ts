@@ -89,7 +89,7 @@ export function useSiteApi() {
         async (data: CreateCompoundDto) => {
             setIsCreating(true);
             try {
-                return await post<Compound>('/compounds', data);
+                return await post<Compound>('/sites/compounds', data);
             } finally {
                 setIsCreating(false);
             }
@@ -101,7 +101,7 @@ export function useSiteApi() {
         async (id: string, data: UpdateCompoundDto) => {
             setIsUpdating(true);
             try {
-                return await patch<Compound>(`/compounds/${id}`, data);
+                return await patch<Compound>(`/sites/compounds/${id}`, data);
             } finally {
                 setIsUpdating(false);
             }
@@ -113,7 +113,7 @@ export function useSiteApi() {
         async (id: string) => {
             setIsDeleting(true);
             try {
-                return await del(`/compounds/${id}`);
+                return await del(`/sites/compounds/${id}`);
             } finally {
                 setIsDeleting(false);
             }
@@ -127,7 +127,7 @@ export function useSiteApi() {
         async (data: CreateCellDto) => {
             setIsCreating(true);
             try {
-                return await post<Cell>('/cells', data);
+                return await post<Cell>('/sites/cells', data);
             } finally {
                 setIsCreating(false);
             }
@@ -139,7 +139,7 @@ export function useSiteApi() {
         async (id: string, data: UpdateCellDto) => {
             setIsUpdating(true);
             try {
-                return await patch<Cell>(`/cells/${id}`, data);
+                return await patch<Cell>(`/sites/cells/${id}`, data);
             } finally {
                 setIsUpdating(false);
             }
@@ -151,7 +151,7 @@ export function useSiteApi() {
         async (id: string) => {
             setIsDeleting(true);
             try {
-                return await del(`/cells/${id}`);
+                return await del(`/sites/cells/${id}`);
             } finally {
                 setIsDeleting(false);
             }

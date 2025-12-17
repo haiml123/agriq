@@ -18,3 +18,4 @@ export const EntityStatusEnum = entityStatusSchema.enum;
 export type CommunicationType = z.infer<typeof communicationTypeSchema>
 export type Severity = z.infer<typeof severitySchema>
 export type EntityStatus = z.infer<typeof entityStatusSchema>
+export type RoleType = z.infer<typeof roleTypeSchema>;

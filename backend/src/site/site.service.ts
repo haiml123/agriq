@@ -1,4 +1,8 @@
-import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import {
   CreateCellDto,
@@ -8,8 +12,9 @@ import {
   UpdateCompoundDto,
   UpdateSiteDto,
 } from './dto';
-import { entity_status, User } from '@prisma/client';
+import { entity_status } from '@prisma/client';
 import { canAccessOrganization, isSuperAdmin } from '../user/user.utils';
+import { AppUser } from '../types/user.type';
 
 @Injectable()
 export class SiteService {
@@ -19,13 +24,15 @@ export class SiteService {
   // PERMISSION HELPERS
   // ─────────────────────────────────────────────────────────────
 
-  private validateOrganizationAccess(user: User, organizationId: string) {
+  private validateOrganizationAccess(user: AppUser, organizationId: string) {
     if (!canAccessOrganization(user, organizationId)) {
-      throw new ForbiddenException('You do not have permission to access this organization');
+      throw new ForbiddenException(
+        'You do not have permission to access this organization',
+      );
     }
   }
 
-  private async validateSiteAccess(user: User, siteId: string) {
+  private async validateSiteAccess(user: AppUser, siteId: string) {
     const site = await this.prisma.site.findUnique({
       where: { id: siteId },
       select: { organizationId: true },
@@ -39,7 +46,7 @@ export class SiteService {
     return site;
   }
 
-  private async validateCompoundAccess(user: User, compoundId: string) {
+  private async validateCompoundAccess(user: AppUser, compoundId: string) {
     const compound = await this.prisma.compound.findUnique({
       where: { id: compoundId },
       include: { site: { select: { organizationId: true } } },
@@ -53,16 +60,16 @@ export class SiteService {
     return compound;
   }
 
-  private async validateCellAccess(user: User, cellId: string) {
+  private async validateCellAccess(user: AppUser, cellId: string) {
     const cell = await this.prisma.cell.findUnique({
       where: { id: cellId },
       include: {
         compound: {
           include: {
-            site: { select: { organizationId: true } }
-          }
-        }
-      }
+            site: { select: { organizationId: true } },
+          },
+        },
+      },
     });
 
     if (!cell) {
@@ -77,7 +84,7 @@ export class SiteService {
   // SITES
   // ─────────────────────────────────────────────────────────────
 
-  async createSite(user: User, dto: CreateSiteDto) {
+  async createSite(user: AppUser, dto: CreateSiteDto) {
     this.validateOrganizationAccess(user, dto.organizationId);
 
     return this.prisma.site.create({
@@ -91,25 +98,27 @@ export class SiteService {
     });
   }
 
-  async findAllSites(user: User, organizationId?: string) {
+  async findAllSites(user: AppUser, organizationId?: string) {
     // Super admin can see all, org admin sees only their org
-    let whereOrgId: string | undefined;
+    let whereOrgId: string | null | undefined;
 
     if (isSuperAdmin(user)) {
       whereOrgId = organizationId;
     } else {
       // For org admin, use their org or validate requested org
-      const userOrgId = user.roles.find(r => r.organizationId)?.organizationId;
+      const userOrgId = user.roles.find(
+        (r) => r.organizationId,
+      )?.organizationId;
       if (organizationId && organizationId !== userOrgId) {
-        throw new ForbiddenException('You do not have permission to access this organization');
+        throw new ForbiddenException(
+          'You do not have permission to access this organization',
+        );
       }
       whereOrgId = userOrgId;
     }
 
     return this.prisma.site.findMany({
-      where: whereOrgId
-          ? { organizationId: whereOrgId }
-          : undefined,
+      where: whereOrgId ? { organizationId: whereOrgId } : undefined,
       include: {
         compounds: {
           include: { cells: true },
@@ -121,7 +130,7 @@ export class SiteService {
     });
   }
 
-  async findSiteById(user: User, id: string) {
+  async findSiteById(user: AppUser, id: string) {
     await this.validateSiteAccess(user, id);
 
     return this.prisma.site.findUnique({
@@ -130,7 +139,7 @@ export class SiteService {
     });
   }
 
-  async updateSite(user: User, id: string, dto: UpdateSiteDto) {
+  async updateSite(user: AppUser, id: string, dto: UpdateSiteDto) {
     await this.validateSiteAccess(user, id);
 
     return this.prisma.site.update({
@@ -143,7 +152,7 @@ export class SiteService {
     });
   }
 
-  async deleteSite(user: User, id: string) {
+  async deleteSite(user: AppUser, id: string) {
     await this.validateSiteAccess(user, id);
     return this.prisma.site.delete({ where: { id } });
   }
@@ -152,7 +161,7 @@ export class SiteService {
   // COMPOUNDS
   // ─────────────────────────────────────────────────────────────
 
-  async createCompound(user: User, dto: CreateCompoundDto) {
+  async createCompound(user: AppUser, dto: CreateCompoundDto) {
     await this.validateSiteAccess(user, dto.siteId);
 
     return this.prisma.compound.create({
@@ -160,13 +169,13 @@ export class SiteService {
         name: dto.name,
         status: dto.status || entity_status.ACTIVE,
         siteId: dto.siteId,
-        createdBy: user.id,
+        createdBy: user.id as string,
       },
       include: { cells: true },
     });
   }
 
-  async findCompoundById(user: User, id: string) {
+  async findCompoundById(user: AppUser, id: string) {
     await this.validateCompoundAccess(user, id);
 
     return this.prisma.compound.findUnique({
@@ -175,7 +184,7 @@ export class SiteService {
     });
   }
 
-  async updateCompound(user: User, id: string, dto: UpdateCompoundDto) {
+  async updateCompound(user: AppUser, id: string, dto: UpdateCompoundDto) {
     await this.validateCompoundAccess(user, id);
 
     return this.prisma.compound.update({
@@ -188,7 +197,7 @@ export class SiteService {
     });
   }
 
-  async deleteCompound(user: User, id: string) {
+  async deleteCompound(user: AppUser, id: string) {
     await this.validateCompoundAccess(user, id);
     return this.prisma.compound.delete({ where: { id } });
   }
@@ -197,7 +206,7 @@ export class SiteService {
   // CELLS
   // ─────────────────────────────────────────────────────────────
 
-  async createCell(user: User, dto: CreateCellDto) {
+  async createCell(user: AppUser, dto: CreateCellDto) {
     await this.validateCompoundAccess(user, dto.compoundId);
 
     return this.prisma.cell.create({
@@ -206,12 +215,12 @@ export class SiteService {
         capacity: dto.capacity,
         status: dto.status || entity_status.ACTIVE,
         compoundId: dto.compoundId,
-        createdBy: user.id,
+        createdBy: user.id as string,
       },
     });
   }
 
-  async findCellById(user: User, id: string) {
+  async findCellById(user: AppUser, id: string) {
     await this.validateCellAccess(user, id);
 
     return this.prisma.cell.findUnique({
@@ -220,7 +229,7 @@ export class SiteService {
     });
   }
 
-  async updateCell(user: User, id: string, dto: UpdateCellDto) {
+  async updateCell(user: AppUser, id: string, dto: UpdateCellDto) {
     await this.validateCellAccess(user, id);
 
     return this.prisma.cell.update({
@@ -233,7 +242,7 @@ export class SiteService {
     });
   }
 
-  async deleteCell(user: User, id: string) {
+  async deleteCell(user: AppUser, id: string) {
     await this.validateCellAccess(user, id);
     return this.prisma.cell.delete({ where: { id } });
   }

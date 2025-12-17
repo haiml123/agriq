@@ -11,6 +11,7 @@ import { OrganizationModule } from './organization';
 import { UserModule } from './user/user.module';
 import { TriggerModule } from './trigger';
 import { CommodityTypeModule } from './commodity-type';
+import { SiteModule } from './site';
 
 @Module({
   imports: [
@@ -25,6 +26,7 @@ import { CommodityTypeModule } from './commodity-type';
     }),
     OrganizationModule,
     UserModule,
+    SiteModule,
     TriggerModule,
     CommodityTypeModule,
   ],

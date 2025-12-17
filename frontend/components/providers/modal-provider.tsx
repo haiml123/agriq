@@ -11,7 +11,7 @@ interface ModalItem {
 
 interface ModalContextValue {
     open: <T = unknown>(content: ReactNode | ((onClose: (result?: T) => void) => ReactNode)) => Promise<T | undefined>;
-    close: (result?: unknown) => void;
+    close: <T = unknown>(result?: T) => void;
 }
 
 const ModalContext = createContext<ModalContextValue | null>(null);

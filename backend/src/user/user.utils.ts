@@ -1,18 +1,19 @@
-import { role_type, User } from '@prisma/client';
+import { role_type } from '@prisma/client';
 import { ForbiddenException } from '@nestjs/common';
+import { AppUser } from '../types/user.type';
 
-export function isSuperAdmin(user: User): boolean {
+export function isSuperAdmin(user: AppUser): boolean {
   return user.roles.some((role) => role.role === role_type.SUPER_ADMIN);
 }
 
-export function isOrgAdmin(user: User): boolean {
+export function isOrgAdmin(user: AppUser): boolean {
   return user.roles.some((role) => role.role === role_type.ORG_ADMIN);
 }
 
-export function getAdminOrganizationIds(user: User): string[] {
+export function getAdminOrganizationIds(user: AppUser): string[] {
   return user.roles
-    .filter((r) => r.role === role_type.ORG_ADMIN && r.organizationId)
-    .map((r) => r.organizationId);
+    .filter((r) => r.role === role_type.ORG_ADMIN && r.organizationId !== null)
+    .map((r) => r.organizationId as string);
 }
 
 /**
@@ -22,7 +23,7 @@ export function getAdminOrganizationIds(user: User): string[] {
  * - Returns null if user has no access
  */
 export function getOrganizationFilter(
-  user: User,
+  user: AppUser,
   requestedOrgId?: string,
 ): string | { in: string[] } | undefined | null {
   if (isSuperAdmin(user)) {
@@ -49,7 +50,7 @@ export function getOrganizationFilter(
  * with the specified role. Throws ForbiddenException if not allowed.
  */
 export function validateUserManagementPermission(params: {
-  currentUser: User;
+  currentUser: AppUser;
   targetOrganizationId: string | null;
   targetRole: role_type;
   existingUserRoles?: { role: role_type }[]; // For update: existing user's roles
@@ -88,7 +89,7 @@ export function validateUserManagementPermission(params: {
 
 // In your role utils file
 export function canAccessOrganization(
-  user: User,
+  user: AppUser,
   organizationId: string,
 ): boolean {
   if (isSuperAdmin(user)) {

@@ -1,5 +1,5 @@
 "use client";
-import { Building2, Info, Languages, Users, Warehouse } from 'lucide-react'
+import { Info, Languages, Users, Warehouse } from 'lucide-react'
 import { AppSidebarLayout, NavItem } from '@/components/layout/app-sidebar-layout';
 import { ReactNode } from 'react';
 import { RoleTypeEnum } from '@/schemas/common.schema';
@@ -9,11 +9,6 @@ interface SettingsLayoutProps {
 }
 
 const settingsMenuItems: NavItem[] = [
-    {
-        label: "Organizations",
-        href: "/settings/organizations",
-        icon: Building2,
-    },
     {
         label: 'Sites',
         href: '/settings/sites',

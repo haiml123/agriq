@@ -4,11 +4,20 @@ import React, { useCallback, useEffect, useState } from 'react'
 import { Building2, Plus } from 'lucide-react'
 import { SidebarTrigger } from '@/components/layout/app-sidebar-layout'
 import { useModal } from '@/components/providers/modal-provider'
-import { Cell, Site } from '@/schemas/sites.schema'
+import {
+    Cell,
+    CreateCellDto,
+    CreateCompoundDto,
+    CreateSiteDto,
+    Site,
+    UpdateCellDto,
+    UpdateCompoundDto,
+    UpdateSiteDto,
+} from '@/schemas/sites.schema'
 import { useCurrentUser } from '@/hooks'
+import { useSiteApi } from '@/hooks/use-site-api'
 import { OrganizationSelect } from '@/components/select/organization-select'
 import { SitesList } from '@/components/sites-table/sites-list'
-import { testSites } from '@/app/(dashboard)/settings/sites/site-example'
 import { Button } from '@/components/ui/button'
 import { SiteModal } from '@/components/modals/site.modal'
 
@@ -16,10 +25,10 @@ export default function SitesPage() {
     const modal = useModal()
     const { user, isSuperAdmin, isLoading: isCurrentUserLoading } = useCurrentUser()
     const {
-        getList,
-        create: createSite,
-        update: updateSite,
-        remove: deleteSite,
+        getSites,
+        createSite,
+        updateSite,
+        deleteSite,
         createCompound,
         updateCompound,
         deleteCompound,
@@ -28,31 +37,33 @@ export default function SitesPage() {
         deleteCell,
         isLoading,
         isCreating,
-    }: any = {}
+        isUpdating,
+        isDeleting,
+    } = useSiteApi()
 
-    const [sites, setSites] = useState<Site[]>(testSites)
+    const [sites, setSites] = useState<Site[]>([])
     const [selectedOrganizationId, setSelectedOrganizationId] = useState<string>('all')
 
     const fetchSites = useCallback(async () => {
         if (isCurrentUserLoading || !user) return
 
         try {
-            const response = await getList({
-                organizationId: isSuperAdmin && selectedOrganizationId !== 'all' ? selectedOrganizationId : undefined,
-            })
-            if (response?.data?.items) {
-                setSites(response.data.items)
+            const params = isSuperAdmin && selectedOrganizationId !== 'all'
+                ? { organizationId: selectedOrganizationId }
+                : undefined
+            const response = await getSites(params)
+            if (response) {
+                setSites(response.data as Site[])
             }
         } catch (error) {
             console.error('Failed to fetch sites:', error)
         }
-    }, [getList, isCurrentUserLoading, isSuperAdmin, selectedOrganizationId, user])
+    }, [getSites, isCurrentUserLoading, isSuperAdmin, selectedOrganizationId, user])
 
     useEffect(() => {
-        // fetchSites()
+        fetchSites()
     }, [fetchSites])
 
-    // Open create site modal
     const openCreateSiteModal = async () => {
         const result = await modal.open<{ name: string; address?: string } | null>((onClose) => (
             <SiteModal onClose={onClose} />
@@ -63,24 +74,43 @@ export default function SitesPage() {
     }
 
     // Site handlers
-    const handleCreateSite = async (data: Pick<Site, 'name' | 'address'>) => {
+    const handleCreateSite = async (data: CreateSiteDto) => {
+        const organizationId = isSuperAdmin && selectedOrganizationId !== 'all'
+            ? selectedOrganizationId
+            : user?.organizationId
+
+        if (!organizationId) {
+            console.error('No organization ID available')
+            return
+        }
+
         try {
-            await createSite({
-                ...data,
-                organizationId: isSuperAdmin && selectedOrganizationId !== 'all'
-                    ? selectedOrganizationId
-                    : user?.organizationId,
-            })
-            await fetchSites()
+            const dto: CreateSiteDto = {
+                name: data.name,
+                address: data.address ?? undefined,
+                organizationId,
+            }
+            const newSite = await createSite(dto)
+            if (newSite) {
+                setSites(prev => [...prev, newSite.data as Site])
+            }
         } catch (error) {
             console.error('Failed to create site:', error)
         }
     }
 
-    const handleEditSite = async (siteId: string, data: Pick<Site, 'name' | 'address'>) => {
+    const handleEditSite = async (siteId: string, data: UpdateSiteDto) => {
         try {
-            await updateSite(siteId, data)
-            await fetchSites()
+            const dto: UpdateSiteDto = {
+                name: data.name,
+                address: data.address ?? undefined,
+            }
+            const updated = await updateSite(siteId, dto)
+            if (updated) {
+                setSites(prev => prev.map(site =>
+                    site.id === siteId ? { ...site, ...data } : site
+                ))
+            }
         } catch (error) {
             console.error('Failed to update site:', error)
         }
@@ -89,26 +119,46 @@ export default function SitesPage() {
     const handleDeleteSite = async (siteId: string) => {
         try {
             await deleteSite(siteId)
-            await fetchSites()
+            setSites(prev => prev.filter(site => site.id !== siteId))
         } catch (error) {
             console.error('Failed to delete site:', error)
         }
     }
 
     // Compound handlers
-    const handleCreateCompound = async (siteId: string, data: { name: string }) => {
+    const handleCreateCompound = async (siteId: string, data: CreateCompoundDto) => {
         try {
-            await createCompound(siteId, data)
-            await fetchSites()
+            const dto: CreateCompoundDto = {
+                name: data.name,
+                siteId,
+            }
+            const newCompound = await createCompound(dto)
+            if (newCompound) {
+                setSites(prev => prev.map(site =>
+                    site.id === siteId
+                        ? { ...site, compounds: [...(site.compounds || []), newCompound.data as any] }
+                        : site
+                ))
+            }
         } catch (error) {
             console.error('Failed to create compound:', error)
         }
     }
 
-    const handleEditCompound = async (compoundId: string, data: { name: string }) => {
+    const handleEditCompound = async (compoundId: string, data: UpdateCompoundDto) => {
         try {
-            await updateCompound(compoundId, data)
-            await fetchSites()
+            const dto: UpdateCompoundDto = {
+                name: data.name,
+            }
+            const updated = await updateCompound(compoundId, dto)
+            if (updated) {
+                setSites(prev => prev.map(site => ({
+                    ...site,
+                    compounds: site.compounds?.map(compound =>
+                        compound.id === compoundId ? { ...compound, ...data } : compound
+                    )
+                })))
+            }
         } catch (error) {
             console.error('Failed to update compound:', error)
         }
@@ -117,7 +167,10 @@ export default function SitesPage() {
     const handleDeleteCompound = async (compoundId: string) => {
         try {
             await deleteCompound(compoundId)
-            await fetchSites()
+            setSites(prev => prev.map(site => ({
+                ...site,
+                compounds: site.compounds?.filter(compound => compound.id !== compoundId)
+            })))
         } catch (error) {
             console.error('Failed to delete compound:', error)
         }
@@ -126,17 +179,45 @@ export default function SitesPage() {
     // Cell handlers
     const handleCreateCell = async (compoundId: string, data: Pick<Cell, 'name' | 'capacity'>) => {
         try {
-            await createCell(compoundId, data)
-            await fetchSites()
+            const dto: CreateCellDto = {
+                name: data.name,
+                capacity: data.capacity ?? 0,
+                compoundId,
+            }
+            const newCell = await createCell(dto)
+            if (newCell) {
+                setSites(prev => prev.map(site => ({
+                    ...site,
+                    compounds: site.compounds?.map(compound =>
+                        compound.id === compoundId
+                            ? { ...compound, cells: [...(compound.cells || []), newCell.data as any] }
+                            : compound
+                    )
+                })))
+            }
         } catch (error) {
             console.error('Failed to create cell:', error)
         }
     }
 
-    const handleEditCell = async (cellId: string, data: Pick<Cell, 'name' | 'capacity'>) => {
+    const handleEditCell = async (cellId: string, data: UpdateCellDto) => {
         try {
-            await updateCell(cellId, data)
-            await fetchSites()
+            const dto: UpdateCellDto = {
+                name: data.name,
+                capacity: data.capacity,
+            }
+            const updated = await updateCell(cellId, dto)
+            if (updated) {
+                setSites(prev => prev.map(site => ({
+                    ...site,
+                    compounds: site.compounds?.map(compound => ({
+                        ...compound,
+                        cells: compound.cells?.map(cell =>
+                            cell.id === cellId ? { ...cell, ...data } : cell
+                        )
+                    }))
+                })))
+            }
         } catch (error) {
             console.error('Failed to update cell:', error)
         }
@@ -145,17 +226,26 @@ export default function SitesPage() {
     const handleDeleteCell = async (cellId: string) => {
         try {
             await deleteCell(cellId)
-            await fetchSites()
+            setSites(prev => prev.map(site => ({
+                ...site,
+                compounds: site.compounds?.map(compound => ({
+                    ...compound,
+                    cells: compound.cells?.filter(cell => cell.id !== cellId)
+                }))
+            })))
         } catch (error) {
             console.error('Failed to delete cell:', error)
         }
     }
 
-    const totalCompounds = sites.reduce((acc, s) => acc + (s.compounds?.length ?? 0), 0)
-    const totalCells = sites.reduce(
+    console.log('sites', sites);
+    const totalCompounds = sites?.reduce((acc, s) => acc + (s.compounds?.length ?? 0), 0)
+    const totalCells = sites?.reduce(
         (acc, s) => acc + (s.compounds?.reduce((a, c) => a + (c.cells?.length ?? 0), 0) ?? 0),
         0
     )
+
+    const isProcessing = isCreating || isUpdating || isDeleting
 
     return (
         <div className="space-y-6">
@@ -171,6 +261,7 @@ export default function SitesPage() {
                 </div>
                 <Button
                     onClick={openCreateSiteModal}
+                    disabled={isProcessing}
                     className="bg-emerald-500 hover:bg-emerald-600"
                 >
                     <Plus className="w-4 h-4 mr-2" />
@@ -196,10 +287,14 @@ export default function SitesPage() {
                     </div>
                 </div>
 
-                {sites.length > 0 ? (
+                {isLoading ? (
+                    <div className="p-8 text-center">
+                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-500 mx-auto mb-4" />
+                        <p className="text-sm text-muted-foreground">Loading sites...</p>
+                    </div>
+                ) : sites.length > 0 ? (
                     <SitesList
                         sites={sites}
-                        onCreateSite={handleCreateSite}
                         onEditSite={handleEditSite}
                         onDeleteSite={handleDeleteSite}
                         onCreateCompound={handleCreateCompound}

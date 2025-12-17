@@ -6,28 +6,16 @@ import { Checkbox } from '@/components/ui/checkbox'
 import { useEffect, useState } from 'react'
 import { useUserApi } from '@/hooks/use-user-api'
 import { useOrganizationApi } from '@/hooks/use-organization-api'
-import { RoleType, User } from '@/schemas/user.schema'
+import { useSiteApi } from '@/hooks/use-site-api'
+import { User } from '@/schemas/user.schema'
 import { Organization } from '@/schemas/organization.schema'
+import { Site } from '@/schemas/sites.schema'
 import { useCurrentUser } from '@/hooks'
-import { Building2 } from 'lucide-react'
-
-// Static sites data for UI preview - TODO: Replace with API call
-const STATIC_SITES = [
-    { id: 'site-1', name: 'Northern Storage Facility', organizationId: 'org-1' },
-    { id: 'site-2', name: 'Southern Distribution Center', organizationId: 'org-1' },
-    { id: 'site-3', name: 'Eastern Grain Depot', organizationId: 'org-1' },
-    { id: 'site-4', name: 'Western Processing Plant', organizationId: 'org-1' },
-    { id: 'site-5', name: 'Central Hub', organizationId: 'org-2' },
-]
+import { Building2, Loader2 } from 'lucide-react'
+import { RoleType, RoleTypeEnum } from '@/schemas/common.schema';
 
 // Internal marker for "All Sites" selection (org-level access)
 const ALL_SITES_OPTION = '__ALL_SITES__'
-
-interface Site {
-    id: string
-    name: string
-    organizationId: string
-}
 
 interface UserModalProps {
     user?: User
@@ -38,8 +26,10 @@ export function UserModal({ user, onClose }: UserModalProps) {
     const { user: appUser, isSuperAdmin, isAdmin } = useCurrentUser()
     const { create, update, isCreating } = useUserApi()
     const { getList: getOrganizations } = useOrganizationApi()
+    const { getSites, isLoading: isLoadingSites } = useSiteApi()
 
     const [organizations, setOrganizations] = useState<Organization[]>([])
+    
     const [sites, setSites] = useState<Site[]>([])
 
     // Determine initial site selection based on existing user roles
@@ -58,7 +48,7 @@ export function UserModal({ user, onClose }: UserModalProps) {
     }
 
     const getInitialRole = (): RoleType => {
-        return (user?.roles?.[0]?.role as RoleType) || 'OPERATOR'
+        return (user?.roles?.[0]?.role) || RoleTypeEnum.OPERATOR
     }
 
     const [formData, setFormData] = useState({
@@ -90,24 +80,36 @@ export function UserModal({ user, onClose }: UserModalProps) {
         }
     }, [getOrganizations, isSuperAdmin])
 
-    // Load sites based on organization (using static data for now)
+    // Load sites based on organization (real API call)
     useEffect(() => {
         const orgId = formData.organizationId
         if (orgId) {
-            // TODO: Replace with API call
-            const filteredSites = STATIC_SITES.filter(s => s.organizationId === orgId)
-            setSites(filteredSites.length > 0 ? filteredSites : STATIC_SITES)
+            getSites({ organizationId: orgId }).then((response) => {
+                if (response?.data) {
+                    setSites(response.data)
+                } else {
+                    setSites([])
+                }
+            }).catch((error) => {
+                console.error('Failed to fetch sites:', error)
+                setSites([])
+            })
         } else {
             setSites([])
         }
-    }, [formData.organizationId])
+    }, [formData.organizationId, getSites])
 
     // Auto-set organization for non-super-admin
     useEffect(() => {
-        if (!isSuperAdmin && appUser?.organizationId && !formData.organizationId) {
+        const shouldUpdateOrg = !isSuperAdmin &&
+            appUser?.organizationId &&
+            !formData.organizationId &&
+            appUser.organizationId !== formData.organizationId;
+
+        if (shouldUpdateOrg) {
             setFormData(prev => ({ ...prev, organizationId: appUser.organizationId! }))
         }
-    }, [isSuperAdmin, appUser, formData.organizationId])
+    }, [isSuperAdmin, appUser?.organizationId])
 
     const handleAllSitesToggle = () => {
         setSitesModified(true)
@@ -325,51 +327,69 @@ export function UserModal({ user, onClose }: UserModalProps) {
                             )}
                         </div>
 
-                        <div className="border rounded-lg overflow-hidden bg-muted/30">
-                            {/* All Sites Option - First and separate */}
-                            <label
-                                className={`flex items-center gap-3 py-3 px-3 cursor-pointer transition-colors border-b ${
-                                    isAllSitesSelected
-                                        ? 'bg-emerald-500/10'
-                                        : 'hover:bg-muted/50'
-                                }`}
-                            >
-                                <Checkbox
-                                    checked={isAllSitesSelected}
-                                    onCheckedChange={handleAllSitesToggle}
-                                />
-                                <Building2 className="w-4 h-4 text-emerald-500" />
-                                <div>
-                                    <span className="text-sm font-medium">All Sites</span>
-                                    <p className="text-xs text-muted-foreground">
-                                        Access to all current and future sites
-                                    </p>
-                                </div>
-                            </label>
-
-                            {/* Individual Sites */}
-                            <div className="max-h-40 overflow-y-auto">
-                                {sites.map((site) => (
-                                    <label
-                                        key={site.id}
-                                        className={`flex items-center gap-3 py-2.5 px-3 cursor-pointer transition-colors ${
-                                            isAllSitesSelected
-                                                ? 'opacity-50 cursor-not-allowed bg-muted/20'
-                                                : formData.siteIds.includes(site.id)
-                                                    ? 'bg-emerald-500/5 hover:bg-emerald-500/10'
-                                                    : 'hover:bg-muted/50'
-                                        }`}
-                                    >
-                                        <Checkbox
-                                            checked={isAllSitesSelected || formData.siteIds.includes(site.id)}
-                                            onCheckedChange={() => handleSiteToggle(site.id)}
-                                            disabled={isAllSitesSelected}
-                                        />
-                                        <span className="text-sm">{site.name}</span>
-                                    </label>
-                                ))}
+                        {isLoadingSites ? (
+                            <div className="flex items-center justify-center py-8 border rounded-lg bg-muted/30">
+                                <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
+                                <span className="ml-2 text-sm text-muted-foreground">Loading sites...</span>
                             </div>
-                        </div>
+                        ) : (
+                            <div className="border rounded-lg overflow-hidden bg-muted/30">
+                                {/* All Sites Option - First and separate */}
+                                <label
+                                    className={`flex items-center gap-3 py-3 px-3 cursor-pointer transition-colors border-b ${
+                                        isAllSitesSelected
+                                            ? 'bg-emerald-500/10'
+                                            : 'hover:bg-muted/50'
+                                    }`}
+                                >
+                                    <Checkbox
+                                        checked={isAllSitesSelected}
+                                        onCheckedChange={handleAllSitesToggle}
+                                    />
+                                    <Building2 className="w-4 h-4 text-emerald-500" />
+                                    <div>
+                                        <span className="text-sm font-medium">All Sites</span>
+                                        <p className="text-xs text-muted-foreground">
+                                            Access to all current and future sites
+                                        </p>
+                                    </div>
+                                </label>
+
+                                {/* Individual Sites */}
+                                {sites.length > 0 ? (
+                                    <div className="max-h-40 overflow-y-auto">
+                                        {sites.map((site) => (
+                                            <label
+                                                key={site.id}
+                                                className={`flex items-center gap-3 py-2.5 px-3 cursor-pointer transition-colors ${
+                                                    isAllSitesSelected
+                                                        ? 'opacity-50 cursor-not-allowed bg-muted/20'
+                                                        : formData.siteIds.includes(site.id)
+                                                            ? 'bg-emerald-500/5 hover:bg-emerald-500/10'
+                                                            : 'hover:bg-muted/50'
+                                                }`}
+                                            >
+                                                <Checkbox
+                                                    checked={isAllSitesSelected || formData.siteIds.includes(site.id)}
+                                                    onCheckedChange={() => handleSiteToggle(site.id)}
+                                                    disabled={isAllSitesSelected}
+                                                />
+                                                <span className="text-sm">{site.name}</span>
+                                            </label>
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <div className="py-6 text-center">
+                                        <p className="text-sm text-muted-foreground">
+                                            No sites found for this organization
+                                        </p>
+                                        <p className="text-xs text-muted-foreground mt-1">
+                                            Create sites first to assign specific access
+                                        </p>
+                                    </div>
+                                )}
+                            </div>
+                        )}
 
                         {!hasValidSiteSelection && (
                             <p className="text-xs text-destructive">
@@ -377,12 +397,6 @@ export function UserModal({ user, onClose }: UserModalProps) {
                             </p>
                         )}
                     </div>
-                )}
-
-                {formData.role === 'OPERATOR' && sites.length === 0 && formData.organizationId && (
-                    <p className="text-sm text-muted-foreground py-2">
-                        No sites found for this organization. Create sites first.
-                    </p>
                 )}
             </div>
 

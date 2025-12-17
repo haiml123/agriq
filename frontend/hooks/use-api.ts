@@ -2,7 +2,7 @@
 
 import { useSession } from 'next-auth/react';
 import { useCallback } from 'react';
-import { apiGet, apiPost, apiPatch } from '@/lib/api-client';
+import { apiDelete, apiGet, apiPatch, apiPost } from '@/lib/api-client';
 
 type Params = Record<string, string | number | boolean | undefined>;
 
@@ -28,5 +28,11 @@ export function useApi() {
         [token]
     );
 
-    return { get, post, patch };
+    const del = useCallback(
+        <T>(endpoint: string, params?: Params) =>
+            apiDelete<T>(endpoint, token, params),
+        [token]
+    );
+
+    return { get, post, patch, del };
 }

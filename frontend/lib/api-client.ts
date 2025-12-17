@@ -131,3 +131,37 @@ export async function apiPatch<T>(
         };
     }
 }
+
+export async function apiDelete<T>(
+    endpoint: string,
+    token?: string,
+    params?: Params
+): Promise<ApiResponse<T>> {
+    try {
+        const response = await fetch(buildUrl(endpoint, params), {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+                ...(token && { Authorization: `Bearer ${token}` }),
+            },
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            return {
+                data: null,
+                error: errorData.message || `Request failed with status ${response.status}`,
+                status: response.status,
+            };
+        }
+
+        const data = await response.json().catch(() => null);
+        return { data, error: null, status: response.status };
+    } catch (error) {
+        return {
+            data: null,
+            error: error instanceof Error ? error.message : 'Network error',
+            status: 0,
+        };
+    }
+}

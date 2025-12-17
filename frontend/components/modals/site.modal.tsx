@@ -1,21 +1,38 @@
+'use client';
+
 import { DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { useState } from 'react';
-import { Site } from '@/schemas/sites.schema';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { Site, UpdateSiteDto, updateSiteSchema } from '@/schemas/sites.schema';
 
 interface SiteModalProps {
   site?: Site | null;
-  onClose: (result?: { name: string; address?: string } | null) => void;
+  onClose: (result?: UpdateSiteDto | null) => void;
 }
 
 export function SiteModal({ site, onClose }: SiteModalProps) {
-  const [name, setName] = useState(site?.name || '');
-  const [address, setAddress] = useState(site?.address || '');
-  const isEdit = !!site;
+  const isEdit = !!site?.id;
 
-  const handleSubmit = () => {
-    onClose({ name, address: address || undefined });
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isValid },
+  } = useForm<UpdateSiteDto>({
+    resolver: zodResolver(updateSiteSchema),
+    defaultValues: {
+      name: site?.name ?? '',
+      address: site?.address ?? '',
+    },
+    mode: 'onChange',
+  });
+
+  const onSubmit = (data: UpdateSiteDto) => {
+    onClose({
+      name: data.name,
+      address: data.address || undefined,
+    });
   };
 
   const title = isEdit ? 'Edit Site' : 'Create Site';
@@ -30,7 +47,7 @@ export function SiteModal({ site, onClose }: SiteModalProps) {
                 : 'Add a new site to your organization.'}
           </DialogDescription>
         </DialogHeader>
-        <div className="space-y-4 py-4">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 py-4">
           <div className="space-y-2">
             <label htmlFor="siteName" className="text-sm font-medium text-foreground">
               Site Name
@@ -38,9 +55,11 @@ export function SiteModal({ site, onClose }: SiteModalProps) {
             <Input
                 id="siteName"
                 placeholder="e.g. Northern Storage Facility"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
+                {...register('name')}
             />
+            {errors.name && (
+                <p className="text-sm text-destructive">{errors.name.message}</p>
+            )}
           </div>
           <div className="space-y-2">
             <label htmlFor="siteAddress" className="text-sm font-medium text-foreground">
@@ -49,23 +68,25 @@ export function SiteModal({ site, onClose }: SiteModalProps) {
             <Input
                 id="siteAddress"
                 placeholder="e.g. Minneapolis, MN"
-                value={address}
-                onChange={(e) => setAddress(e.target.value)}
+                {...register('address')}
             />
+            {errors.address && (
+                <p className="text-sm text-destructive">{errors.address.message}</p>
+            )}
           </div>
-        </div>
-        <DialogFooter>
-          <Button variant="outline" onClick={() => onClose()}>
-            Cancel
-          </Button>
-          <Button
-              onClick={handleSubmit}
-              disabled={!name.trim()}
-              className="bg-emerald-500 hover:bg-emerald-600"
-          >
-            {isEdit ? 'Save Changes' : 'Create Site'}
-          </Button>
-        </DialogFooter>
+          <DialogFooter>
+            <Button type="button" variant="outline" onClick={() => onClose()}>
+              Cancel
+            </Button>
+            <Button
+                type="submit"
+                disabled={!isValid}
+                className="bg-emerald-500 hover:bg-emerald-600"
+            >
+              {isEdit ? 'Save Changes' : 'Create Site'}
+            </Button>
+          </DialogFooter>
+        </form>
       </>
   );
 }

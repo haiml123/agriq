@@ -1,13 +1,13 @@
 import {
+  ConflictException,
   Injectable,
   NotFoundException,
-  ConflictException,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import {
   CreateCommodityTypeDto,
-  UpdateCommodityTypeDto,
   ListCommodityTypesQueryDto,
+  UpdateCommodityTypeDto,
 } from './dto';
 
 @Injectable()
@@ -31,7 +31,7 @@ export class CommodityTypeService {
         name: dto.name,
         description: dto.description,
         createdBy: userId,
-      },
+      } as any,
     });
   }
 

@@ -10,7 +10,12 @@ import { CreateUserDto, ListUsersQueryDto } from './dto';
 import { Prisma, role_type, User } from '@prisma/client';
 import { UpdateUserDto } from './dto/update-user.dto';
 import * as bcrypt from 'bcryptjs';
-import { getOrganizationFilter, isSuperAdmin, validateUserManagementPermission, } from './user.utils';
+import {
+  getOrganizationFilter,
+  isSuperAdmin,
+  validateUserManagementPermission,
+} from './user.utils';
+import { AppUser } from '../types/user.type';
 
 @Injectable()
 export class UserService {
@@ -18,7 +23,7 @@ export class UserService {
     console.log('UserService created');
   }
 
-  async create(currentUser: User, dto: CreateUserDto) {
+  async create(currentUser: AppUser, dto: CreateUserDto) {
     const { siteIds, role, organizationId, password, ...userData } = dto;
 
     // Validate password is provided
@@ -85,18 +90,16 @@ export class UserService {
         role,
         organization: { connect: { id: organizationId } },
         site: { connect: { id: siteId } },
-        grantedByUserId: currentUser.id,
+        grantedByUserId: currentUser.id as string,
       }));
     } else {
       // Org-level access (all sites): siteId = null
       roleRecords = [
         {
           role,
-          organization: organizationId
-            ? { connect: { id: organizationId } }
-            : undefined,
+          organization: { connect: { id: organizationId } },
           site: undefined,
-          grantedByUserId: currentUser.id,
+          grantedByUserId: currentUser.id as string,
         },
       ];
     }
@@ -117,7 +120,7 @@ export class UserService {
     });
   }
 
-  async update(currentUser: User, id: string, dto: UpdateUserDto) {
+  async update(currentUser: AppUser, id: string, dto: UpdateUserDto) {
     const { siteIds, role, password, ...userData } = dto;
 
     // Find existing user
@@ -188,7 +191,7 @@ export class UserService {
           role: newRole,
           organizationId,
           siteId,
-          grantedByUserId: currentUser.id,
+          grantedByUserId: currentUser.id as string,
         }));
       } else {
         // Org-level access (all sites): siteId = null
@@ -199,7 +202,7 @@ export class UserService {
             organizationId:
               newRole === role_type.SUPER_ADMIN ? null : organizationId,
             siteId: null,
-            grantedByUserId: currentUser.id,
+            grantedByUserId: currentUser.id as string,
           },
         ];
       }
@@ -219,7 +222,7 @@ export class UserService {
     });
   }
 
-  async findAll(user: User, query: ListUsersQueryDto) {
+  async findAll(user: AppUser, query: ListUsersQueryDto) {
     const { organizationId, status, search, page = 1, limit = 10 } = query;
 
     const isRootAdmin = isSuperAdmin(user);

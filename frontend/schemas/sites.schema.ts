@@ -52,7 +52,7 @@ export const compoundSchema = z.object({
 
 export const createCompoundSchema = z.object({
   name: z.string().min(1).max(100),
-  siteId: z.string(),
+  siteId: z.string().optional(),
   status: entityStatusSchema.optional(),
 });
 
@@ -82,7 +82,7 @@ export const siteSchema = z.object({
 
 export const createSiteSchema = z.object({
   name: z.string().min(1).max(100),
-  organizationId: z.string(),
+  organizationId: z.string().optional(),
   address: z.string().max(255).optional(),
 });
 

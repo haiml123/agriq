@@ -23,6 +23,7 @@ const defaultTabs: Tab[] = [
     { label: "Sites", href: "/sites" },
     { label: "Alerts", href: "/alerts" },
     { label: "Settings", href: "/settings" },
+    { label: "Admin", href: "/admin" },
 ]
 
 export function AppHeader({ title, subtitle, tabs = defaultTabs }: AppHeaderProps) {
