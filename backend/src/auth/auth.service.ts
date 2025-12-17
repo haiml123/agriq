@@ -1,14 +1,20 @@
-import { BadRequestException, Injectable, UnauthorizedException, } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../prisma/prisma.service';
 import * as bcrypt from 'bcryptjs';
-import { User } from '@prisma/client';
+import { User, user_role } from '@prisma/client';
 import { UserService } from '../user/user.service';
 
 export interface JwtPayload {
   sub: string;
   email: string;
+  role?: user_role;
+  organizationId?: string | null;
 }
 
 export interface Tokens {
@@ -51,7 +57,12 @@ export class AuthService {
   }
 
   async login(user: Omit<User, 'password'>): Promise<AuthResponse> {
-    const payload: JwtPayload = { sub: user.id, email: user.email };
+    const payload: JwtPayload = {
+      sub: user.id,
+      email: user.email,
+      role: user.userRole,
+      organizationId: user.organizationId,
+    };
 
     const accessToken = this.jwtService.sign(payload, {
       expiresIn: '1005m',
@@ -124,6 +135,8 @@ export class AuthService {
     const payload: JwtPayload = {
       sub: storedToken.user.id,
       email: storedToken.user.email,
+      role: storedToken.user.userRole,
+      organizationId: storedToken.user.organizationId,
     };
 
     const accessToken = this.jwtService.sign(payload, {

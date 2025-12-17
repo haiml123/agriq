@@ -1,18 +1,14 @@
 import {
   IsEmail,
-  IsString,
   IsInt,
   IsOptional,
   IsPositive,
+  IsString,
 } from 'class-validator';
 
 export class CreateInviteDto {
   @IsEmail({}, { message: 'Please provide a valid email address' })
   email: string;
-
-  @IsInt()
-  @IsPositive()
-  roleId: number;
 
   @IsString()
   organizationId: string;

@@ -23,7 +23,7 @@ import { SiteModal } from '@/components/modals/site.modal'
 
 export default function SitesPage() {
     const modal = useModal()
-    const { user, isSuperAdmin, isLoading: isCurrentUserLoading } = useCurrentUser()
+    const { user, isSuperAdmin, isAdmin, isLoading: isCurrentUserLoading } = useCurrentUser()
     const {
         getSites,
         createSite,
@@ -43,6 +43,8 @@ export default function SitesPage() {
 
     const [sites, setSites] = useState<Site[]>([])
     const [selectedOrganizationId, setSelectedOrganizationId] = useState<string>('all')
+    const canCreateSite = isSuperAdmin || isAdmin
+    const headingTitle = canCreateSite ? 'All Sites' : 'My Sites'
 
     const fetchSites = useCallback(async () => {
         if (isCurrentUserLoading || !user) return
@@ -65,6 +67,7 @@ export default function SitesPage() {
     }, [fetchSites])
 
     const openCreateSiteModal = async () => {
+        if (!canCreateSite) return
         const result = await modal.open<{ name: string; address?: string } | null>((onClose) => (
             <SiteModal onClose={onClose} />
         ))
@@ -253,27 +256,29 @@ export default function SitesPage() {
                 <div className="flex items-center gap-3">
                     <SidebarTrigger />
                     <div>
-                        <h1 className="text-2xl font-semibold text-foreground">Sites</h1>
+                        <h1 className="text-2xl font-semibold text-foreground">{headingTitle}</h1>
                         <p className="text-sm text-muted-foreground mt-1">
-                            Manage sites, compounds, and cells
+                            {canCreateSite ? 'Manage sites, compounds, and cells' : 'View your assigned sites'}
                         </p>
                     </div>
                 </div>
-                <Button
-                    onClick={openCreateSiteModal}
-                    disabled={isProcessing}
-                    className="bg-emerald-500 hover:bg-emerald-600"
-                >
-                    <Plus className="w-4 h-4 mr-2" />
-                    Add Site
-                </Button>
+                {canCreateSite && (
+                    <Button
+                        onClick={openCreateSiteModal}
+                        disabled={isProcessing}
+                        className="bg-emerald-500 hover:bg-emerald-600"
+                    >
+                        <Plus className="w-4 h-4 mr-2" />
+                        Add Site
+                    </Button>
+                )}
             </div>
 
             <div className="bg-card border border-border rounded-lg overflow-hidden">
                 <div className="flex items-center justify-between gap-4 p-4 border-b border-border">
                     <div>
                         <p className="text-sm text-muted-foreground">
-                            {sites.length} site{sites.length !== 1 ? 's' : ''} • {totalCompounds} compound{totalCompounds !== 1 ? 's' : ''} • {totalCells} cell{totalCells !== 1 ? 's' : ''}
+                            {sites?.length} site{sites?.length !== 1 ? 's' : ''} • {totalCompounds} compound{totalCompounds !== 1 ? 's' : ''} • {totalCells} cell{totalCells !== 1 ? 's' : ''}
                         </p>
                     </div>
                     <div className="flex items-center gap-3">
@@ -292,7 +297,7 @@ export default function SitesPage() {
                         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-500 mx-auto mb-4" />
                         <p className="text-sm text-muted-foreground">Loading sites...</p>
                     </div>
-                ) : sites.length > 0 ? (
+                ) : sites?.length > 0 ? (
                     <SitesList
                         sites={sites}
                         onEditSite={handleEditSite}
@@ -309,8 +314,20 @@ export default function SitesPage() {
                         <Building2 className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
                         <h3 className="font-medium text-foreground mb-1">No sites yet</h3>
                         <p className="text-sm text-muted-foreground mb-4">
-                            Get started by creating your first site
+                            {canCreateSite
+                                ? 'Get started by creating your first site'
+                                : 'You have not been assigned to any sites yet'}
                         </p>
+                        {canCreateSite && (
+                            <Button
+                                onClick={openCreateSiteModal}
+                                disabled={isProcessing}
+                                className="bg-emerald-500 hover:bg-emerald-600"
+                            >
+                                <Plus className="w-4 h-4 mr-2" />
+                                Add Site
+                            </Button>
+                        )}
                     </div>
                 )}
             </div>

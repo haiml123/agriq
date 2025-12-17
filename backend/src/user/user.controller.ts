@@ -15,7 +15,7 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { CurrentUser } from '../auth/decorators';
-import { role_type } from '@prisma/client';
+import { user_role } from '@prisma/client';
 import * as userType from '../types/user.type';
 
 @UseGuards(JwtAuthGuard, RolesGuard)
@@ -25,7 +25,7 @@ export class UserController {
     console.log('user controller');
   }
 
-  @Roles(role_type.SUPER_ADMIN, role_type.ORG_ADMIN)
+  @Roles(user_role.SUPER_ADMIN, user_role.ADMIN)
   @Get()
   findAll(
     @Query() query: ListUsersQueryDto,
@@ -35,7 +35,7 @@ export class UserController {
     return this.userService.findAll(user, query);
   }
 
-  @Roles(role_type.SUPER_ADMIN, role_type.ORG_ADMIN)
+  @Roles(user_role.SUPER_ADMIN, user_role.ADMIN)
   @Post()
   create(@Body() dto: CreateUserDto, @CurrentUser() user: userType.AppUser) {
     return this.userService.create(user, dto);

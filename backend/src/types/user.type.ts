@@ -1,5 +1,6 @@
-import { User, UserRole } from '@prisma/client';
+import { Organization, SiteUser, User } from '@prisma/client';
 
 export type AppUser = User & {
-  roles: UserRole[];
+  siteUsers: SiteUser[];
+  organization?: Organization | null;
 };

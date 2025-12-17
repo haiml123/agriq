@@ -9,7 +9,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { EmailService } from '../email/email.service';
 import { AcceptInviteDto, CreateInviteDto } from './dto';
 import * as bcrypt from 'bcryptjs';
-import { invite_status, role_type, Site } from '@prisma/client';
+import { invite_status, Site, user_role } from '@prisma/client';
 
 @Injectable()
 export class InvitesService {
@@ -26,7 +26,6 @@ export class InvitesService {
   async create(createInviteDto: CreateInviteDto, createdById: string) {
     const {
       email,
-      roleId,
       organizationId,
       siteId,
       expiresInDays = 7,
@@ -57,15 +56,6 @@ export class InvitesService {
           'Site does not belong to this organization',
         );
       }
-    }
-
-    // Check if role exists
-    const role = await this.prisma.role.findUnique({
-      where: { id: roleId },
-    });
-
-    if (!role) {
-      throw new NotFoundException('Role not found');
     }
 
     // Check if user already exists with this email
@@ -107,14 +97,12 @@ export class InvitesService {
       data: {
         token: crypto.randomUUID(),
         email,
-        roleId,
         organizationId,
         siteId,
         expiresAt,
         createdById,
       },
       include: {
-        role: true,
         organization: true,
         site: true,
         createdBy: {
@@ -133,7 +121,7 @@ export class InvitesService {
       email: invite.email,
       inviteUrl,
       organizationName: organization.name,
-      roleName: role.name,
+      roleName: site ? 'Operator' : 'Member',
       siteName: site?.name,
       inviterName: inviter?.name || 'An administrator',
       expiresAt: invite.expiresAt,
@@ -159,7 +147,6 @@ export class InvitesService {
     const invite = await this.prisma.invite.findUnique({
       where: { token },
       include: {
-        role: true,
         organization: true,
         site: true,
       },
@@ -186,7 +173,7 @@ export class InvitesService {
     return {
       id: invite.id,
       email: invite.email,
-      role: invite.role.name,
+      role: user_role.OPERATOR,
       organization: invite.organization.name,
       site: invite.site?.name || null,
       expiresAt: invite.expiresAt,
@@ -202,7 +189,6 @@ export class InvitesService {
     const invite = await this.prisma.invite.findUnique({
       where: { token },
       include: {
-        role: true,
         organization: true,
         site: true,
       },
@@ -244,19 +230,19 @@ export class InvitesService {
           name: `${firstName} ${lastName}`,
           phone,
           organizationId: invite.organizationId,
+          userRole: user_role.OPERATOR,
         },
       });
 
-      await tx.userRole.create({
-        data: {
-          userId: user.id,
-          roleId: invite.roleId,
-          organizationId: invite.organizationId,
-          siteId: invite.siteId,
-          grantedByUserId: invite.createdById,
-          role: role_type.OPERATOR,
-        },
-      });
+      if (invite.siteId) {
+        await tx.siteUser.create({
+          data: {
+            userId: user.id,
+            siteId: invite.siteId,
+            siteRole: user_role.OPERATOR,
+          },
+        });
+      }
 
       await tx.invite.update({
         where: { id: invite.id },
@@ -275,7 +261,7 @@ export class InvitesService {
     return {
       user: userWithoutPassword,
       organization: invite.organization.name,
-      role: invite.role.name,
+      role: user_role.OPERATOR,
     };
   }
 
@@ -289,7 +275,6 @@ export class InvitesService {
         ...(status && { status }),
       },
       include: {
-        role: true,
         site: true,
         createdBy: {
           select: {
@@ -334,7 +319,6 @@ export class InvitesService {
       where: { id: inviteId },
       data: { status: 'REVOKED' },
       include: {
-        role: true,
         organization: true,
         site: true,
       },
@@ -348,7 +332,6 @@ export class InvitesService {
     const invite = await this.prisma.invite.findUnique({
       where: { id: inviteId },
       include: {
-        role: true,
         organization: true,
         site: true,
       },
@@ -385,7 +368,6 @@ export class InvitesService {
         expiresAt,
       },
       include: {
-        role: true,
         organization: true,
         site: true,
       },
@@ -397,8 +379,8 @@ export class InvitesService {
       email: updatedInvite.email,
       inviteUrl,
       organizationName: invite.organization.name,
-      roleName: invite.role.name,
-      siteName: invite.site?.name,
+      roleName: updatedInvite.site ? 'Operator' : 'Member',
+      siteName: updatedInvite.site?.name,
       inviterName: resender?.name || 'An administrator',
       expiresAt,
     });

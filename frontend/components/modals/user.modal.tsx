@@ -11,11 +11,8 @@ import { User } from '@/schemas/user.schema'
 import { Organization } from '@/schemas/organization.schema'
 import { Site } from '@/schemas/sites.schema'
 import { useCurrentUser } from '@/hooks'
-import { Building2, Loader2 } from 'lucide-react'
+import { Loader2 } from 'lucide-react'
 import { RoleType, RoleTypeEnum } from '@/schemas/common.schema';
-
-// Internal marker for "All Sites" selection (org-level access)
-const ALL_SITES_OPTION = '__ALL_SITES__'
 
 interface UserModalProps {
     user?: User
@@ -34,21 +31,12 @@ export function UserModal({ user, onClose }: UserModalProps) {
 
     // Determine initial site selection based on existing user roles
     const getInitialSiteIds = (): string[] => {
-        if (!user?.roles?.length) return [ALL_SITES_OPTION]
-        // Only check OPERATOR roles for site-level access
-        const operatorRoles = user.roles.filter(r => r.role === 'OPERATOR')
-        if (operatorRoles.length === 0) return [ALL_SITES_OPTION]
-
-        // If any OPERATOR role has siteId = null, it's org-level access
-        const hasOrgLevelAccess = operatorRoles.some(r => !r.siteId)
-        if (hasOrgLevelAccess) return [ALL_SITES_OPTION]
-
-        // Otherwise, return specific site IDs
-        return operatorRoles.map(r => r.siteId).filter(Boolean) as string[]
+        if (!user?.siteUsers?.length) return []
+        return user.siteUsers.map((assignment) => assignment.siteId)
     }
 
     const getInitialRole = (): RoleType => {
-        return (user?.roles?.[0]?.role) || RoleTypeEnum.OPERATOR
+        return user?.userRole || RoleTypeEnum.OPERATOR
     }
 
     const [formData, setFormData] = useState({
@@ -67,7 +55,6 @@ export function UserModal({ user, onClose }: UserModalProps) {
     const [sitesModified, setSitesModified] = useState(false)
 
     const isEditing = !!user
-    const isAllSitesSelected = formData.siteIds.includes(ALL_SITES_OPTION)
 
     // Fetch organizations only for super admin
     useEffect(() => {
@@ -111,45 +98,30 @@ export function UserModal({ user, onClose }: UserModalProps) {
         }
     }, [isSuperAdmin, appUser?.organizationId])
 
-    const handleAllSitesToggle = () => {
-        setSitesModified(true)
-        if (isAllSitesSelected) {
-            // Deselect "All Sites" - clear selection
-            setFormData(prev => ({ ...prev, siteIds: [] }))
-        } else {
-            // Select "All Sites" - clear individual sites
-            setFormData(prev => ({ ...prev, siteIds: [ALL_SITES_OPTION] }))
-        }
-    }
-
     const handleSiteToggle = (siteId: string) => {
         setSitesModified(true)
         setFormData(prev => {
             const newSiteIds = prev.siteIds.includes(siteId)
                 ? prev.siteIds.filter(id => id !== siteId)
-                : [...prev.siteIds.filter(id => id !== ALL_SITES_OPTION), siteId]
+                : [...prev.siteIds, siteId]
             return { ...prev, siteIds: newSiteIds }
         })
     }
 
     const handleRoleChange = (value: RoleType) => {
         setRoleModified(true)
-        setSitesModified(true) // Role change implies sites change too
+        setSitesModified(true)
         setFormData({
             ...formData,
             role: value,
-            siteIds: [ALL_SITES_OPTION]
+            siteIds: value === RoleTypeEnum.OPERATOR ? formData.siteIds : []
         })
     }
 
     const handleSubmit = async () => {
-        // Convert ALL_SITES_OPTION to empty array for backend
-        // Backend logic: empty siteIds = org-level access (siteId: null in UserRole)
-        // Backend logic: populated siteIds = site-level access (one UserRole per site)
-        const actualSiteIds = isAllSitesSelected ? [] : formData.siteIds
+        const actualSiteIds = formData.siteIds
 
         if (isEditing) {
-            // For updates: only send fields that changed
             const payload: Record<string, any> = {
                 name: formData.name,
                 phone: formData.phone || undefined,
@@ -161,12 +133,9 @@ export function UserModal({ user, onClose }: UserModalProps) {
                 payload.password = formData.password
             }
 
-            // Only include role/siteIds if they were modified
-            // Backend checks: if (role || siteIds) { ... rebuild roles }
             if (roleModified || sitesModified) {
                 payload.role = formData.role
-                // Only send siteIds for OPERATOR role
-                if (formData.role === 'OPERATOR') {
+                if (formData.role === RoleTypeEnum.OPERATOR) {
                     payload.siteIds = actualSiteIds
                 }
             }
@@ -176,7 +145,6 @@ export function UserModal({ user, onClose }: UserModalProps) {
                 onClose(response.data)
             }
         } else {
-            // For create: send all required fields
             const payload: Record<string, any> = {
                 name: formData.name,
                 email: formData.email,
@@ -187,8 +155,7 @@ export function UserModal({ user, onClose }: UserModalProps) {
                 languagePreference: formData.languagePreference || undefined,
             }
 
-            // Only include siteIds for OPERATOR role
-            if (formData.role === 'OPERATOR') {
+            if (formData.role === RoleTypeEnum.OPERATOR) {
                 payload.siteIds = actualSiteIds
             }
 
@@ -199,20 +166,22 @@ export function UserModal({ user, onClose }: UserModalProps) {
         }
     }
 
-    const hasValidSiteSelection = isAllSitesSelected || formData.siteIds.length > 0
+    const hasValidSiteSelection = formData.role !== RoleTypeEnum.OPERATOR || formData.siteIds.length > 0
+
+    const requiresOrganization = formData.role !== RoleTypeEnum.SUPER_ADMIN
 
     const isValid =
         formData.name.trim() &&
         formData.email.trim() &&
-        formData.organizationId &&
+        (!requiresOrganization || formData.organizationId) &&
         formData.role &&
         (isEditing || formData.password.trim()) &&
-        (formData.role !== 'OPERATOR' || hasValidSiteSelection)
+        hasValidSiteSelection
 
     // Determine which roles the current user can assign
     const availableRoles = isSuperAdmin
-        ? ['SUPER_ADMIN', 'ORG_ADMIN', 'OPERATOR']
-        : ['ORG_ADMIN', 'OPERATOR']
+        ? [RoleTypeEnum.SUPER_ADMIN, RoleTypeEnum.ADMIN, RoleTypeEnum.OPERATOR]
+        : [RoleTypeEnum.ADMIN, RoleTypeEnum.OPERATOR]
 
     return (
         <>
@@ -276,7 +245,7 @@ export function UserModal({ user, onClose }: UserModalProps) {
                             onValueChange={(value) => setFormData({
                                 ...formData,
                                 organizationId: value,
-                                siteIds: [ALL_SITES_OPTION]
+                                siteIds: []
                             })}
                             disabled={isEditing}
                         >
@@ -304,27 +273,24 @@ export function UserModal({ user, onClose }: UserModalProps) {
                             <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                            {availableRoles.includes('SUPER_ADMIN') && (
-                                <SelectItem value="SUPER_ADMIN">Super Admin</SelectItem>
+                            {availableRoles.includes(RoleTypeEnum.SUPER_ADMIN) && (
+                                <SelectItem value={RoleTypeEnum.SUPER_ADMIN}>Super Admin</SelectItem>
                             )}
-                            <SelectItem value="ORG_ADMIN">Admin</SelectItem>
-                            <SelectItem value="OPERATOR">Operator</SelectItem>
+                            <SelectItem value={RoleTypeEnum.ADMIN}>Admin</SelectItem>
+                            <SelectItem value={RoleTypeEnum.OPERATOR}>Operator</SelectItem>
                         </SelectContent>
                     </Select>
                 </div>
 
-                {/* Site Access - only for OPERATOR role */}
-                {formData.role === 'OPERATOR' && (
+                {formData.role === RoleTypeEnum.OPERATOR && (
                     <div className="space-y-3">
                         <div className="flex items-center justify-between">
                             <label className="text-sm font-medium text-foreground">
                                 Site Access *
                             </label>
-                            {!isAllSitesSelected && formData.siteIds.length > 0 && (
-                                <span className="text-xs text-muted-foreground">
-                                    {formData.siteIds.length} site{formData.siteIds.length !== 1 ? 's' : ''} selected
-                                </span>
-                            )}
+                            <span className="text-xs text-muted-foreground">
+                                {formData.siteIds.length} site{formData.siteIds.length !== 1 ? 's' : ''} selected
+                            </span>
                         </div>
 
                         {isLoadingSites ? (
@@ -334,45 +300,20 @@ export function UserModal({ user, onClose }: UserModalProps) {
                             </div>
                         ) : (
                             <div className="border rounded-lg overflow-hidden bg-muted/30">
-                                {/* All Sites Option - First and separate */}
-                                <label
-                                    className={`flex items-center gap-3 py-3 px-3 cursor-pointer transition-colors border-b ${
-                                        isAllSitesSelected
-                                            ? 'bg-emerald-500/10'
-                                            : 'hover:bg-muted/50'
-                                    }`}
-                                >
-                                    <Checkbox
-                                        checked={isAllSitesSelected}
-                                        onCheckedChange={handleAllSitesToggle}
-                                    />
-                                    <Building2 className="w-4 h-4 text-emerald-500" />
-                                    <div>
-                                        <span className="text-sm font-medium">All Sites</span>
-                                        <p className="text-xs text-muted-foreground">
-                                            Access to all current and future sites
-                                        </p>
-                                    </div>
-                                </label>
-
-                                {/* Individual Sites */}
                                 {sites.length > 0 ? (
                                     <div className="max-h-40 overflow-y-auto">
                                         {sites.map((site) => (
                                             <label
                                                 key={site.id}
                                                 className={`flex items-center gap-3 py-2.5 px-3 cursor-pointer transition-colors ${
-                                                    isAllSitesSelected
-                                                        ? 'opacity-50 cursor-not-allowed bg-muted/20'
-                                                        : formData.siteIds.includes(site.id)
-                                                            ? 'bg-emerald-500/5 hover:bg-emerald-500/10'
-                                                            : 'hover:bg-muted/50'
+                                                    formData.siteIds.includes(site.id)
+                                                        ? 'bg-emerald-500/5 hover:bg-emerald-500/10'
+                                                        : 'hover:bg-muted/50'
                                                 }`}
                                             >
                                                 <Checkbox
-                                                    checked={isAllSitesSelected || formData.siteIds.includes(site.id)}
+                                                    checked={formData.siteIds.includes(site.id)}
                                                     onCheckedChange={() => handleSiteToggle(site.id)}
-                                                    disabled={isAllSitesSelected}
                                                 />
                                                 <span className="text-sm">{site.name}</span>
                                             </label>
@@ -393,7 +334,7 @@ export function UserModal({ user, onClose }: UserModalProps) {
 
                         {!hasValidSiteSelection && (
                             <p className="text-xs text-destructive">
-                                Please select site access level
+                                Please select at least one site
                             </p>
                         )}
                     </div>
