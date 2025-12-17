@@ -278,7 +278,7 @@ export default function SitesPage() {
                 <div className="flex items-center justify-between gap-4 p-4 border-b border-border">
                     <div>
                         <p className="text-sm text-muted-foreground">
-                            {sites.length} site{sites.length !== 1 ? 's' : ''} • {totalCompounds} compound{totalCompounds !== 1 ? 's' : ''} • {totalCells} cell{totalCells !== 1 ? 's' : ''}
+                            {sites?.length} site{sites?.length !== 1 ? 's' : ''} • {totalCompounds} compound{totalCompounds !== 1 ? 's' : ''} • {totalCells} cell{totalCells !== 1 ? 's' : ''}
                         </p>
                     </div>
                     <div className="flex items-center gap-3">
@@ -297,7 +297,7 @@ export default function SitesPage() {
                         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-500 mx-auto mb-4" />
                         <p className="text-sm text-muted-foreground">Loading sites...</p>
                     </div>
-                ) : sites.length > 0 ? (
+                ) : sites?.length > 0 ? (
                     <SitesList
                         sites={sites}
                         onEditSite={handleEditSite}

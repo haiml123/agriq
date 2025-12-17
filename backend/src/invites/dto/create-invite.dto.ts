@@ -1,4 +1,10 @@
-import { IsEmail, IsString, IsOptional } from 'class-validator';
+import {
+  IsEmail,
+  IsInt,
+  IsOptional,
+  IsPositive,
+  IsString,
+} from 'class-validator';
 
 export class CreateInviteDto {
   @IsEmail({}, { message: 'Please provide a valid email address' })
