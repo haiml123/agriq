@@ -14,6 +14,8 @@ import {
   CreateCommodityTypeDto,
   UpdateCommodityTypeDto,
   ListCommodityTypesQueryDto,
+  CreateLookupTableDto,
+  UpdateLookupTableDto,
 } from './dto';
 import { JwtAuthGuard } from '../auth/guards';
 import { CurrentUser, Public } from '../auth/decorators';
@@ -54,5 +56,33 @@ export class CommodityTypeController {
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.commodityTypeService.remove(id);
+  }
+
+  @Get(':id/lookup-table')
+  getLookupTable(@Param('id') id: string) {
+    return this.commodityTypeService.getLookupTable(id);
+  }
+
+  @Post(':id/lookup-table')
+  createLookupTable(
+    @Param('id') id: string,
+    @Body() dto: CreateLookupTableDto,
+    @CurrentUser('id') userId: string,
+  ) {
+    return this.commodityTypeService.createLookupTable(id, dto, userId);
+  }
+
+  @Patch(':id/lookup-table')
+  updateLookupTable(
+    @Param('id') id: string,
+    @Body() dto: UpdateLookupTableDto,
+    @CurrentUser('id') userId: string,
+  ) {
+    return this.commodityTypeService.updateLookupTable(id, dto, userId);
+  }
+
+  @Delete(':id/lookup-table')
+  deleteLookupTable(@Param('id') id: string) {
+    return this.commodityTypeService.deleteLookupTable(id);
   }
 }

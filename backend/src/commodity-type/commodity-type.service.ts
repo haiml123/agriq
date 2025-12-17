@@ -8,6 +8,8 @@ import {
   CreateCommodityTypeDto,
   ListCommodityTypesQueryDto,
   UpdateCommodityTypeDto,
+  CreateLookupTableDto,
+  UpdateLookupTableDto,
 } from './dto';
 
 @Injectable()
@@ -156,5 +158,89 @@ export class CommodityTypeService {
     return this.prisma.commodityType.delete({
       where: { id },
     });
+  }
+
+  async getLookupTable(commodityTypeId: string) {
+    await this.ensureCommodityTypeExists(commodityTypeId);
+
+    const lookupTable = await this.prisma.lookupTable.findUnique({
+      where: { commodityTypeId },
+    });
+
+    if (!lookupTable) {
+      throw new NotFoundException(
+        `Lookup table for commodity type ID "${commodityTypeId}" not found`,
+      );
+    }
+
+    return lookupTable;
+  }
+
+  async createLookupTable(
+    commodityTypeId: string,
+    dto: CreateLookupTableDto,
+    userId?: string,
+  ) {
+    await this.ensureCommodityTypeExists(commodityTypeId);
+
+    const existing = await this.prisma.lookupTable.findUnique({
+      where: { commodityTypeId },
+    });
+
+    if (existing) {
+      throw new ConflictException(
+        `Lookup table already exists for commodity type ID "${commodityTypeId}"`,
+      );
+    }
+
+    return this.prisma.lookupTable.create({
+      data: {
+        name: dto.name,
+        description: dto.description,
+        data: dto.data,
+        commodityTypeId,
+        createdBy: userId,
+      },
+    });
+  }
+
+  async updateLookupTable(
+    commodityTypeId: string,
+    dto: UpdateLookupTableDto,
+    userId?: string,
+  ) {
+    await this.getLookupTable(commodityTypeId);
+
+    return this.prisma.lookupTable.update({
+      where: { commodityTypeId },
+      data: {
+        ...(dto.name && { name: dto.name }),
+        ...(dto.description !== undefined && { description: dto.description }),
+        ...(dto.data !== undefined && { data: dto.data }),
+        updatedBy: userId,
+      },
+    });
+  }
+
+  async deleteLookupTable(commodityTypeId: string) {
+    await this.getLookupTable(commodityTypeId);
+
+    return this.prisma.lookupTable.delete({
+      where: { commodityTypeId },
+    });
+  }
+
+  private async ensureCommodityTypeExists(commodityTypeId: string) {
+    const commodityType = await this.prisma.commodityType.findUnique({
+      where: { id: commodityTypeId },
+    });
+
+    if (!commodityType) {
+      throw new NotFoundException(
+        `Commodity type with ID "${commodityTypeId}" not found`,
+      );
+    }
+
+    return commodityType;
   }
 }
