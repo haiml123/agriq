@@ -4,14 +4,16 @@ import { useState } from 'react';
 import { DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import type { Trigger } from '@/schemas/trigger.schema';
 import { TriggerEditorForm } from '@/components/triggers/trigger-editor/trigger-editor-form';
+import type { Organization } from '@/schemas/organization.schema';
 
 interface TriggerModalProps {
     trigger?: Trigger | null;
     onSubmit: (trigger: Trigger) => Promise<Trigger | null>;
     onClose: (result?: Trigger | null) => void;
+    organizations?: Organization[];
 }
 
-export function TriggerModal({ trigger, onSubmit, onClose }: TriggerModalProps) {
+export function TriggerModal({ trigger, onSubmit, onClose, organizations }: TriggerModalProps) {
     const [isLoading, setIsLoading] = useState(false);
 
     const handleSave = async (data: Trigger) => {
@@ -42,6 +44,7 @@ export function TriggerModal({ trigger, onSubmit, onClose }: TriggerModalProps) 
                     onSave={handleSave}
                     onCancel={() => onClose()}
                     isLoading={isLoading}
+                    organizations={organizations}
                 />
             </div>
         </>

@@ -25,7 +25,8 @@ export function ScopeSelector({
 
     const handleScopeTypeChange = (newScopeType: ScopeType) => {
         if (newScopeType === ScopeTypeEnum.ORGANIZATION) {
-            onScopeChange({ scopeType: newScopeType, organizationId });
+            const defaultOrgId = organizationId ?? organizations?.[0]?.id;
+            onScopeChange({ scopeType: newScopeType, organizationId: defaultOrgId });
         } else {
             onScopeChange({ scopeType: newScopeType, organizationId: undefined });
         }
@@ -48,7 +49,7 @@ export function ScopeSelector({
                         <SelectValue placeholder="Select scope" />
                     </SelectTrigger>
                     <SelectContent>
-                        <SelectItem value={ScopeTypeEnum.ALL}>All Sites</SelectItem>
+                        <SelectItem value={ScopeTypeEnum.ALL}>All Organizations</SelectItem>
                         <SelectItem value={ScopeTypeEnum.ORGANIZATION}>Specific Organization</SelectItem>
                     </SelectContent>
                 </Select>
@@ -65,6 +66,11 @@ export function ScopeSelector({
                             <SelectValue placeholder="Select organization" />
                         </SelectTrigger>
                         <SelectContent>
+                            {(!organizations || organizations.length === 0) && (
+                                <SelectItem value="" disabled>
+                                    No organizations available
+                                </SelectItem>
+                            )}
                             {organizations?.map((org) => (
                                 <SelectItem key={org.id} value={org.id}>
                                     {org.name}

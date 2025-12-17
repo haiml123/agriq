@@ -9,12 +9,16 @@ import { TriggerModal } from '@/components/modals/trigger.modal';
 import { TriggerList } from '@/components/triggers';
 import type { Trigger } from '@/schemas/trigger.schema';
 import { useTriggerApi } from '@/hooks/use-trigger-api';
+import { useOrganizationApi } from '@/hooks/use-organization-api';
+import type { Organization } from '@/schemas/organization.schema';
 
 export default function TriggersPage() {
     const modal = useModal();
     const { getList, create, update, toggleActive, remove, isLoading: isApiLoading } = useTriggerApi();
+    const { getList: getOrganizationList, isLoading: isOrgLoading } = useOrganizationApi();
     const [triggers, setTriggers] = useState<Trigger[]>([]);
     const [isLoading, setIsLoading] = useState(false);
+    const [organizations, setOrganizations] = useState<Organization[]>([]);
 
     const loadTriggers = useCallback(async () => {
         setIsLoading(true);
@@ -31,6 +35,16 @@ export default function TriggersPage() {
     useEffect(() => {
         void loadTriggers();
     }, [loadTriggers]);
+
+    useEffect(() => {
+        const loadOrganizations = async () => {
+            const response = await getOrganizationList();
+            if (response?.data?.items) {
+                setOrganizations(response.data.items);
+            }
+        };
+        void loadOrganizations();
+    }, [getOrganizationList]);
 
     const saveTrigger = useCallback(
         async (payload: Trigger, existing?: Trigger | null) => {
@@ -49,6 +63,7 @@ export default function TriggersPage() {
                     trigger={trigger}
                     onSubmit={(data) => saveTrigger(data, trigger ?? null)}
                     onClose={onClose}
+                    organizations={organizations}
                 />
             ),
             // { size: 'xl' }
@@ -112,7 +127,7 @@ export default function TriggersPage() {
                 </div>
 
                 <div className="p-4">
-                    {isLoading || isApiLoading ? (
+                    {isLoading || isApiLoading || isOrgLoading ? (
                         <p className="text-sm text-muted-foreground">Loading triggers...</p>
                     ) : (
                         <TriggerList

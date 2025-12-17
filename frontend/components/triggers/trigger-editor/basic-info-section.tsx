@@ -5,11 +5,13 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { SeverityEnum } from '@/schemas/common.schema';
 import { ScopeSelector } from '@/components/triggers';
+import type { Organization } from '@/schemas/organization.schema';
 
 interface BasicInfoSectionProps {
     formData: Trigger;
     onUpdate: <K extends keyof Trigger>(field: K, value: Trigger[K]) => void;
     onScopeChange: (updates: { scopeType: Trigger['scopeType']; organizationId?: string; siteId?: string }) => void;
+    organizations?: Organization[];
 }
 
 const SEVERITY_OPTIONS = [
@@ -19,7 +21,7 @@ const SEVERITY_OPTIONS = [
     { value: SeverityEnum.CRITICAL, label: 'Critical', color: 'bg-red-500' },
 ] as const;
 
-export function BasicInfoSection({ formData, onUpdate, onScopeChange }: BasicInfoSectionProps) {
+export function BasicInfoSection({ formData, onUpdate, onScopeChange, organizations }: BasicInfoSectionProps) {
     return (
         <div className="space-y-4">
             <h3 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
@@ -63,6 +65,7 @@ export function BasicInfoSection({ formData, onUpdate, onScopeChange }: BasicInf
                     scopeType={formData.scopeType}
                     organizationId={formData.organizationId}
                     onScopeChange={onScopeChange}
+                    organizations={organizations}
                 />
             </div>
         </div>
