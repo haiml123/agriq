@@ -12,6 +12,7 @@ import { UserModule } from './user/user.module';
 import { TriggerModule } from './trigger';
 import { CommodityTypeModule } from './commodity-type';
 import { SiteModule } from './site';
+import { EventsModule } from './events';
 
 @Module({
   imports: [
@@ -29,6 +30,7 @@ import { SiteModule } from './site';
     SiteModule,
     TriggerModule,
     CommodityTypeModule,
+    EventsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

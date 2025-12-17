@@ -12,7 +12,7 @@ import { useTriggerForm } from '@/components/triggers/trigger-editor/hooks/use-t
 
 interface TriggerEditorFormProps {
     trigger: Trigger | null;
-    onSave: (trigger: Trigger) => void;
+    onSave: (trigger: Trigger) => Promise<void> | void;
     onCancel: () => void;
     isLoading?: boolean;
 }
@@ -35,10 +35,10 @@ export function TriggerEditorForm({
         validateAndSubmit,
     } = useTriggerForm(trigger);
 
-    const handleSubmit = () => {
+    const handleSubmit = async () => {
         const validatedTrigger = validateAndSubmit();
         if (validatedTrigger) {
-            onSave(validatedTrigger);
+            await onSave(validatedTrigger);
         }
     };
 

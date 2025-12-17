@@ -7,20 +7,18 @@ import { TriggerEditorForm } from '@/components/triggers/trigger-editor/trigger-
 
 interface TriggerModalProps {
     trigger?: Trigger | null;
+    onSubmit: (trigger: Trigger) => Promise<Trigger | null>;
     onClose: (result?: Trigger | null) => void;
 }
 
-export function TriggerModal({ trigger, onClose }: TriggerModalProps) {
+export function TriggerModal({ trigger, onSubmit, onClose }: TriggerModalProps) {
     const [isLoading, setIsLoading] = useState(false);
 
     const handleSave = async (data: Trigger) => {
         setIsLoading(true);
         try {
-            // TODO: Call your API here
-            // const response = await triggerApi.create(data) or triggerApi.update(trigger.id, data)
-            
-            // For now, just return the data
-            onClose(data);
+            const result = await onSubmit(data);
+            onClose(result ?? null);
         } catch (error) {
             console.error('Failed to save trigger:', error);
         } finally {
