@@ -1,110 +1,140 @@
 'use client'
 
-import { useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Input } from '@/components/ui/input'
-import { Plus, Save, Table2, Wheat } from 'lucide-react'
-import type { LookupTable } from '@/components/lookup-table'
+import { Plus, Save, Table2, Trash2, Wheat } from 'lucide-react'
 import { LookupTableEditor, TestLookup } from '@/components/lookup-table'
+import { useCommodityTypeApi } from '@/hooks/use-commodity-type-api'
+import { useLookupTableApi } from '@/hooks/use-lookup-table-api'
+import { CommodityType } from '@/schemas/commodity-type.schema'
+import { LookupTable, LookupTableData } from '@/schemas/lookup-table.schema'
 
-// Mock data - replace with API calls
-interface CommodityType {
-    id: string
-    name: string
-    description?: string | null
-    isActive: boolean
-}
-
-const mockCommodityTypes: CommodityType[] = [
-    { id: '1', name: 'Wheat', description: 'Winter and spring wheat varieties', isActive: true },
-    { id: '2', name: 'Corn', description: 'Yellow and white corn', isActive: true },
-    { id: '3', name: 'Soybeans', description: 'Various soybean cultivars', isActive: true },
-    { id: '4', name: 'Barley', description: 'Malting and feed barley', isActive: true },
-]
-
-const mockLookupTables: Record<string, LookupTable> = {
-    '1': {
-        id: 't1',
-        name: 'Wheat Storage Table',
-        commodityTypeId: '1',
-        data: {
-            tempRanges: [10, 20, 30, 40],
-            humidityRanges: [20, 40, 60, 80],
-            values: [
-                [1.2, 1.5, 1.8, 2.1],
-                [2.3, 2.7, 3.1, 3.5],
-                [3.4, 3.9, 4.4, 4.9],
-                [4.5, 5.1, 5.7, 6.3],
-            ],
-        },
-    },
-    '2': {
-        id: 't2',
-        name: 'Corn Storage Table',
-        commodityTypeId: '2',
-        data: {
-            tempRanges: [15, 25, 35, 45],
-            humidityRanges: [30, 50, 70, 90],
-            values: [
-                [0.8, 1.1, 1.4, 1.7],
-                [1.5, 1.9, 2.3, 2.7],
-                [2.2, 2.7, 3.2, 3.7],
-                [2.9, 3.5, 4.1, 4.7],
-            ],
-        },
-    },
-}
-
-function createDefaultTable(commodityTypeId: string, commodityName: string): LookupTable {
+function createDefaultTableData(): LookupTableData {
     return {
-        id: Date.now().toString(),
-        name: `${commodityName} Storage Table`,
-        commodityTypeId,
-        data: {
-            tempRanges: [10, 20, 30, 40],
-            humidityRanges: [20, 40, 60, 80],
-            values: [
-                [0, 0, 0, 0],
-                [0, 0, 0, 0],
-                [0, 0, 0, 0],
-                [0, 0, 0, 0],
-            ],
-        },
+        tempRanges: [10, 20, 30, 40],
+        humidityRanges: [20, 40, 60, 80],
+        values: [
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+        ],
     }
 }
 
 export default function LookupTablesPage() {
-    const [commodityTypes] = useState<CommodityType[]>(mockCommodityTypes)
-    const [lookupTables, setLookupTables] = useState<Record<string, LookupTable>>(mockLookupTables)
+    const {
+        getList: getCommodityTypes,
+        isLoading: isLoadingCommodityTypes,
+    } = useCommodityTypeApi()
+    const {
+        getByCommodityType,
+        create,
+        update,
+        remove,
+        isLoading: isLoadingLookup,
+        isSaving,
+        isDeleting,
+    } = useLookupTableApi()
+
+    const [commodityTypes, setCommodityTypes] = useState<CommodityType[]>([])
     const [selectedTypeId, setSelectedTypeId] = useState<string>('')
+    const [currentTable, setCurrentTable] = useState<LookupTable | null>(null)
     const [highlightedCell, setHighlightedCell] = useState<{ rowIndex: number; colIndex: number } | null>(null)
-    const [isSaving, setIsSaving] = useState(false)
+    const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
-    const selectedType = commodityTypes.find((t) => t.id === selectedTypeId)
-    const currentTable = selectedTypeId ? lookupTables[selectedTypeId] : null
+    const selectedType = useMemo(
+        () => commodityTypes.find((type) => type.id === selectedTypeId),
+        [commodityTypes, selectedTypeId]
+    )
 
-    const handleCreateTable = () => {
-        if (!selectedTypeId || !selectedType) return
-        const newTable = createDefaultTable(selectedTypeId, selectedType.name)
-        setLookupTables({ ...lookupTables, [selectedTypeId]: newTable })
+    const loadCommodityTypes = useCallback(async () => {
+        const response = await getCommodityTypes({ limit: 100, isActive: true })
+        if (response?.data && Array.isArray(response.data.items)) {
+            setCommodityTypes(response.data.items)
+        }
+    }, [getCommodityTypes])
+
+    useEffect(() => {
+        loadCommodityTypes()
+    }, [loadCommodityTypes])
+
+    useEffect(() => {
+        const fetchTable = async () => {
+            if (!selectedTypeId) {
+                setCurrentTable(null)
+                return
+            }
+
+            setErrorMessage(null)
+            setHighlightedCell(null)
+        const response = await getByCommodityType(selectedTypeId)
+
+            if (response?.data) {
+                setCurrentTable(response.data)
+            } else if (response?.status === 404) {
+                setCurrentTable(null)
+            } else if (response?.error) {
+                setErrorMessage(response.error)
+                setCurrentTable(null)
+            }
+        }
+
+        fetchTable()
+    }, [selectedTypeId, getByCommodityType])
+
+    const handleCreateTable = async () => {
+        if (!selectedType) return
+
+        const response = await create(selectedType.id, {
+            name: `${selectedType.name} Storage Table`,
+            description: selectedType.description || undefined,
+            data: createDefaultTableData(),
+        })
+
+        if (response?.data) {
+            setCurrentTable(response.data)
+            setErrorMessage(null)
+        } else if (response?.error) {
+            setErrorMessage(response.error)
+        }
     }
 
     const handleUpdateTable = (updatedTable: LookupTable) => {
-        setLookupTables({
-            ...lookupTables,
-            [updatedTable.commodityTypeId]: updatedTable,
-        })
+        setCurrentTable(updatedTable)
     }
 
     const handleSave = async () => {
         if (!currentTable) return
-        setIsSaving(true)
-        // TODO: Replace with actual API call
-        console.log('Saving table:', currentTable)
-        await new Promise((resolve) => setTimeout(resolve, 500))
-        setIsSaving(false)
+
+        const response = await update(selectedTypeId, {
+            name: currentTable.name,
+            description: currentTable.description || undefined,
+            data: currentTable.data,
+        })
+
+        if (response?.data) {
+            setCurrentTable(response.data)
+        } else if (response?.error) {
+            setErrorMessage(response.error)
+        }
     }
+
+    const handleDelete = async () => {
+        if (!currentTable) return
+        const response = await remove(selectedTypeId)
+
+        if (response?.status === 200) {
+            setCurrentTable(null)
+            setHighlightedCell(null)
+        } else if (response?.error) {
+            setErrorMessage(response.error)
+        }
+    }
+
+    const isTableLoading = isLoadingLookup && !!selectedTypeId
 
     return (
         <div className="space-y-6">
@@ -117,10 +147,21 @@ export default function LookupTablesPage() {
                     </p>
                 </div>
                 {currentTable && (
-                    <Button onClick={handleSave} disabled={isSaving}>
-                        <Save className="w-4 h-4 mr-2" />
-                        {isSaving ? 'Saving...' : 'Save Changes'}
-                    </Button>
+                    <div className="flex items-center gap-2">
+                        <Button
+                            variant="outline"
+                            onClick={handleDelete}
+                            disabled={isDeleting || isSaving}
+                            className="text-destructive"
+                        >
+                            <Trash2 className="w-4 h-4 mr-2" />
+                            Delete Table
+                        </Button>
+                        <Button onClick={handleSave} disabled={isSaving}>
+                            <Save className="w-4 h-4 mr-2" />
+                            {isSaving ? 'Saving...' : 'Save Changes'}
+                        </Button>
+                    </div>
                 )}
             </div>
 
@@ -137,6 +178,7 @@ export default function LookupTablesPage() {
                                 setSelectedTypeId(value)
                                 setHighlightedCell(null)
                             }}
+                            disabled={isLoadingCommodityTypes}
                         >
                             <SelectTrigger>
                                 <SelectValue placeholder="Select a commodity type..." />
@@ -147,8 +189,8 @@ export default function LookupTablesPage() {
                                         <div className="flex items-center gap-2">
                                             <Wheat className="w-4 h-4 text-primary" />
                                             <span>{type.name}</span>
-                                            {lookupTables[type.id] && (
-                                                <span className="text-xs text-muted-foreground">(has table)</span>
+                                            {type.isActive === false && (
+                                                <span className="text-xs text-muted-foreground">(inactive)</span>
                                             )}
                                         </div>
                                     </SelectItem>
@@ -157,10 +199,10 @@ export default function LookupTablesPage() {
                         </Select>
                     </div>
 
-                    {selectedTypeId && !currentTable && (
-                        <Button onClick={handleCreateTable} className="mt-7">
+                    {selectedTypeId && !currentTable && !isTableLoading && (
+                        <Button onClick={handleCreateTable} className="mt-7" disabled={isSaving}>
                             <Plus className="w-4 h-4 mr-2" />
-                            Create Table
+                            {isSaving ? 'Creating...' : 'Create Table'}
                         </Button>
                     )}
                 </div>
@@ -170,10 +212,20 @@ export default function LookupTablesPage() {
                         {selectedType.description || 'No description available'}
                     </p>
                 )}
+                {errorMessage && (
+                    <p className="text-sm text-destructive mt-3">{errorMessage}</p>
+                )}
             </div>
 
+            {/* Loading State */}
+            {isTableLoading && (
+                <div className="bg-surface border border-border rounded-xl p-6 text-sm text-muted-foreground">
+                    Loading lookup table...
+                </div>
+            )}
+
             {/* Table Editor */}
-            {currentTable && (
+            {currentTable && !isTableLoading && (
                 <>
                     {/* Table Name */}
                     <div className="bg-surface border border-border rounded-xl p-6">
@@ -229,18 +281,18 @@ export default function LookupTablesPage() {
             )}
 
             {/* Empty State - No Table */}
-            {selectedTypeId && !currentTable && (
+            {selectedTypeId && !currentTable && !isTableLoading && (
                 <div className="bg-surface border-2 border-dashed border-border rounded-xl p-12 text-center">
                     <Table2 className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
                     <h3 className="font-medium text-foreground mb-1">
                         No lookup table for {selectedType?.name}
                     </h3>
                     <p className="text-sm text-muted-foreground mb-4">
-                        Click &#34;Create Table&#34; to start configuring storage values
+                        Click &quot;Create Table&quot; to start configuring storage values
                     </p>
-                    <Button onClick={handleCreateTable}>
+                    <Button onClick={handleCreateTable} disabled={isSaving}>
                         <Plus className="w-4 h-4 mr-2" />
-                        Create Table
+                        {isSaving ? 'Creating...' : 'Create Table'}
                     </Button>
                 </div>
             )}

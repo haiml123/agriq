@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Package, Pencil, Plus, Power, PowerOff, Trash2, Wheat } from 'lucide-react';
 import { SidebarTrigger } from '@/components/layout/app-sidebar-layout';
@@ -12,28 +12,28 @@ import { formatDate } from '@/lib/utils';
 
 export default function CommodityTypesPage() {
     const modal = useModal();
-    const { getList, toggleActive, isLoading, isUpdating } = useCommodityTypeApi();
+    const { getList, toggleActive, remove, isLoading, isUpdating, isDeleting } = useCommodityTypeApi();
     const [commodityTypes, setCommodityTypes] = useState<CommodityType[]>([]);
 
-    const refreshList = async () => {
+    const refreshList = useCallback(async () => {
         const response = await getList();
         if (response?.data?.items) {
             setCommodityTypes(response.data.items);
         }
-    };
+    }, [getList]);
 
     useEffect(() => {
         refreshList();
-    }, []);
+    }, [refreshList]);
 
     const handleToggleActive = async (id: string, currentStatus: boolean) => {
         await toggleActive(id, !currentStatus);
         await refreshList();
     };
 
-    const handleDeleteCommodityType = (id: string) => {
-        // TODO: Implement delete API call
-        setCommodityTypes(commodityTypes.filter((type) => type.id !== id));
+    const handleDeleteCommodityType = async (id: string) => {
+        await remove(id);
+        await refreshList();
     };
 
     const openCommodityTypeModal = async (commodityType?: CommodityType) => {
@@ -71,75 +71,83 @@ export default function CommodityTypesPage() {
                 </div>
 
                 <div className="divide-y divide-border">
-                    {commodityTypes.map((type) => (
-                        <div key={type.id} className="p-4 hover:bg-muted/30 transition-colors">
-                            <div className="flex items-center justify-between gap-4">
-                                <div className="flex items-center gap-4 min-w-0">
-                                    <div className="w-10 h-10 rounded-lg bg-amber-500/10 flex items-center justify-center shrink-0">
-                                        <Wheat className="w-5 h-5 text-amber-500" />
-                                    </div>
-                                    <div className="min-w-0">
-                                        <div className="flex items-center gap-2">
-                                            <h3 className="font-medium text-foreground truncate">{type.name}</h3>
-                                            {!type.isActive && (
-                                                <span className="text-xs px-2 py-0.5 rounded-full bg-muted text-muted-foreground">
-                                                    Inactive
-                                                </span>
-                                            )}
-                                        </div>
-                                        {type.description ? (
-                                            <p className="text-sm text-muted-foreground truncate">{type.description}</p>
-                                        ) : (
-                                            <p className="text-sm text-muted-foreground">Created {formatDate(type.createdAt)}</p>
-                                        )}
-                                    </div>
-                                </div>
+                    {commodityTypes.map((type) => {
+                        const isActive = type.isActive ?? type.status === 'ACTIVE';
+                        const commoditiesCount = type.commoditiesCount ?? 0;
 
-                                <div className="flex items-center gap-6 shrink-0">
-                                    <div className="hidden md:flex items-center gap-4">
-                                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                                            <Package className="w-4 h-4" />
-                                            <span>0 commodities</span>
+                        return (
+                            <div key={type.id} className="p-4 hover:bg-muted/30 transition-colors">
+                                <div className="flex items-center justify-between gap-4">
+                                    <div className="flex items-center gap-4 min-w-0">
+                                        <div className="w-10 h-10 rounded-lg bg-amber-500/10 flex items-center justify-center shrink-0">
+                                            <Wheat className="w-5 h-5 text-amber-500" />
                                         </div>
-                                    </div>
-
-                                    <div className="flex items-center gap-2">
-                                        <Button
-                                            variant="ghost"
-                                            size="icon"
-                                            onClick={() => handleToggleActive(type.id, type.isActive)}
-                                            disabled={isUpdating}
-                                            title={type.isActive ? 'Deactivate' : 'Activate'}
-                                        >
-                                            {type.isActive ? (
-                                                <Power className="w-4 h-4 text-emerald-500" />
+                                        <div className="min-w-0">
+                                            <div className="flex items-center gap-2">
+                                                <h3 className="font-medium text-foreground truncate">{type.name}</h3>
+                                                {!isActive && (
+                                                    <span className="text-xs px-2 py-0.5 rounded-full bg-muted text-muted-foreground">
+                                                        Inactive
+                                                    </span>
+                                                )}
+                                            </div>
+                                            {type.description ? (
+                                                <p className="text-sm text-muted-foreground truncate">{type.description}</p>
                                             ) : (
-                                                <PowerOff className="w-4 h-4 text-muted-foreground" />
+                                                <p className="text-sm text-muted-foreground">Created {formatDate(type.createdAt)}</p>
                                             )}
-                                        </Button>
-                                        <Button
-                                            variant="ghost"
-                                            size="icon"
-                                            onClick={() => openCommodityTypeModal(type)}
-                                        >
-                                            <Pencil className="w-4 h-4" />
-                                        </Button>
-                                        <Button
-                                            variant="ghost"
-                                            size="icon"
-                                            onClick={() => handleDeleteCommodityType(type.id)}
-                                            className="text-destructive hover:text-destructive"
-                                        >
-                                            <Trash2 className="w-4 h-4" />
-                                        </Button>
+                                        </div>
+                                    </div>
+
+                                    <div className="flex items-center gap-6 shrink-0">
+                                        <div className="hidden md:flex items-center gap-4">
+                                            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                                <Package className="w-4 h-4" />
+                                                <span>
+                                                    {commoditiesCount} commodit{commoditiesCount === 1 ? 'y' : 'ies'}
+                                                </span>
+                                            </div>
+                                        </div>
+
+                                        <div className="flex items-center gap-2">
+                                            <Button
+                                                variant="ghost"
+                                                size="icon"
+                                                onClick={() => handleToggleActive(type.id, isActive)}
+                                                disabled={isUpdating}
+                                                title={isActive ? 'Deactivate' : 'Activate'}
+                                            >
+                                                {isActive ? (
+                                                    <Power className="w-4 h-4 text-emerald-500" />
+                                                ) : (
+                                                    <PowerOff className="w-4 h-4 text-muted-foreground" />
+                                                )}
+                                            </Button>
+                                            <Button
+                                                variant="ghost"
+                                                size="icon"
+                                                onClick={() => openCommodityTypeModal(type)}
+                                            >
+                                                <Pencil className="w-4 h-4" />
+                                            </Button>
+                                            <Button
+                                                variant="ghost"
+                                                size="icon"
+                                                onClick={() => handleDeleteCommodityType(type.id)}
+                                                className="text-destructive hover:text-destructive"
+                                                disabled={isDeleting}
+                                            >
+                                                <Trash2 className="w-4 h-4" />
+                                            </Button>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
-                        </div>
-                    ))}
+                        );
+                    })}
                 </div>
 
-                {commodityTypes.length === 0 && (
+                {commodityTypes.length === 0 && !isLoading && (
                     <div className="p-8 text-center">
                         <Wheat className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
                         <h3 className="font-medium text-foreground mb-1">No commodity types yet</h3>

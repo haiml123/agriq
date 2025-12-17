@@ -3,6 +3,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+import { entity_status } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import {
   CreateCommodityTypeDto,
@@ -13,6 +14,18 @@ import {
 @Injectable()
 export class CommodityTypeService {
   constructor(private readonly prisma: PrismaService) {}
+
+  private mapCommodityType(
+    commodityType: any,
+    commoditiesCount?: number,
+  ) {
+    return {
+      ...commodityType,
+      commoditiesCount,
+      isActive: commodityType.status === entity_status.ACTIVE,
+      _count: undefined,
+    };
+  }
 
   async create(dto: CreateCommodityTypeDto, userId?: string) {
     // Check if name already exists
@@ -26,13 +39,16 @@ export class CommodityTypeService {
       );
     }
 
-    return this.prisma.commodityType.create({
+    const created = await this.prisma.commodityType.create({
       data: {
         name: dto.name,
         description: dto.description,
+        status: entity_status.ACTIVE,
         createdBy: userId,
       } as any,
     });
+
+    return this.mapCommodityType(created, 0);
   }
 
   async findAll(query: ListCommodityTypesQueryDto) {
@@ -58,7 +74,11 @@ export class CommodityTypeService {
         ],
       }),
       ...(query.isActive !== undefined && {
-        isActive: query.isActive,
+        status: query.isActive
+          ? entity_status.ACTIVE
+          : {
+              not: entity_status.ACTIVE,
+            },
       }),
     };
 
@@ -78,11 +98,9 @@ export class CommodityTypeService {
     ]);
 
     return {
-      items: items.map((item) => ({
-        ...item,
-        commoditiesCount: item._count.commodities,
-        _count: undefined,
-      })),
+      items: items.map((item) =>
+        this.mapCommodityType(item, item._count.commodities),
+      ),
       total,
       page,
       limit,
@@ -106,11 +124,10 @@ export class CommodityTypeService {
       throw new NotFoundException(`Commodity type with ID "${id}" not found`);
     }
 
-    return {
-      ...commodityType,
-      commoditiesCount: commodityType._count.commodities,
-      _count: undefined,
-    };
+    return this.mapCommodityType(
+      commodityType,
+      commodityType._count.commodities,
+    );
   }
 
   async update(id: string, dto: UpdateCommodityTypeDto, userId?: string) {
@@ -132,15 +149,21 @@ export class CommodityTypeService {
       }
     }
 
-    return this.prisma.commodityType.update({
+    const updated = await this.prisma.commodityType.update({
       where: { id },
       data: {
         ...(dto.name && { name: dto.name }),
         ...(dto.description !== undefined && { description: dto.description }),
-        ...(dto.isActive !== undefined && { isActive: dto.isActive }),
+        ...(dto.isActive !== undefined && {
+          status: dto.isActive
+            ? entity_status.ACTIVE
+            : entity_status.BLOCKED,
+        }),
         updatedBy: userId,
       },
     });
+
+    return this.mapCommodityType(updated);
   }
 
   async remove(id: string) {

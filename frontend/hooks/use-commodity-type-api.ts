@@ -11,11 +11,12 @@ import {
 import { PaginatedResponse } from '@/schemas/organization.schema';
 
 export function useCommodityTypeApi() {
-    const { get, post, patch } = useApi();
+    const { get, post, patch, del } = useApi();
 
     const [isLoading, setIsLoading] = useState(false);
     const [isCreating, setIsCreating] = useState(false);
     const [isUpdating, setIsUpdating] = useState(false);
+    const [isDeleting, setIsDeleting] = useState(false);
 
     const getList = useCallback(
         async (params?: CommodityTypeListParams) => {
@@ -77,14 +78,28 @@ export function useCommodityTypeApi() {
         [patch]
     );
 
+    const remove = useCallback(
+        async (id: string) => {
+            setIsDeleting(true);
+            try {
+                return await del(`/commodity-types/${id}`);
+            } finally {
+                setIsDeleting(false);
+            }
+        },
+        [del]
+    );
+
     return {
         getList,
         getById,
         create,
         update,
         toggleActive,
+        remove,
         isLoading,
         isCreating,
         isUpdating,
+        isDeleting,
     };
 }

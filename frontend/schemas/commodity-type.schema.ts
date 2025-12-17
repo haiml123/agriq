@@ -1,10 +1,14 @@
 import { z } from 'zod';
 
+const EntityStatusEnum = z.enum(['ACTIVE', 'PENDING', 'BLOCKED', 'DELETED']);
+
 export const CommodityTypeSchema = z.object({
     id: z.string(),
     name: z.string(),
     description: z.string().nullable(),
-    isActive: z.boolean(),
+    status: EntityStatusEnum,
+    isActive: z.boolean().optional(),
+    commoditiesCount: z.number().optional(),
     createdBy: z.string().nullable(),
     updatedBy: z.string().nullable(),
     createdAt: z.string(),
@@ -33,3 +37,4 @@ export type CommodityType = z.infer<typeof CommodityTypeSchema>;
 export type CreateCommodityTypeDto = z.infer<typeof CreateCommodityTypeSchema>;
 export type UpdateCommodityTypeDto = z.infer<typeof UpdateCommodityTypeSchema>;
 export type CommodityTypeListParams = z.infer<typeof CommodityTypeListParamsSchema>;
+export type EntityStatus = z.infer<typeof EntityStatusEnum>;
