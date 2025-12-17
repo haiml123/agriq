@@ -11,6 +11,7 @@ import {
   CreateLookupTableDto,
   UpdateLookupTableDto,
 } from './dto';
+import { entity_status } from '@prisma/client';
 
 @Injectable()
 export class CommodityTypeService {
@@ -32,6 +33,7 @@ export class CommodityTypeService {
       data: {
         name: dto.name,
         description: dto.description,
+        status: entity_status.ACTIVE,
         createdBy: userId,
       } as any,
     });
@@ -59,8 +61,8 @@ export class CommodityTypeService {
           },
         ],
       }),
-      ...(query.isActive !== undefined && {
-        isActive: query.isActive,
+      ...(query.status !== undefined && {
+        status: query.status,
       }),
     };
 
@@ -139,7 +141,7 @@ export class CommodityTypeService {
       data: {
         ...(dto.name && { name: dto.name }),
         ...(dto.description !== undefined && { description: dto.description }),
-        ...(dto.isActive !== undefined && { isActive: dto.isActive }),
+        ...(dto.status !== undefined && { status: dto.status }),
         updatedBy: userId,
       },
     });

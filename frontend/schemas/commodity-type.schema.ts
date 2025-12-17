@@ -1,10 +1,11 @@
 import { z } from 'zod';
+import { entityStatusSchema } from './common.schema';
 
 export const CommodityTypeSchema = z.object({
     id: z.string(),
     name: z.string(),
     description: z.string().nullable(),
-    isActive: z.boolean(),
+    status: entityStatusSchema,
     createdBy: z.string().nullable(),
     updatedBy: z.string().nullable(),
     createdAt: z.string(),
@@ -19,14 +20,14 @@ export const CreateCommodityTypeSchema = z.object({
 export const UpdateCommodityTypeSchema = z.object({
     name: z.string().min(2).max(100).optional(),
     description: z.string().max(500).optional(),
-    isActive: z.boolean().optional(),
+    status: entityStatusSchema.optional(),
 });
 
 export const CommodityTypeListParamsSchema = z.object({
     page: z.number().optional(),
     limit: z.number().optional(),
     search: z.string().optional(),
-    isActive: z.boolean().optional(),
+    status: entityStatusSchema.optional(),
 });
 
 export type CommodityType = z.infer<typeof CommodityTypeSchema>;

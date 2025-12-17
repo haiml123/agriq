@@ -8,6 +8,7 @@ import {
     CreateCommodityTypeDto,
     UpdateCommodityTypeDto,
 } from '@/schemas/commodity-type.schema';
+import { EntityStatus } from '@/schemas/common.schema';
 import { PaginatedResponse } from '@/schemas/organization.schema';
 
 export function useCommodityTypeApi() {
@@ -66,11 +67,11 @@ export function useCommodityTypeApi() {
         [patch]
     );
 
-    const toggleActive = useCallback(
-        async (id: string, isActive: boolean) => {
+    const setStatus = useCallback(
+        async (id: string, status: EntityStatus) => {
             setIsUpdating(true);
             try {
-                return await patch<CommodityType>(`/commodity-types/${id}`, { isActive });
+                return await patch<CommodityType>(`/commodity-types/${id}`, { status });
             } finally {
                 setIsUpdating(false);
             }
@@ -95,7 +96,7 @@ export function useCommodityTypeApi() {
         getById,
         create,
         update,
-        toggleActive,
+        setStatus,
         remove,
         isLoading,
         isCreating,
