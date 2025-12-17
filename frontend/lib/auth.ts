@@ -62,7 +62,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                         id: data.user.id,
                         email: data.user.email,
                         name: data.user.name,
-                        roles: data.user.roles,
+                        userRole: data.user.userRole,
+                        siteUsers: data.user.siteUsers,
                         organizationId: data.user.organizationId,
                         accessToken: data.accessToken,
                     };
@@ -78,7 +79,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             if (user) {
                 token.id = user.id;
                 token.accessToken = user.accessToken;
-                token.roles = user.roles;
+                token.userRole = user.userRole;
+                token.siteUsers = user.siteUsers;
                 token.organizationId = user.organizationId;
             }
             return token;
@@ -90,8 +92,13 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             if (token?.organizationId) {
                 session.user.organizationId = token.organizationId as string;
             }
-            if (token?.roles) {
-                session.user.roles = token.roles as string[];
+            if (token?.userRole) {
+                // @ts-expect-error - next-auth user typing is extended at runtime
+                session.user.userRole = token.userRole;
+            }
+            if (token?.siteUsers) {
+                // @ts-expect-error - next-auth user typing is extended at runtime
+                session.user.siteUsers = token.siteUsers;
             }
             if (token.accessToken) {
                 session.accessToken = token.accessToken as string;

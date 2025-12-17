@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { entityStatusSchema } from '@/schemas/common.schema';
 import { siteSchema } from '@/schemas/sites.schema';
-import { userRoleSchema, userSchema } from '@/schemas/user.schema';
+import { userSchema } from '@/schemas/user.schema';
 import { triggerSchema } from '@/schemas/trigger.schema';
 
 export const organizationSchema = z.object({
@@ -14,7 +14,6 @@ export const organizationSchema = z.object({
 
     users: z.array(z.lazy(() => userSchema)).optional(),
     sites: z.array(z.lazy(() => siteSchema)).optional(),
-    roles: z.array(z.lazy(() => userRoleSchema)).optional(),
     eventTriggers: z.array(z.lazy(() => triggerSchema)).optional(),
 });
 

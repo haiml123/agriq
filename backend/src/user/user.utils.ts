@@ -1,19 +1,20 @@
-import { role_type } from '@prisma/client';
 import { ForbiddenException } from '@nestjs/common';
 import { AppUser } from '../types/user.type';
+import { user_role } from '@prisma/client';
 
 export function isSuperAdmin(user: AppUser): boolean {
-  return user.roles.some((role) => role.role === role_type.SUPER_ADMIN);
+  return user.userRole === user_role.SUPER_ADMIN;
 }
 
-export function isOrgAdmin(user: AppUser): boolean {
-  return user.roles.some((role) => role.role === role_type.ORG_ADMIN);
+export function isAdmin(user: AppUser): boolean {
+  return user.userRole === user_role.ADMIN;
 }
 
 export function getAdminOrganizationIds(user: AppUser): string[] {
-  return user.roles
-    .filter((r) => r.role === role_type.ORG_ADMIN && r.organizationId !== null)
-    .map((r) => r.organizationId as string);
+  if (isAdmin(user) && user.organizationId) {
+    return [user.organizationId];
+  }
+  return [];
 }
 
 /**
@@ -25,24 +26,21 @@ export function getAdminOrganizationIds(user: AppUser): string[] {
 export function getOrganizationFilter(
   user: AppUser,
   requestedOrgId?: string,
-): string | { in: string[] } | undefined | null {
+): string | undefined | null {
   if (isSuperAdmin(user)) {
     return requestedOrgId || undefined;
   }
 
-  const adminOrgIds = getAdminOrganizationIds(user);
-
-  if (adminOrgIds.length === 0) {
-    return null; // No access
+  const userOrgId = user.organizationId;
+  if (!userOrgId) {
+    return null;
   }
 
-  // If specific org requested, validate access
-  if (requestedOrgId) {
-    return adminOrgIds.includes(requestedOrgId) ? requestedOrgId : null;
+  if (requestedOrgId && requestedOrgId !== userOrgId) {
+    return null;
   }
 
-  // Return single org or multiple
-  return adminOrgIds.length === 1 ? adminOrgIds[0] : { in: adminOrgIds };
+  return userOrgId;
 }
 
 /**
@@ -52,35 +50,36 @@ export function getOrganizationFilter(
 export function validateUserManagementPermission(params: {
   currentUser: AppUser;
   targetOrganizationId: string | null;
-  targetRole: role_type;
-  existingUserRoles?: { role: role_type }[]; // For update: existing user's roles
+  targetRole: user_role;
+  existingUserRole?: user_role; // For update: existing user's role
 }): void {
-  const { currentUser, targetOrganizationId, targetRole, existingUserRoles } =
+  const { currentUser, targetOrganizationId, targetRole, existingUserRole } =
     params;
 
-  // Super admins can do anything
   if (isSuperAdmin(currentUser)) {
     return;
   }
 
-  const adminOrgIds = getAdminOrganizationIds(currentUser);
+  if (!isAdmin(currentUser)) {
+    throw new ForbiddenException('You are not authorized for this action');
+  }
 
-  // Check organization access
-  if (!targetOrganizationId || !adminOrgIds.includes(targetOrganizationId)) {
+  if (
+    !targetOrganizationId ||
+    currentUser.organizationId !== targetOrganizationId
+  ) {
     throw new ForbiddenException(
       'You do not have permission to manage users in this organization',
     );
   }
 
-  // Org admins cannot assign super admin role
-  if (targetRole === role_type.SUPER_ADMIN) {
+  if (targetRole === user_role.SUPER_ADMIN) {
     throw new ForbiddenException(
       'You do not have permission to assign super admin role',
     );
   }
 
-  // Org admins cannot edit existing super admins
-  if (existingUserRoles?.some((r) => r.role === role_type.SUPER_ADMIN)) {
+  if (existingUserRole === user_role.SUPER_ADMIN) {
     throw new ForbiddenException(
       'You do not have permission to edit super admin users',
     );
@@ -95,5 +94,10 @@ export function canAccessOrganization(
   if (isSuperAdmin(user)) {
     return true;
   }
-  return getAdminOrganizationIds(user).includes(organizationId);
+
+  if (isAdmin(user) && user.organizationId === organizationId) {
+    return true;
+  }
+
+  return user.organizationId === organizationId;
 }

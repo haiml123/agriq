@@ -12,8 +12,12 @@ import {
   UpdateCompoundDto,
   UpdateSiteDto,
 } from './dto';
-import { entity_status } from '@prisma/client';
-import { canAccessOrganization, isSuperAdmin } from '../user/user.utils';
+import { entity_status, user_role } from '@prisma/client';
+import {
+  canAccessOrganization,
+  isAdmin,
+  isSuperAdmin,
+} from '../user/user.utils';
 import { AppUser } from '../types/user.type';
 
 @Injectable()
@@ -42,21 +46,45 @@ export class SiteService {
       throw new NotFoundException(`Site with ID "${siteId}" not found`);
     }
 
-    this.validateOrganizationAccess(user, site.organizationId);
+    if (isSuperAdmin(user)) {
+      return site;
+    }
+
+    if (isAdmin(user)) {
+      this.validateOrganizationAccess(user, site.organizationId);
+      return site;
+    }
+
+    // Operators must have explicit site assignment
+    const siteAssignment = await this.prisma.siteUser.findUnique({
+      where: {
+        userId_siteId: {
+          siteId,
+          userId: user.id,
+        },
+      },
+    });
+
+    if (!siteAssignment || user.organizationId !== site.organizationId) {
+      throw new ForbiddenException(
+        'You do not have permission to access this site',
+      );
+    }
+
     return site;
   }
 
   private async validateCompoundAccess(user: AppUser, compoundId: string) {
     const compound = await this.prisma.compound.findUnique({
       where: { id: compoundId },
-      include: { site: { select: { organizationId: true } } },
+      include: { site: { select: { organizationId: true, id: true } } },
     });
 
     if (!compound) {
       throw new NotFoundException(`Compound with ID "${compoundId}" not found`);
     }
 
-    this.validateOrganizationAccess(user, compound.site.organizationId);
+    await this.validateSiteAccess(user, compound.site.id);
     return compound;
   }
 
@@ -66,7 +94,7 @@ export class SiteService {
       include: {
         compound: {
           include: {
-            site: { select: { organizationId: true } },
+            site: { select: { organizationId: true, id: true } },
           },
         },
       },
@@ -76,7 +104,11 @@ export class SiteService {
       throw new NotFoundException(`Cell with ID "${cellId}" not found`);
     }
 
-    this.validateOrganizationAccess(user, cell.compound?.site?.organizationId);
+    if (!cell.compound?.site?.id) {
+      throw new NotFoundException(`Cell with ID "${cellId}" not found`);
+    }
+
+    await this.validateSiteAccess(user, cell.compound.site.id);
     return cell;
   }
 
@@ -85,13 +117,25 @@ export class SiteService {
   // ─────────────────────────────────────────────────────────────
 
   async createSite(user: AppUser, dto: CreateSiteDto) {
-    this.validateOrganizationAccess(user, dto.organizationId);
+    if (user.userRole === user_role.OPERATOR) {
+      throw new ForbiddenException(
+        'You do not have permission to create sites',
+      );
+    }
+
+    const organizationId = dto.organizationId ?? user.organizationId;
+
+    if (!organizationId) {
+      throw new ForbiddenException('Organization is required to create a site');
+    }
+
+    this.validateOrganizationAccess(user, organizationId);
 
     return this.prisma.site.create({
       data: {
         name: dto.name,
         address: dto.address,
-        organizationId: dto.organizationId,
+        organizationId,
         createdBy: user.id,
       },
       include: { compounds: { include: { cells: true } } },
@@ -99,26 +143,70 @@ export class SiteService {
   }
 
   async findAllSites(user: AppUser, organizationId?: string) {
-    // Super admin can see all, org admin sees only their org
-    let whereOrgId: string | null | undefined;
-
     if (isSuperAdmin(user)) {
-      whereOrgId = organizationId;
-    } else {
-      // For org admin, use their org or validate requested org
-      const userOrgId = user.roles.find(
-        (r) => r.organizationId,
-      )?.organizationId;
+      return this.prisma.site.findMany({
+        where: organizationId ? { organizationId } : undefined,
+        include: {
+          compounds: {
+            include: { cells: true },
+          },
+        },
+        orderBy: {
+          createdAt: 'desc',
+        } as const,
+      });
+    }
+
+    if (isAdmin(user)) {
+      const userOrgId = user.organizationId;
+
+      if (!userOrgId) {
+        throw new ForbiddenException(
+          'You do not have permission to access sites',
+        );
+      }
+
       if (organizationId && organizationId !== userOrgId) {
         throw new ForbiddenException(
           'You do not have permission to access this organization',
         );
       }
-      whereOrgId = userOrgId;
+
+      return this.prisma.site.findMany({
+        where: { organizationId: userOrgId },
+        include: {
+          compounds: {
+            include: { cells: true },
+          },
+        },
+        orderBy: {
+          createdAt: 'desc',
+        } as const,
+      });
+    }
+
+    // Operator: only assigned sites
+    const userOrgId = user.organizationId;
+
+    if (!userOrgId) {
+      throw new ForbiddenException(
+        'You do not have permission to access sites',
+      );
+    }
+
+    if (organizationId && organizationId !== userOrgId) {
+      throw new ForbiddenException(
+        'You do not have permission to access this organization',
+      );
     }
 
     return this.prisma.site.findMany({
-      where: whereOrgId ? { organizationId: whereOrgId } : undefined,
+      where: {
+        organizationId: userOrgId,
+        siteUsers: {
+          some: { userId: user.id },
+        },
+      },
       include: {
         compounds: {
           include: { cells: true },

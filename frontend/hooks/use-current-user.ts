@@ -18,8 +18,8 @@ export function useCurrentUser() {
     return {
         user,
         isLoading: status === 'loading',
-        isSuperAdmin: user?.roles.find(role => role.role === RoleTypeEnum.SUPER_ADMIN),
-        isAdmin: user?.roles.find(role => role.role === RoleTypeEnum.ORG_ADMIN),
-        isOperator: user?.roles.find(role => role.role === RoleTypeEnum.OPERATOR),
+        isSuperAdmin: user?.userRole === RoleTypeEnum.SUPER_ADMIN,
+        isAdmin: user?.userRole === RoleTypeEnum.ADMIN,
+        isOperator: user?.userRole === RoleTypeEnum.OPERATOR,
     }
 }

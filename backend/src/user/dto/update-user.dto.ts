@@ -5,7 +5,7 @@ import {
   IsString,
   MinLength,
 } from 'class-validator';
-import { role_type as RoleType } from '@prisma/client';
+import { user_role as RoleType } from '@prisma/client';
 import { EntityStatus } from '../../../consts';
 
 export class UpdateUserDto {

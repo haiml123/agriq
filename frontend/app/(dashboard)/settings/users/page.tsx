@@ -15,26 +15,27 @@ import { RoleTypeEnum } from '@/schemas/common.schema';
 
 const roleLabels: Record<string, string> = {
     SUPER_ADMIN: 'Super Admin',
-    ORG_ADMIN: 'Admin',
+    ADMIN: 'Admin',
     OPERATOR: 'Operator',
 }
 
 const roleStyles: Record<string, string> = {
     [RoleTypeEnum.SUPER_ADMIN]: 'bg-purple-500/10 text-purple-500 border-purple-500/30',
-    [RoleTypeEnum.ORG_ADMIN]: 'bg-emerald-500/10 text-emerald-500 border-emerald-500/30',
+    [RoleTypeEnum.ADMIN]: 'bg-emerald-500/10 text-emerald-500 border-emerald-500/30',
     [RoleTypeEnum.OPERATOR]: 'bg-blue-500/10 text-blue-500 border-blue-500/30',
 }
 
 export default function UsersPage() {
     const modal = useModal();
-    const { user, isSuperAdmin, isLoading: isCurrentUserLoading } = useCurrentUser();
-    const { getList, create, isLoading, isCreating } = useUserApi();
+    const { user, isSuperAdmin, isAdmin, isLoading: isCurrentUserLoading } = useCurrentUser();
+    const { getList, isCreating } = useUserApi();
     const [users, setUsers] = useState<UserType[]>([]);
     const [selectedOrganizationId, setSelectedOrganizationId] = useState<string>('all')
+    const canManageUsers = isSuperAdmin || isAdmin
 
     const fetchUsers = useCallback(async () => {
         console.log('fetchUsers');
-        if (isCurrentUserLoading || !user) return
+        if (isCurrentUserLoading || !user || !canManageUsers) return
 
         try {
             const response = await getList({
@@ -46,7 +47,7 @@ export default function UsersPage() {
         } catch (error) {
             console.error('Failed to fetch users:', error);
         }
-    }, [getList, isCurrentUserLoading, isSuperAdmin, selectedOrganizationId, user]);
+    }, [canManageUsers, getList, isCurrentUserLoading, isSuperAdmin, selectedOrganizationId, user]);
 
     useEffect(() => {
         const loadUsers = async () => {
@@ -69,7 +70,23 @@ export default function UsersPage() {
     }
 
     const getUserRole = (user: UserType) => {
-        return user.roles?.[0]?.role || 'OPERATOR'
+        return user.userRole || 'OPERATOR'
+    }
+
+    if (!isCurrentUserLoading && !canManageUsers) {
+        return (
+            <div className="space-y-6 p-6">
+                <div className="flex items-center gap-3">
+                    <SidebarTrigger />
+                    <div>
+                        <h1 className="text-2xl font-semibold text-foreground">Users</h1>
+                        <p className="text-sm text-muted-foreground mt-1">
+                            You do not have permission to view users.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        )
     }
 
     return (
@@ -82,10 +99,12 @@ export default function UsersPage() {
                         <p className="text-sm text-muted-foreground mt-1">Manage users and their roles</p>
                     </div>
                 </div>
-                <Button isLoading={isCreating} onClick={() => openUserModal()} className="bg-emerald-500 hover:bg-emerald-600">
-                    <Plus className="w-4 h-4 mr-2" />
-                    Create User
-                </Button>
+                {canManageUsers && (
+                    <Button isLoading={isCreating} onClick={() => openUserModal()} className="bg-emerald-500 hover:bg-emerald-600">
+                        <Plus className="w-4 h-4 mr-2" />
+                        Create User
+                    </Button>
+                )}
             </div>
 
             <div className="bg-card border border-border rounded-lg overflow-hidden">
@@ -158,10 +177,12 @@ export default function UsersPage() {
                         <Users className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
                         <h3 className="font-medium text-foreground mb-1">No users yet</h3>
                         <p className="text-sm text-muted-foreground mb-4">Get started by creating your first user</p>
-                        <Button onClick={() => openUserModal()} className="bg-emerald-500 hover:bg-emerald-600">
-                            <Plus className="w-4 h-4 mr-2" />
-                            Create User
-                        </Button>
+                        {canManageUsers && (
+                            <Button onClick={() => openUserModal()} className="bg-emerald-500 hover:bg-emerald-600">
+                                <Plus className="w-4 h-4 mr-2" />
+                                Create User
+                            </Button>
+                        )}
                     </div>
                 )}
             </div>

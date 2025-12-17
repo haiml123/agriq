@@ -1,19 +1,12 @@
 import { z } from 'zod';
-import { entityStatusSchema, roleTypeSchema } from '@/schemas/common.schema';
+import { entityStatusSchema, roleTypeSchema, siteRoleSchema } from '@/schemas/common.schema';
 import { siteSchema } from '@/schemas/sites.schema';
 
-export const userRoleSchema = z.object({
-    id: z.number(),
+export const siteUserSchema = z.object({
     userId: z.string(),
-    role: roleTypeSchema,
-    organizationId: z.string().nullable().optional(),
-    siteId: z.string().nullable().optional(),
-    grantedByUserId: z.string().nullable().optional(),
-    createdAt: z.date(),
-    updatedAt: z.date(),
-    // Relations
-    // organization: organizationSchema.optional(),
-    site: siteSchema.optional(),
+    siteId: z.string(),
+    siteRole: siteRoleSchema,
+    site: siteSchema.pick({ id: true, name: true, organizationId: true }).optional(),
 });
 
 export const userOrganizationSchema = z.object({
@@ -30,19 +23,21 @@ export const userSchema = z.object({
     languagePreference: z.string().nullable(),
     organizationId: z.string().nullable(),
     organization: userOrganizationSchema.nullable().optional(),
-    roles: z.array(userRoleSchema),
+    userRole: roleTypeSchema,
+    siteUsers: z.array(siteUserSchema).optional(),
     createdAt: z.string(),
     updatedAt: z.string(),
 });
 
 export const createUserSchema = z.object({
-    organizationId: z.string().min(1, 'Organization is required'),
+    organizationId: z.string().min(1, 'Organization is required').optional(),
     email: z.string().email('Invalid email'),
     name: z.string().min(1, 'Name is required'),
     role: roleTypeSchema,
     phone: z.string().optional(),
     password: z.string().optional(),
     languagePreference: z.string().optional(),
+    siteIds: z.array(z.string()).optional(),
 });
 
 export const userListParamsSchema = z.object({
@@ -53,6 +48,7 @@ export const userListParamsSchema = z.object({
     limit: z.number().optional(),
 });
 
+export type SiteUser = z.infer<typeof siteUserSchema>;
 export type User = z.infer<typeof userSchema>;
 export type CreateUserDto = z.infer<typeof createUserSchema>;
 export type UserListParams = z.infer<typeof userListParamsSchema>;
