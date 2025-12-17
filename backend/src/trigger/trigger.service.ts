@@ -18,6 +18,7 @@ export class TriggerService {
         description: dto.description,
         // @ts-ignore
         scopeType: dto.scopeType,
+        commodityTypeId: dto.commodityTypeId,
         organizationId: dto.organizationId,
         siteId: dto.siteId,
         compoundId: dto.compoundId,
@@ -31,6 +32,9 @@ export class TriggerService {
       },
       include: {
         organization: {
+          select: { id: true, name: true },
+        },
+        commodityType: {
           select: { id: true, name: true },
         },
         site: {
@@ -82,6 +86,9 @@ export class TriggerService {
           organization: {
             select: { id: true, name: true },
           },
+          commodityType: {
+            select: { id: true, name: true },
+          },
           site: {
             select: { id: true, name: true },
           },
@@ -104,6 +111,9 @@ export class TriggerService {
       where: { id },
       include: {
         organization: {
+          select: { id: true, name: true },
+        },
+        commodityType: {
           select: { id: true, name: true },
         },
         site: {
@@ -131,6 +141,9 @@ export class TriggerService {
       ...(dto.name !== undefined && { name: dto.name }),
       ...(dto.description !== undefined && { description: dto.description }),
       ...(dto.scopeType !== undefined && { scopeType: dto.scopeType }),
+      ...(dto.commodityTypeId !== undefined && {
+        commodityTypeId: dto.commodityTypeId,
+      }),
       ...(dto.organizationId !== undefined && {
         organizationId: dto.organizationId,
       }),
@@ -157,6 +170,9 @@ export class TriggerService {
         organization: {
           select: { id: true, name: true },
         },
+        commodityType: {
+          select: { id: true, name: true },
+        },
         site: {
           select: { id: true, name: true },
         },
@@ -172,6 +188,17 @@ export class TriggerService {
       data: {
         isActive,
         updatedBy: userId,
+      },
+      include: {
+        organization: {
+          select: { id: true, name: true },
+        },
+        commodityType: {
+          select: { id: true, name: true },
+        },
+        site: {
+          select: { id: true, name: true },
+        },
       },
     });
   }

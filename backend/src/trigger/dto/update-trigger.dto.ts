@@ -29,6 +29,10 @@ export class UpdateTriggerDto {
   @MaxLength(1000)
   description?: string;
 
+  @IsString()
+  @IsOptional()
+  commodityTypeId?: string;
+
   @IsEnum(ScopeType)
   @IsOptional()
   scopeType?: ScopeType;

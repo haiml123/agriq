@@ -1,13 +1,14 @@
-import { getCommodityLabel, type Trigger } from '@/schemas/trigger.schema';
+import { getCommodityLabel, type Trigger, type TriggerCommodityType } from '@/schemas/trigger.schema';
 import { Card, CardContent } from '@/components/ui/card';
 import { ConditionDisplay, SeverityBadge } from '@/components/triggers';
 
 interface RulePreviewProps {
     trigger: Trigger;
+    commodityTypes?: TriggerCommodityType[];
 }
 
-export function RulePreview({ trigger }: RulePreviewProps) {
-    const { commodityType, conditions, conditionLogic, actions, severity } = trigger;
+export function RulePreview({ trigger, commodityTypes }: RulePreviewProps) {
+    const { commodityTypeId, commodityType, conditions, conditionLogic, actions, severity } = trigger;
 
     return (
         <Card className="bg-emerald-500/5 border-emerald-500/20">
@@ -17,7 +18,9 @@ export function RulePreview({ trigger }: RulePreviewProps) {
                 </h3>
                 <div className="text-sm">
                     <RuleText
+                        commodityTypeId={commodityTypeId}
                         commodityType={commodityType}
+                        commodityTypes={commodityTypes}
                         conditions={conditions}
                         conditionLogic={conditionLogic}
                         actions={actions}
@@ -31,16 +34,28 @@ export function RulePreview({ trigger }: RulePreviewProps) {
 
 function RuleText({
     commodityType,
+    commodityTypeId,
+    commodityTypes,
     conditions,
     conditionLogic,
     actions,
     severity,
-}: Pick<Trigger, 'commodityType' | 'conditions' | 'conditionLogic' | 'actions' | 'severity'>) {
+}: Pick<Trigger, 'commodityType' | 'commodityTypeId' | 'conditions' | 'conditionLogic' | 'actions' | 'severity'> & {
+    commodityTypes?: TriggerCommodityType[];
+}) {
+    const commodityTypeValue = commodityTypeId || commodityType?.id;
+
     return (
         <>
             <span className="text-muted-foreground">When </span>
 
-            {commodityType && <CommodityClause commodityType={commodityType} />}
+            {(commodityTypeValue || commodityType) && (
+                <CommodityClause
+                    commodityTypeId={commodityTypeValue}
+                    commodityType={commodityType}
+                    commodityTypes={commodityTypes}
+                />
+            )}
 
             <ConditionsClause conditions={conditions} conditionLogic={conditionLogic} />
 
@@ -55,11 +70,19 @@ function RuleText({
     );
 }
 
-function CommodityClause({ commodityType }: { commodityType: NonNullable<Trigger['commodityType']> }) {
+function CommodityClause({
+    commodityTypeId,
+    commodityType,
+    commodityTypes,
+}: {
+    commodityTypeId: Trigger['commodityTypeId'] | undefined;
+    commodityType?: Trigger['commodityType'];
+    commodityTypes?: TriggerCommodityType[];
+}) {
     return (
         <>
             <span className="font-semibold text-emerald-600 dark:text-emerald-400">
-                {getCommodityLabel(commodityType)}
+                {getCommodityLabel(commodityTypeId, commodityType, commodityTypes)}
             </span>
             <span className="text-muted-foreground"> storage has </span>
         </>

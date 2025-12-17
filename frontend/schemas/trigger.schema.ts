@@ -12,33 +12,10 @@ export const ConditionTypeEnum = conditionTypeSchema.enum;
 export const OperatorEnum = operatorSchema.enum;
 export const ScopeTypeEnum = scopeTypeSchema.enum;
 
-// Commodity Type Schema - values will come from DB in production
-export const commodityTypeSchema = z.enum([
-    "WHEAT",
-    "CORN",
-    "SOYBEANS",
-    "BARLEY",
-    "RICE",
-    "OATS",
-    "SORGHUM",
-    "CANOLA",
-    "SUNFLOWER",
-    "OTHER",
-])
-
-// Mock commodity data - will be replaced with DB data in production
-export const COMMODITY_OPTIONS = [
-    { id: "wheat", value: "WHEAT", label: "Wheat" },
-    { id: "corn", value: "CORN", label: "Corn" },
-    { id: "soybeans", value: "SOYBEANS", label: "Soybeans" },
-    { id: "barley", value: "BARLEY", label: "Barley" },
-    { id: "rice", value: "RICE", label: "Rice" },
-    { id: "oats", value: "OATS", label: "Oats" },
-    { id: "sorghum", value: "SORGHUM", label: "Sorghum" },
-    { id: "canola", value: "CANOLA", label: "Canola" },
-    { id: "sunflower", value: "SUNFLOWER", label: "Sunflower Seeds" },
-    { id: "other", value: "OTHER", label: "Other" },
-] as const
+export const triggerCommodityTypeSchema = z.object({
+    id: z.string(),
+    name: z.string(),
+})
 
 // Condition Schema - matches Prisma JSON structure for conditions.items
 export const conditionSchema = z.object({
@@ -70,8 +47,8 @@ export const triggerSchema = z.object({
     name: z.string().min(1, "Name is required"),
     description: z.string(),
     isActive: z.boolean(),
-    // Commodity type
-    commodityType: commodityTypeSchema.optional(),
+    commodityTypeId: z.string().min(1, "Commodity type is required"),
+    commodityType: triggerCommodityTypeSchema.optional(),
     // Scope fields matching Prisma
     scopeType: scopeTypeSchema,
     organizationId: z.string().optional(),
@@ -93,11 +70,11 @@ export type ChangeDirection = z.infer<typeof changeDirectionSchema>
 export type ConditionLogic = z.infer<typeof conditionLogicSchema>
 export type ActionType = z.infer<typeof actionTypeSchema>
 export type ScopeType = z.infer<typeof scopeTypeSchema>
-export type CommodityType = z.infer<typeof commodityTypeSchema>
 export type Condition = z.infer<typeof conditionSchema>
 export type NotificationTemplate = z.infer<typeof notificationTemplateSchema>
 export type Action = z.infer<typeof actionSchema>
 export type Trigger = z.infer<typeof triggerSchema>
+export type TriggerCommodityType = z.infer<typeof triggerCommodityTypeSchema>
 
 // Alias used by trigger editor hooks
 export const TriggerSchema = triggerSchema;
@@ -145,6 +122,7 @@ export const createDefaultTrigger = (): Trigger => ({
     name: "",
     description: "",
     isActive: true,
+    commodityTypeId: "",
     commodityType: undefined,
     scopeType: "ALL",
     organizationId: undefined,
@@ -164,8 +142,14 @@ export const getActionByType = (actions: Action[], type: ActionType): Action | u
     actions.find((a) => a.type === type)
 
 // Helper to get commodity label
-export const getCommodityLabel = (commodityType: CommodityType | undefined): string => {
-    if (!commodityType) return "Any"
-    const option = COMMODITY_OPTIONS.find((o) => o.value === commodityType)
-    return option?.label ?? commodityType
+export const getCommodityLabel = (
+    commodityTypeId: string | undefined,
+    commodityType?: TriggerCommodityType,
+    availableTypes?: TriggerCommodityType[],
+): string => {
+    if (commodityType?.name) return commodityType.name
+    const match = availableTypes?.find((type) => type.id === commodityTypeId)
+    if (match?.name) return match.name
+    if (commodityTypeId) return commodityTypeId
+    return "Commodity not set"
 }

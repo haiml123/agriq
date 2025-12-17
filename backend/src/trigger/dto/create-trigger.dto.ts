@@ -140,6 +140,10 @@ export class CreateTriggerDto {
   scopeType: ScopeType;
 
   @IsString()
+  @IsNotEmpty()
+  commodityTypeId: string;
+
+  @IsString()
   @IsOptional()
   organizationId?: string;
 

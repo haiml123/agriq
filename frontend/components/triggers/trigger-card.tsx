@@ -32,10 +32,12 @@ export function TriggerCard({ trigger, onEdit, onDelete, onToggleActive }: Trigg
                             <p className="text-sm text-muted-foreground mb-3">{trigger.description}</p>
                         )}
 
-                        {trigger.commodityType && (
+                        {trigger.commodityTypeId && (
                             <div className="flex items-center gap-2 mb-3">
                                 <span className="text-xs font-medium uppercase text-muted-foreground">Commodity:</span>
-                                <Badge variant="outline">{getCommodityLabel(trigger.commodityType)}</Badge>
+                                <Badge variant="outline">
+                                    {getCommodityLabel(trigger.commodityTypeId, trigger.commodityType)}
+                                </Badge>
                             </div>
                         )}
 

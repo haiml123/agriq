@@ -1,9 +1,9 @@
-import { COMMODITY_OPTIONS, type CommodityType, type Severity, type Trigger } from '@/schemas/trigger.schema';
+import type { Trigger, TriggerCommodityType } from '@/schemas/trigger.schema';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { SeverityEnum } from '@/schemas/common.schema';
+import { SeverityEnum, type Severity } from '@/schemas/common.schema';
 import { ScopeSelector } from '@/components/triggers';
 import type { Organization } from '@/schemas/organization.schema';
 
@@ -12,6 +12,8 @@ interface BasicInfoSectionProps {
     onUpdate: <K extends keyof Trigger>(field: K, value: Trigger[K]) => void;
     onScopeChange: (updates: { scopeType: Trigger['scopeType']; organizationId?: string; siteId?: string }) => void;
     organizations?: Organization[];
+    commodityTypes: TriggerCommodityType[];
+    isCommodityTypesLoading?: boolean;
 }
 
 const SEVERITY_OPTIONS = [
@@ -21,7 +23,14 @@ const SEVERITY_OPTIONS = [
     { value: SeverityEnum.CRITICAL, label: 'Critical', color: 'bg-red-500' },
 ] as const;
 
-export function BasicInfoSection({ formData, onUpdate, onScopeChange, organizations }: BasicInfoSectionProps) {
+export function BasicInfoSection({
+    formData,
+    onUpdate,
+    onScopeChange,
+    organizations,
+    commodityTypes,
+    isCommodityTypesLoading,
+}: BasicInfoSectionProps) {
     return (
         <div className="space-y-4">
             <h3 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
@@ -57,8 +66,10 @@ export function BasicInfoSection({ formData, onUpdate, onScopeChange, organizati
                 />
 
                 <CommoditySelect
-                    value={formData.commodityType}
-                    onChange={(v) => onUpdate('commodityType', v)}
+                    value={formData.commodityTypeId}
+                    onChange={(v) => onUpdate('commodityTypeId', v)}
+                    commodityTypes={commodityTypes}
+                    isLoading={isCommodityTypesLoading}
                 />
 
                 <ScopeSelector
@@ -104,27 +115,41 @@ function SeveritySelect({
 function CommoditySelect({
     value,
     onChange,
+    commodityTypes,
+    isLoading,
 }: {
-    value: CommodityType | undefined;
-    onChange: (value: CommodityType | undefined) => void;
+    value: string | undefined;
+    onChange: (value: string) => void;
+    commodityTypes: TriggerCommodityType[];
+    isLoading?: boolean;
 }) {
     return (
         <div className="space-y-2">
-            <Label>Commodity Type</Label>
+            <Label>Commodity Type *</Label>
             <Select
-                value={value || 'ANY'}
-                onValueChange={(v) => onChange(v === 'ANY' ? undefined : (v as CommodityType))}
+                value={value || undefined}
+                onValueChange={(v) => onChange(v)}
+                disabled={isLoading || commodityTypes.length === 0}
             >
                 <SelectTrigger className="w-[180px]">
-                    <SelectValue placeholder="Any commodity" />
+                    <SelectValue placeholder="Select commodity type" />
                 </SelectTrigger>
                 <SelectContent>
-                    <SelectItem value="ANY">Any commodity</SelectItem>
-                    {COMMODITY_OPTIONS.map((option) => (
-                        <SelectItem key={option.id} value={option.value}>
-                            {option.label}
+                    {isLoading ? (
+                        <SelectItem value="loading" disabled>
+                            Loading commodity types...
                         </SelectItem>
-                    ))}
+                    ) : commodityTypes.length === 0 ? (
+                        <SelectItem value="no-types" disabled>
+                            No commodity types available
+                        </SelectItem>
+                    ) : (
+                        commodityTypes.map((option) => (
+                            <SelectItem key={option.id} value={option.id}>
+                                {option.name}
+                            </SelectItem>
+                        ))
+                    )}
                 </SelectContent>
             </Select>
         </div>

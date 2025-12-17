@@ -16,6 +16,11 @@ type ApiTriggerResponse = {
     siteId?: string | null;
     compoundId?: string | null;
     cellId?: string | null;
+    commodityTypeId?: string | null;
+    commodityType?: {
+        id: string;
+        name: string;
+    } | null;
     conditionLogic?: Trigger['conditionLogic'];
     conditions?: (Condition & {
         secondary_value?: number;
@@ -29,7 +34,6 @@ type ApiTriggerResponse = {
     })[];
     severity?: Trigger['severity'];
     isActive?: boolean;
-    commodityType?: Trigger['commodityType'];
 };
 
 const mapConditionFromApi = (condition: any): Condition => ({
@@ -60,6 +64,13 @@ const mapTriggerFromApi = (trigger: ApiTriggerResponse): Trigger => ({
     siteId: trigger.siteId ?? undefined,
     compoundId: trigger.compoundId ?? undefined,
     cellId: trigger.cellId ?? undefined,
+    commodityTypeId: trigger.commodityTypeId ?? '',
+    commodityType: trigger.commodityType
+        ? {
+            id: trigger.commodityType.id,
+            name: trigger.commodityType.name,
+        }
+        : undefined,
     conditionLogic: trigger.conditionLogic ?? 'AND',
     conditions: Array.isArray(trigger.conditions)
         ? trigger.conditions.map(mapConditionFromApi)
@@ -67,7 +78,6 @@ const mapTriggerFromApi = (trigger: ApiTriggerResponse): Trigger => ({
     actions: Array.isArray(trigger.actions) ? trigger.actions.map(mapActionFromApi) : [],
     severity: trigger.severity ?? 'MEDIUM',
     isActive: trigger.isActive ?? true,
-    commodityType: trigger.commodityType ?? undefined,
 });
 
 const mapConditionToApi = (condition: Condition) => ({
@@ -97,12 +107,12 @@ const mapTriggerToApi = (trigger: Trigger) => ({
     siteId: trigger.siteId,
     compoundId: trigger.compoundId,
     cellId: trigger.cellId,
+    commodityTypeId: trigger.commodityTypeId,
     conditionLogic: trigger.conditionLogic,
     conditions: trigger.conditions.map(mapConditionToApi),
     actions: trigger.actions.map(mapActionToApi),
     severity: trigger.severity,
     isActive: trigger.isActive,
-    commodityType: trigger.commodityType,
 });
 
 export function useTriggerApi() {

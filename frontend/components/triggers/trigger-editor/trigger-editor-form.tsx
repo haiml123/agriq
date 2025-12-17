@@ -1,6 +1,7 @@
 'use client';
 
-import { type Trigger } from '@/schemas/trigger.schema';
+import { useEffect, useMemo, useState } from 'react';
+import { type Trigger, type TriggerCommodityType } from '@/schemas/trigger.schema';
 import { ValidationErrors } from './validation-errors';
 import { BasicInfoSection } from './basic-info-section';
 import { ConditionsSection } from './conditions-section';
@@ -10,6 +11,8 @@ import { RulePreview } from './rule-preview';
 import { FormActions } from './form-actions';
 import { useTriggerForm } from '@/components/triggers/trigger-editor/hooks/use-trigger-form';
 import type { Organization } from '@/schemas/organization.schema';
+import type { CommodityType } from '@/schemas/commodity-type.schema';
+import { useCommodityTypeApi } from '@/hooks/use-commodity-type-api';
 
 interface TriggerEditorFormProps {
     trigger: Trigger | null;
@@ -26,6 +29,13 @@ export function TriggerEditorForm({
     isLoading,
     organizations,
 }: TriggerEditorFormProps) {
+    const { getList: getCommodityTypes, isLoading: isCommodityTypesLoading } = useCommodityTypeApi();
+    const [commodityTypes, setCommodityTypes] = useState<CommodityType[]>([]);
+    const commodityTypeOptions: TriggerCommodityType[] = useMemo(
+        () => commodityTypes.map(({ id, name }) => ({ id, name })),
+        [commodityTypes]
+    );
+
     const {
         formData,
         errors,
@@ -37,6 +47,17 @@ export function TriggerEditorForm({
         updateActionTemplate,
         validateAndSubmit,
     } = useTriggerForm(trigger);
+
+    useEffect(() => {
+        const loadCommodityTypes = async () => {
+            const response = await getCommodityTypes({ limit: 100, isActive: true });
+            if (response?.data?.items) {
+                setCommodityTypes(response.data.items);
+            }
+        };
+
+        void loadCommodityTypes();
+    }, [getCommodityTypes]);
 
     const handleSubmit = async () => {
         const validatedTrigger = validateAndSubmit();
@@ -61,6 +82,7 @@ export function TriggerEditorForm({
 
     const isFormValid =
         formData.name.trim() !== '' &&
+        formData.commodityTypeId.trim() !== '' &&
         formData.conditions.length > 0 &&
         formData.actions.length > 0;
 
@@ -73,6 +95,8 @@ export function TriggerEditorForm({
                 onUpdate={updateField}
                 onScopeChange={handleScopeChange}
                 organizations={organizations}
+                commodityTypes={commodityTypeOptions}
+                isCommodityTypesLoading={isCommodityTypesLoading}
             />
 
             <ConditionsSection
@@ -94,7 +118,7 @@ export function TriggerEditorForm({
                 onUpdateTemplate={updateActionTemplate}
             />
 
-            <RulePreview trigger={formData} />
+            <RulePreview trigger={formData} commodityTypes={commodityTypeOptions} />
 
             <FormActions
                 isEditing={trigger !== null}
