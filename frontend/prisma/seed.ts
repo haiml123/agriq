@@ -116,9 +116,9 @@ async function main() {
   //
   // ROLES (optional but nice)
   //
-  const [superRole, orgAdminRole, siteManagerRole] = await Promise.all([
+  const [superRole, adminRole, siteManagerRole] = await Promise.all([
     prisma.role.create({ data: { name: 'SUPER_ADMIN' } }),
-    prisma.role.create({ data: { name: 'ORG_ADMIN' } }),
+    prisma.role.create({ data: { name: 'ADMIN' } }),
     prisma.role.create({ data: { name: 'SITE_MANAGER' } }),
   ]);
 
@@ -133,14 +133,14 @@ async function main() {
       },
       {
         user_id: org1Admin.id,
-        role_id: orgAdminRole.id,
+        role_id: adminRole.id,
         organization_id: org1.id,
         site_id: null,
         granted_by_user_id: superAdmin.id,
       },
       {
         user_id: org2Admin.id,
-        role_id: orgAdminRole.id,
+        role_id: adminRole.id,
         organization_id: org2.id,
         site_id: null,
         granted_by_user_id: superAdmin.id,

@@ -31,6 +31,7 @@ export const userSchema = z.object({
     organizationId: z.string().nullable(),
     organization: userOrganizationSchema.nullable().optional(),
     roles: z.array(userRoleSchema),
+    userRole: roleTypeSchema.optional(),
     createdAt: z.string(),
     updatedAt: z.string(),
 });

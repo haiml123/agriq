@@ -5,6 +5,8 @@ import { PrismaService } from '../prisma/prisma.service';
 import * as bcrypt from 'bcryptjs';
 import { User } from '@prisma/client';
 import { UserService } from '../user/user.service';
+import { getUserLevelRole } from '../user/user.utils';
+import { AppUser } from '../types/user.type';
 
 export interface JwtPayload {
   sub: string;
@@ -32,7 +34,7 @@ export class AuthService {
   async validateUser(
     email: string,
     password: string,
-  ): Promise<Omit<User, 'password'> | null> {
+  ): Promise<Omit<AppUser, 'password'> | null> {
     const user = await this.userService.findByEmail(email);
 
     if (!user) {
@@ -50,8 +52,9 @@ export class AuthService {
     return result;
   }
 
-  async login(user: Omit<User, 'password'>): Promise<AuthResponse> {
+  async login(user: Omit<AppUser, 'password'>): Promise<AuthResponse> {
     const payload: JwtPayload = { sub: user.id, email: user.email };
+    const userRole = getUserLevelRole(user as any);
 
     const accessToken = this.jwtService.sign(payload, {
       expiresIn: '1005m',
@@ -63,6 +66,7 @@ export class AuthService {
       user: {
         ...user,
         password: undefined,
+        userRole,
       },
       accessToken,
       refreshToken,

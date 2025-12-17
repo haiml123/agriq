@@ -15,13 +15,13 @@ import { RoleTypeEnum } from '@/schemas/common.schema';
 
 const roleLabels: Record<string, string> = {
     SUPER_ADMIN: 'Super Admin',
-    ORG_ADMIN: 'Admin',
+    ADMIN: 'Admin',
     OPERATOR: 'Operator',
 }
 
 const roleStyles: Record<string, string> = {
     [RoleTypeEnum.SUPER_ADMIN]: 'bg-purple-500/10 text-purple-500 border-purple-500/30',
-    [RoleTypeEnum.ORG_ADMIN]: 'bg-emerald-500/10 text-emerald-500 border-emerald-500/30',
+    [RoleTypeEnum.ADMIN]: 'bg-emerald-500/10 text-emerald-500 border-emerald-500/30',
     [RoleTypeEnum.OPERATOR]: 'bg-blue-500/10 text-blue-500 border-blue-500/30',
 }
 
@@ -69,6 +69,9 @@ export default function UsersPage() {
     }
 
     const getUserRole = (user: UserType) => {
+        if (user.userRole) {
+            return user.userRole
+        }
         return user.roles?.[0]?.role || 'OPERATOR'
     }
 

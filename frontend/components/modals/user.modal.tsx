@@ -35,20 +35,23 @@ export function UserModal({ user, onClose }: UserModalProps) {
     // Determine initial site selection based on existing user roles
     const getInitialSiteIds = (): string[] => {
         if (!user?.roles?.length) return [ALL_SITES_OPTION]
-        // Only check OPERATOR roles for site-level access
-        const operatorRoles = user.roles.filter(r => r.role === 'OPERATOR')
-        if (operatorRoles.length === 0) return [ALL_SITES_OPTION]
+        // Consider any site-level assignment regardless of specific site role
+        const siteRoles = user.roles.filter(r => r.siteId)
+        if (siteRoles.length === 0) return [ALL_SITES_OPTION]
 
-        // If any OPERATOR role has siteId = null, it's org-level access
-        const hasOrgLevelAccess = operatorRoles.some(r => !r.siteId)
+        // If any site role has siteId = null, it's org-level access
+        const hasOrgLevelAccess = siteRoles.some(r => !r.siteId)
         if (hasOrgLevelAccess) return [ALL_SITES_OPTION]
 
         // Otherwise, return specific site IDs
-        return operatorRoles.map(r => r.siteId).filter(Boolean) as string[]
+        return siteRoles.map(r => r.siteId).filter(Boolean) as string[]
     }
 
     const getInitialRole = (): RoleType => {
-        return (user?.roles?.[0]?.role) || RoleTypeEnum.OPERATOR
+        if (user?.userRole && Object.values(RoleTypeEnum).includes(user.userRole as RoleTypeEnum)) {
+            return user.userRole as RoleType
+        }
+        return (user?.roles?.[0]?.role as RoleType) || RoleTypeEnum.OPERATOR
     }
 
     const [formData, setFormData] = useState({
@@ -211,8 +214,8 @@ export function UserModal({ user, onClose }: UserModalProps) {
 
     // Determine which roles the current user can assign
     const availableRoles = isSuperAdmin
-        ? ['SUPER_ADMIN', 'ORG_ADMIN', 'OPERATOR']
-        : ['ORG_ADMIN', 'OPERATOR']
+        ? ['SUPER_ADMIN', 'ADMIN', 'OPERATOR']
+        : ['ADMIN', 'OPERATOR']
 
     return (
         <>
@@ -307,7 +310,7 @@ export function UserModal({ user, onClose }: UserModalProps) {
                             {availableRoles.includes('SUPER_ADMIN') && (
                                 <SelectItem value="SUPER_ADMIN">Super Admin</SelectItem>
                             )}
-                            <SelectItem value="ORG_ADMIN">Admin</SelectItem>
+                            <SelectItem value="ADMIN">Admin</SelectItem>
                             <SelectItem value="OPERATOR">Operator</SelectItem>
                         </SelectContent>
                     </Select>

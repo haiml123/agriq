@@ -3,9 +3,10 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { ThemeToggle } from '@/theme/ThemeToggle'
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { BarChart3, Menu, X } from 'lucide-react'
+import { useCurrentUser } from '@/hooks'
 
 interface Tab {
     label: string
@@ -29,6 +30,19 @@ const defaultTabs: Tab[] = [
 export function AppHeader({ title, subtitle, tabs = defaultTabs }: AppHeaderProps) {
     const pathname = usePathname()
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+    const { isOperator } = useCurrentUser()
+
+    const resolvedTabs = useMemo(() => {
+        return tabs.map((tab) => {
+            if (tab.href === "/sites") {
+                return {
+                    ...tab,
+                    label: isOperator ? "My Sites" : "All Sites",
+                }
+            }
+            return tab
+        })
+    }, [isOperator, tabs])
 
     const isActiveTab = (href: string) => {
         if (href === "/dashboard") {
@@ -71,7 +85,7 @@ export function AppHeader({ title, subtitle, tabs = defaultTabs }: AppHeaderProp
 
             <nav className="hidden md:block sticky top-0 z-50 border-b border-border bg-background">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex gap-1">
-                    {tabs.map((tab) => {
+                    {resolvedTabs.map((tab) => {
                         const isActive = isActiveTab(tab.href)
                         return (
                             <Link
@@ -111,7 +125,7 @@ export function AppHeader({ title, subtitle, tabs = defaultTabs }: AppHeaderProp
 
                             {/* Menu Items */}
                             <nav className="flex flex-col p-2 gap-1">
-                                {tabs.map((tab) => {
+                                {resolvedTabs.map((tab) => {
                                     const isActive = isActiveTab(tab.href)
                                     return (
                                         <Link

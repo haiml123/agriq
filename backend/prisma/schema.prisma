@@ -12,7 +12,7 @@ datasource db {
 //
 enum role_type {
   SUPER_ADMIN
-  ORG_ADMIN
+  ADMIN
   OPERATOR
 }
 
@@ -104,6 +104,7 @@ model User {
   phone    String?
   name     String
   status   entity_status @default(ACTIVE)
+  userRole role_type     @default(OPERATOR) @map("user_role")
 
   languagePreference String? @map("language_preference")
 
