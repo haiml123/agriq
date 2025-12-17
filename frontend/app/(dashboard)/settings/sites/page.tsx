@@ -14,7 +14,7 @@ import { SiteModal } from '@/components/modals/site.modal'
 
 export default function SitesPage() {
     const modal = useModal()
-    const { user, isSuperAdmin, isLoading: isCurrentUserLoading } = useCurrentUser()
+    const { user, isSuperAdmin, isAdmin, isOperator, isLoading: isCurrentUserLoading } = useCurrentUser()
     const {
         getList,
         create: createSite,
@@ -32,6 +32,7 @@ export default function SitesPage() {
 
     const [sites, setSites] = useState<Site[]>(testSites)
     const [selectedOrganizationId, setSelectedOrganizationId] = useState<string>('all')
+    const canManageSites = isSuperAdmin || isAdmin
 
     const fetchSites = useCallback(async () => {
         if (isCurrentUserLoading || !user) return
@@ -163,19 +164,21 @@ export default function SitesPage() {
                 <div className="flex items-center gap-3">
                     <SidebarTrigger />
                     <div>
-                        <h1 className="text-2xl font-semibold text-foreground">Sites</h1>
+                        <h1 className="text-2xl font-semibold text-foreground">{isOperator ? 'My Sites' : 'Sites'}</h1>
                         <p className="text-sm text-muted-foreground mt-1">
-                            Manage sites, compounds, and cells
+                            {isOperator ? 'View sites assigned to you' : 'Manage sites, compounds, and cells'}
                         </p>
                     </div>
                 </div>
-                <Button
-                    onClick={openCreateSiteModal}
-                    className="bg-emerald-500 hover:bg-emerald-600"
-                >
-                    <Plus className="w-4 h-4 mr-2" />
-                    Add Site
-                </Button>
+                {canManageSites && (
+                    <Button
+                        onClick={openCreateSiteModal}
+                        className="bg-emerald-500 hover:bg-emerald-600"
+                    >
+                        <Plus className="w-4 h-4 mr-2" />
+                        Add Site
+                    </Button>
+                )}
             </div>
 
             <div className="bg-card border border-border rounded-lg overflow-hidden">
@@ -208,6 +211,7 @@ export default function SitesPage() {
                         onCreateCell={handleCreateCell}
                         onEditCell={handleEditCell}
                         onDeleteCell={handleDeleteCell}
+                        canManageSites={canManageSites}
                     />
                 ) : (
                     <div className="p-8 text-center">

@@ -11,6 +11,7 @@ interface CompoundRowProps {
   isExpanded: boolean;
   onToggle: () => void;
   isLast: boolean;
+  canManage?: boolean;
   onCreateCell: () => void;
   onEditCompound: () => void;
   onDeleteCompound: () => void;
@@ -23,6 +24,7 @@ export const CompoundRow: React.FC<CompoundRowProps> = ({
   isExpanded,
   onToggle,
   isLast,
+  canManage = true,
   onCreateCell,
   onEditCompound,
   onDeleteCompound,
@@ -55,41 +57,45 @@ export const CompoundRow: React.FC<CompoundRowProps> = ({
         </div>
         <div className="flex items-center gap-2">
           <StatusIndicator status={status} />
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={(e) => {
-              e.stopPropagation();
-              onCreateCell();
-            }}
-            className="text-muted-foreground hover:text-cyan-500 hover:bg-cyan-500/10"
-            title="Add Cell"
-          >
-            <Plus size={16} />
-          </Button>
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={(e) => {
-              e.stopPropagation();
-              onEditCompound();
-            }}
-            title="Edit Compound"
-          >
-            <Pencil size={16} />
-          </Button>
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={(e) => {
-              e.stopPropagation();
-              onDeleteCompound();
-            }}
-            className="text-muted-foreground hover:text-destructive hover:bg-destructive/10"
-            title="Delete Compound"
-          >
-            <Trash2 size={16} />
-          </Button>
+          {canManage && (
+            <>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onCreateCell();
+                }}
+                className="text-muted-foreground hover:text-cyan-500 hover:bg-cyan-500/10"
+                title="Add Cell"
+              >
+                <Plus size={16} />
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onEditCompound();
+                }}
+                title="Edit Compound"
+              >
+                <Pencil size={16} />
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onDeleteCompound();
+                }}
+                className="text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                title="Delete Compound"
+              >
+                <Trash2 size={16} />
+              </Button>
+            </>
+          )}
         </div>
       </div>
 
@@ -100,6 +106,7 @@ export const CompoundRow: React.FC<CompoundRowProps> = ({
               <CellBox
                 key={cell.id}
                 cell={cell}
+                canManage={canManage}
                 onEdit={() => onEditCell(cell)}
                 onDelete={() => onDeleteCell(cell)}
               />

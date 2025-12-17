@@ -2,6 +2,18 @@ import { z } from 'zod';
 import { entityStatusSchema, roleTypeSchema } from '@/schemas/common.schema';
 import { siteSchema } from '@/schemas/sites.schema';
 
+export const siteUserRoleSchema = z.enum(['ADMIN', 'OPERATOR']);
+
+export const siteUserSchema = z.object({
+    id: z.string(),
+    userId: z.string(),
+    siteId: z.string(),
+    siteRole: siteUserRoleSchema,
+    createdAt: z.date(),
+    updatedAt: z.date(),
+    site: siteSchema.optional(),
+});
+
 export const userRoleSchema = z.object({
     id: z.number(),
     userId: z.string(),
@@ -30,7 +42,9 @@ export const userSchema = z.object({
     languagePreference: z.string().nullable(),
     organizationId: z.string().nullable(),
     organization: userOrganizationSchema.nullable().optional(),
-    roles: z.array(userRoleSchema),
+    userRole: roleTypeSchema,
+    roles: z.array(userRoleSchema).optional(),
+    siteUsers: z.array(siteUserSchema).optional(),
     createdAt: z.string(),
     updatedAt: z.string(),
 });

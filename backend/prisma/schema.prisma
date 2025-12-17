@@ -12,7 +12,12 @@ datasource db {
 //
 enum role_type {
   SUPER_ADMIN
-  ORG_ADMIN
+  ADMIN
+  OPERATOR
+}
+
+enum site_role {
+  ADMIN
   OPERATOR
 }
 
@@ -111,7 +116,11 @@ model User {
   organization   Organization? @relation(fields: [organizationId], references: [id])
 
   // Roles
-  roles UserRole[]
+  userRole role_type   @default(OPERATOR) @map("user_role")
+  roles    UserRole[]
+
+  // Site assignments
+  siteUsers SiteUser[]
 
   // Auth - Refresh tokens
   refreshTokens RefreshToken[]
@@ -249,6 +258,7 @@ model Site {
   alerts    Alert[]
   trades    Trade[]
   roles     UserRole[]
+  siteUsers SiteUser[]
   triggers  EventTrigger[]
   invites   Invite[]
 
@@ -258,6 +268,24 @@ model Site {
   updatedAt DateTime @updatedAt @map("updated_at")
 
   @@map("site")
+}
+
+model SiteUser {
+  id String @id @default(cuid())
+
+  userId String @map("user_id")
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  siteId String @map("site_id")
+  site   Site   @relation(fields: [siteId], references: [id], onDelete: Cascade)
+
+  siteRole site_role @map("site_role")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@unique([userId, siteId])
+  @@map("site_users")
 }
 
 model Compound {

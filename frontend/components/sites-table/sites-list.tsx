@@ -9,6 +9,7 @@ import { DeleteConfirmModal } from '@/components/modals/delete-confirm.modal';
 
 interface SitesListProps {
   sites: Site[];
+  canManageSites?: boolean;
   onCreateSite?: (data: Pick<Site, "name" | "address">) => void;
   onEditSite?: (siteId: string, data: Pick<Site, "name" | "address">) => void;
   onDeleteSite?: (siteId: string) => void;
@@ -22,6 +23,7 @@ interface SitesListProps {
 
 export const SitesList: React.FC<SitesListProps> = ({
   sites,
+  canManageSites = true,
   onCreateSite,
   onEditSite,
   onDeleteSite,
@@ -155,6 +157,7 @@ export const SitesList: React.FC<SitesListProps> = ({
           expandedCompounds={expandedCompounds}
           onToggleCompound={toggleCompound}
           isLast={idx === sites.length - 1}
+          canManage={canManageSites}
           onCreateCompound={() => handleCreateCompound(site)}
           onEditSite={() => handleEditSite(site)}
           onDeleteSite={() => handleDeleteSite(site)}

@@ -13,6 +13,7 @@ interface SiteRowProps {
   expandedCompounds: Set<string>;
   onToggleCompound: (compoundId: string) => void;
   isLast: boolean;
+  canManage?: boolean;
   onCreateCompound: () => void;
   onEditSite: () => void;
   onDeleteSite: () => void;
@@ -30,6 +31,7 @@ export const SiteRow: React.FC<SiteRowProps> = ({
   expandedCompounds,
   onToggleCompound,
   isLast,
+  canManage = true,
   onCreateCompound,
   onEditSite,
   onDeleteSite,
@@ -80,41 +82,45 @@ export const SiteRow: React.FC<SiteRowProps> = ({
         </div>
         <div className="flex items-center gap-2">
           <StatusIndicator status={status} />
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={(e) => {
-              e.stopPropagation();
-              onCreateCompound();
-            }}
-            className="text-muted-foreground hover:text-emerald-500 hover:bg-emerald-500/10"
-            title="Add Compound"
-          >
-            <Plus size={16} />
-          </Button>
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={(e) => {
-              e.stopPropagation();
-              onEditSite();
-            }}
-            title="Edit Site"
-          >
-            <Pencil size={16} />
-          </Button>
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={(e) => {
-              e.stopPropagation();
-              onDeleteSite();
-            }}
-            className="text-muted-foreground hover:text-destructive hover:bg-destructive/10"
-            title="Delete Site"
-          >
-            <Trash2 size={16} />
-          </Button>
+          {canManage && (
+            <>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onCreateCompound();
+                }}
+                className="text-muted-foreground hover:text-emerald-500 hover:bg-emerald-500/10"
+                title="Add Compound"
+              >
+                <Plus size={16} />
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onEditSite();
+                }}
+                title="Edit Site"
+              >
+                <Pencil size={16} />
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onDeleteSite();
+                }}
+                className="text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                title="Delete Site"
+              >
+                <Trash2 size={16} />
+              </Button>
+            </>
+          )}
         </div>
       </div>
 
@@ -127,6 +133,7 @@ export const SiteRow: React.FC<SiteRowProps> = ({
               isExpanded={expandedCompounds.has(compound.id)}
               onToggle={() => onToggleCompound(compound.id)}
               isLast={idx === (site.compounds?.length ?? 0) - 1}
+              canManage={canManage}
               onCreateCell={() => onCreateCell(compound)}
               onEditCompound={() => onEditCompound(compound)}
               onDeleteCompound={() => onDeleteCompound(compound)}

@@ -7,10 +7,14 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateUserDto, ListUsersQueryDto } from './dto';
-import { Prisma, role_type, User } from '@prisma/client';
+import { Prisma, role_type, site_role, User } from '@prisma/client';
 import { UpdateUserDto } from './dto/update-user.dto';
 import * as bcrypt from 'bcryptjs';
-import { getOrganizationFilter, isSuperAdmin, validateUserManagementPermission, } from './user.utils';
+import {
+  getOrganizationFilter,
+  isSuperAdmin,
+  validateUserManagementPermission,
+} from './user.utils';
 
 @Injectable()
 export class UserService {
@@ -76,11 +80,11 @@ export class UserService {
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Build role records
+    // Build role records (legacy) and site-level assignments
     let roleRecords: Prisma.UserRoleCreateWithoutUserInput[];
 
     if (role === role_type.OPERATOR && siteIds && siteIds.length > 0) {
-      // Site-level access: create one UserRole per site
+      // Site-level access: create one UserRole per site for backward compatibility
       roleRecords = siteIds.map((siteId) => ({
         role,
         organization: { connect: { id: organizationId } },
@@ -101,18 +105,31 @@ export class UserService {
       ];
     }
 
+    const siteUserAssignments =
+      role === role_type.OPERATOR && siteIds && siteIds.length > 0
+        ? siteIds.map((siteId) => ({ siteId, siteRole: site_role.OPERATOR }))
+        : [];
+
     return this.prisma.user.create({
       data: {
         ...userData,
         password: hashedPassword,
         organizationId,
-        roles: {
-          create: roleRecords,
-        },
+        userRole: role,
+        roles: roleRecords.length
+          ? {
+              create: roleRecords,
+            }
+          : undefined,
+        siteUsers:
+          siteUserAssignments.length > 0
+            ? { create: siteUserAssignments }
+            : undefined,
       },
       include: {
         roles: true,
         organization: { select: { id: true, name: true } },
+        siteUsers: true,
       },
     });
   }
@@ -123,7 +140,7 @@ export class UserService {
     // Find existing user
     const user = await this.prisma.user.findUnique({
       where: { id },
-      include: { roles: true },
+      include: { roles: true, siteUsers: true },
     });
 
     if (!user) {
@@ -134,8 +151,8 @@ export class UserService {
     validateUserManagementPermission({
       currentUser,
       targetOrganizationId: user.organizationId,
-      targetRole: role ?? user.roles[0]?.role,
-      existingUserRoles: user.roles,
+      targetRole: role ?? user.userRole,
+      existingUserRole: user.userRole,
     });
 
     // Validate siteIds if provided
@@ -161,9 +178,13 @@ export class UserService {
       updateData.password = await bcrypt.hash(password, 10);
     }
 
+    if (role) {
+      updateData.userRole = role;
+    }
+
     // Only update roles if role or siteIds were explicitly provided
     if (role || siteIds) {
-      const newRole = role ?? user.roles[0]?.role;
+      const newRole = role ?? user.userRole;
       const organizationId = user.organizationId;
 
       // Extra safety: org admins should never reach here with SUPER_ADMIN
@@ -178,8 +199,11 @@ export class UserService {
         where: { userId: id },
       });
 
+      // Reset site assignments
+      await this.prisma.siteUser.deleteMany({ where: { userId: id } });
+
       // Create new roles using createMany (accepts direct IDs)
-      let roleRecords: Prisma.UserRoleCreateManyInput[];
+      let roleRecords: Prisma.UserRoleCreateManyInput[] = [];
 
       if (newRole === role_type.OPERATOR && siteIds && siteIds.length > 0) {
         // Site-level access: create one UserRole per site
@@ -190,6 +214,14 @@ export class UserService {
           siteId,
           grantedByUserId: currentUser.id,
         }));
+
+        await this.prisma.siteUser.createMany({
+          data: siteIds.map((siteId) => ({
+            userId: id,
+            siteId,
+            siteRole: site_role.OPERATOR,
+          })),
+        });
       } else {
         // Org-level access (all sites): siteId = null
         roleRecords = [
@@ -204,9 +236,11 @@ export class UserService {
         ];
       }
 
-      await this.prisma.userRole.createMany({
-        data: roleRecords,
-      });
+      if (roleRecords.length) {
+        await this.prisma.userRole.createMany({
+          data: roleRecords,
+        });
+      }
     }
 
     return this.prisma.user.update({
@@ -215,6 +249,7 @@ export class UserService {
       include: {
         roles: true,
         organization: { select: { id: true, name: true } },
+        siteUsers: true,
       },
     });
   }
@@ -262,6 +297,7 @@ export class UserService {
             select: { id: true, name: true },
           },
           roles: true,
+          siteUsers: true,
         },
       }),
       this.prisma.user.count({ where }),
@@ -284,6 +320,7 @@ export class UserService {
           select: { id: true, name: true },
         },
         roles: true,
+        siteUsers: true,
       },
     });
 
@@ -299,6 +336,7 @@ export class UserService {
       where: { email },
       include: {
         roles: true,
+        siteUsers: true,
       },
     });
   }
@@ -309,6 +347,7 @@ export class UserService {
       include: {
         organization: true,
         roles: true,
+        siteUsers: true,
       },
     });
   }

@@ -6,11 +6,12 @@ import { Button } from '@/components/ui/button';
 
 interface CellBoxProps {
   cell: Cell;
+  canManage?: boolean;
   onEdit: () => void;
   onDelete: () => void;
 }
 
-export const CellBox: React.FC<CellBoxProps> = ({ cell, onEdit, onDelete }) => {
+export const CellBox: React.FC<CellBoxProps> = ({ cell, canManage = true, onEdit, onDelete }) => {
   return (
     <div className="p-3 bg-card rounded-lg border border-border hover:bg-muted/30 transition-all cursor-pointer">
       <div className="flex justify-between gap-2">
@@ -38,30 +39,32 @@ export const CellBox: React.FC<CellBoxProps> = ({ cell, onEdit, onDelete }) => {
 
         <div className="flex flex-col items-center justify-between">
           <StatusDot status={cell.status} />
-          <div className="flex flex-col gap-1">
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-7 w-7"
-              onClick={(e) => {
-                e.stopPropagation();
-                onEdit();
-              }}
-            >
-              <Pencil size={14} />
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-7 w-7 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
-              onClick={(e) => {
-                e.stopPropagation();
-                onDelete();
-              }}
-            >
-              <Trash2 size={14} />
-            </Button>
-          </div>
+          {canManage && (
+            <div className="flex flex-col gap-1">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-7 w-7"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onEdit();
+                }}
+              >
+                <Pencil size={14} />
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-7 w-7 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onDelete();
+                }}
+              >
+                <Trash2 size={14} />
+              </Button>
+            </div>
+          )}
         </div>
       </div>
     </div>

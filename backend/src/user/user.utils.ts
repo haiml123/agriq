@@ -1,18 +1,21 @@
 import { role_type, User } from '@prisma/client';
 import { ForbiddenException } from '@nestjs/common';
 
-export function isSuperAdmin(user: User): boolean {
-  return user.roles.some((role) => role.role === role_type.SUPER_ADMIN);
+function resolveUserRole(user: User): role_type | undefined {
+  return user.userRole ?? (user as any)?.roles?.[0]?.role;
 }
 
-export function isOrgAdmin(user: User): boolean {
-  return user.roles.some((role) => role.role === role_type.ORG_ADMIN);
+export function isSuperAdmin(user: User): boolean {
+  return resolveUserRole(user) === role_type.SUPER_ADMIN;
+}
+
+export function isAdmin(user: User): boolean {
+  return resolveUserRole(user) === role_type.ADMIN;
 }
 
 export function getAdminOrganizationIds(user: User): string[] {
-  return user.roles
-    .filter((r) => r.role === role_type.ORG_ADMIN && r.organizationId)
-    .map((r) => r.organizationId);
+  // In the new role model, admins are tied to their organizationId
+  return isAdmin(user) && user.organizationId ? [user.organizationId] : [];
 }
 
 /**
@@ -29,19 +32,21 @@ export function getOrganizationFilter(
     return requestedOrgId || undefined;
   }
 
-  const adminOrgIds = getAdminOrganizationIds(user);
+  const userOrgId = user.organizationId;
 
-  if (adminOrgIds.length === 0) {
-    return null; // No access
+  if (!userOrgId) {
+    return null;
   }
 
-  // If specific org requested, validate access
-  if (requestedOrgId) {
-    return adminOrgIds.includes(requestedOrgId) ? requestedOrgId : null;
+  if (isAdmin(user)) {
+    if (requestedOrgId && requestedOrgId !== userOrgId) {
+      return null;
+    }
+    return userOrgId;
   }
 
-  // Return single org or multiple
-  return adminOrgIds.length === 1 ? adminOrgIds[0] : { in: adminOrgIds };
+  // Operators cannot list organizations/users outside their scope
+  return null;
 }
 
 /**
@@ -52,9 +57,9 @@ export function validateUserManagementPermission(params: {
   currentUser: User;
   targetOrganizationId: string | null;
   targetRole: role_type;
-  existingUserRoles?: { role: role_type }[]; // For update: existing user's roles
+  existingUserRole?: role_type | null;
 }): void {
-  const { currentUser, targetOrganizationId, targetRole, existingUserRoles } =
+  const { currentUser, targetOrganizationId, targetRole, existingUserRole } =
     params;
 
   // Super admins can do anything
@@ -62,24 +67,28 @@ export function validateUserManagementPermission(params: {
     return;
   }
 
-  const adminOrgIds = getAdminOrganizationIds(currentUser);
-
-  // Check organization access
-  if (!targetOrganizationId || !adminOrgIds.includes(targetOrganizationId)) {
+  // Admins can manage users only within their organization
+  if (!isAdmin(currentUser) || !currentUser.organizationId) {
     throw new ForbiddenException(
       'You do not have permission to manage users in this organization',
     );
   }
 
-  // Org admins cannot assign super admin role
+  if (currentUser.organizationId !== targetOrganizationId) {
+    throw new ForbiddenException(
+      'You do not have permission to manage users in this organization',
+    );
+  }
+
+  // Admins cannot assign super admin role
   if (targetRole === role_type.SUPER_ADMIN) {
     throw new ForbiddenException(
       'You do not have permission to assign super admin role',
     );
   }
 
-  // Org admins cannot edit existing super admins
-  if (existingUserRoles?.some((r) => r.role === role_type.SUPER_ADMIN)) {
+  // Admins cannot edit existing super admins
+  if (existingUserRole === role_type.SUPER_ADMIN) {
     throw new ForbiddenException(
       'You do not have permission to edit super admin users',
     );
@@ -94,5 +103,15 @@ export function canAccessOrganization(
   if (isSuperAdmin(user)) {
     return true;
   }
-  return getAdminOrganizationIds(user).includes(organizationId);
+
+  if (!user.organizationId) {
+    return false;
+  }
+
+  if (isAdmin(user)) {
+    return user.organizationId === organizationId;
+  }
+
+  // Operators can only access their own organization
+  return user.organizationId === organizationId;
 }

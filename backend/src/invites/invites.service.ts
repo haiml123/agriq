@@ -9,7 +9,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { EmailService } from '../email/email.service';
 import { AcceptInviteDto, CreateInviteDto } from './dto';
 import * as bcrypt from 'bcryptjs';
-import { invite_status, role_type, Site } from '@prisma/client';
+import { invite_status, role_type, site_role, Site } from '@prisma/client';
 
 @Injectable()
 export class InvitesService {
@@ -244,6 +244,7 @@ export class InvitesService {
           name: `${firstName} ${lastName}`,
           phone,
           organizationId: invite.organizationId,
+          userRole: role_type.OPERATOR,
         },
       });
 
@@ -257,6 +258,16 @@ export class InvitesService {
           role: role_type.OPERATOR,
         },
       });
+
+      if (invite.siteId) {
+        await tx.siteUser.create({
+          data: {
+            userId: user.id,
+            siteId: invite.siteId,
+            siteRole: site_role.OPERATOR,
+          },
+        });
+      }
 
       await tx.invite.update({
         where: { id: invite.id },

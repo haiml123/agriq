@@ -1,4 +1,13 @@
-import { Body, Controller, Get, Param, Patch, Post, Query, UseGuards, } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Patch,
+  Post,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto, ListUsersQueryDto } from './dto';
 import { JwtAuthGuard } from '../auth/guards';
@@ -15,17 +24,14 @@ export class UserController {
     console.log('user controller');
   }
 
-  @Roles(role_type.SUPER_ADMIN, role_type.ORG_ADMIN)
+  @Roles(role_type.SUPER_ADMIN, role_type.ADMIN)
   @Get()
-  findAll(
-    @Query() query: ListUsersQueryDto,
-    @CurrentUser() user: User,
-  ) {
+  findAll(@Query() query: ListUsersQueryDto, @CurrentUser() user: User) {
     console.log('users query:', query);
     return this.userService.findAll(user, query);
   }
 
-  @Roles(role_type.SUPER_ADMIN, role_type.ORG_ADMIN)
+  @Roles(role_type.SUPER_ADMIN, role_type.ADMIN)
   @Post()
   create(@Body() dto: CreateUserDto, @CurrentUser() user: User) {
     return this.userService.create(user, dto);

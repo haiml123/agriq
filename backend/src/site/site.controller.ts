@@ -68,12 +68,18 @@ export class SiteController {
   // ─────────────────────────────────────────────────────────────
 
   @Post('compounds')
-  createCompound(@Body() dto: CreateCompoundDto, @CurrentUser() user: UserWithRoles) {
+  createCompound(
+    @Body() dto: CreateCompoundDto,
+    @CurrentUser() user: UserWithRoles,
+  ) {
     return this.siteService.createCompound(user, dto);
   }
 
   @Get('compounds/:id')
-  findCompoundById(@Param('id') id: string, @CurrentUser() user: UserWithRoles) {
+  findCompoundById(
+    @Param('id') id: string,
+    @CurrentUser() user: UserWithRoles,
+  ) {
     return this.siteService.findCompoundById(user, id);
   }
 

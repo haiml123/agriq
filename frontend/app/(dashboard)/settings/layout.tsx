@@ -23,7 +23,7 @@ const settingsMenuItems: NavItem[] = [
         label: "Users and Roles",
         href: "/settings/users",
         icon: Users,
-        roles: [RoleTypeEnum.SUPER_ADMIN, RoleTypeEnum.ORG_ADMIN]
+        roles: [RoleTypeEnum.SUPER_ADMIN, RoleTypeEnum.ADMIN]
     },
     {
         label: "Languages",

@@ -35,7 +35,7 @@ interface UserModalProps {
 }
 
 export function UserModal({ user, onClose }: UserModalProps) {
-    const { user: appUser, isSuperAdmin, isAdmin } = useCurrentUser()
+    const { user: appUser, isSuperAdmin } = useCurrentUser()
     const { create, update, isCreating } = useUserApi()
     const { getList: getOrganizations } = useOrganizationApi()
 
@@ -44,21 +44,13 @@ export function UserModal({ user, onClose }: UserModalProps) {
 
     // Determine initial site selection based on existing user roles
     const getInitialSiteIds = (): string[] => {
-        if (!user?.roles?.length) return [ALL_SITES_OPTION]
-        // Only check OPERATOR roles for site-level access
-        const operatorRoles = user.roles.filter(r => r.role === 'OPERATOR')
-        if (operatorRoles.length === 0) return [ALL_SITES_OPTION]
-
-        // If any OPERATOR role has siteId = null, it's org-level access
-        const hasOrgLevelAccess = operatorRoles.some(r => !r.siteId)
-        if (hasOrgLevelAccess) return [ALL_SITES_OPTION]
-
-        // Otherwise, return specific site IDs
-        return operatorRoles.map(r => r.siteId).filter(Boolean) as string[]
+        if (user?.userRole !== 'OPERATOR') return [ALL_SITES_OPTION]
+        if (!user?.siteUsers?.length) return []
+        return user.siteUsers.map((assignment) => assignment.siteId)
     }
 
     const getInitialRole = (): RoleType => {
-        return (user?.roles?.[0]?.role as RoleType) || 'OPERATOR'
+        return (user?.userRole as RoleType) || 'OPERATOR'
     }
 
     const [formData, setFormData] = useState({
@@ -209,8 +201,8 @@ export function UserModal({ user, onClose }: UserModalProps) {
 
     // Determine which roles the current user can assign
     const availableRoles = isSuperAdmin
-        ? ['SUPER_ADMIN', 'ORG_ADMIN', 'OPERATOR']
-        : ['ORG_ADMIN', 'OPERATOR']
+        ? ['SUPER_ADMIN', 'ADMIN', 'OPERATOR']
+        : ['ADMIN', 'OPERATOR']
 
     return (
         <>
@@ -305,7 +297,7 @@ export function UserModal({ user, onClose }: UserModalProps) {
                             {availableRoles.includes('SUPER_ADMIN') && (
                                 <SelectItem value="SUPER_ADMIN">Super Admin</SelectItem>
                             )}
-                            <SelectItem value="ORG_ADMIN">Admin</SelectItem>
+                            <SelectItem value="ADMIN">Admin</SelectItem>
                             <SelectItem value="OPERATOR">Operator</SelectItem>
                         </SelectContent>
                     </Select>

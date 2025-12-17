@@ -15,11 +15,13 @@ export function useCurrentUser() {
         return session.user as unknown as User
     }, [session?.user, status])
 
+    const userRole = user?.userRole
+
     return {
         user,
         isLoading: status === 'loading',
-        isSuperAdmin: user?.roles.find(role => role.role === RoleTypeEnum.SUPER_ADMIN),
-        isAdmin: user?.roles.find(role => role.role === RoleTypeEnum.ORG_ADMIN),
-        isOperator: user?.roles.find(role => role.role === RoleTypeEnum.OPERATOR),
+        isSuperAdmin: userRole === RoleTypeEnum.SUPER_ADMIN,
+        isAdmin: userRole === RoleTypeEnum.ADMIN,
+        isOperator: userRole === RoleTypeEnum.OPERATOR,
     }
 }

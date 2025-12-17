@@ -1,4 +1,13 @@
-import { IsString, IsNotEmpty, MinLength, MaxLength, IsOptional, IsEnum, IsNumber, Min } from 'class-validator';
+import {
+  IsString,
+  IsNotEmpty,
+  MinLength,
+  MaxLength,
+  IsOptional,
+  IsEnum,
+  IsNumber,
+  Min,
+} from 'class-validator';
 import { entity_status } from '@prisma/client';
 
 export class CreateCellDto {

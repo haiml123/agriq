@@ -14,6 +14,7 @@ async function main() {
       email: 'superadmin@example.com',
       phone: null,
       language_preference: 'en',
+      user_role: 'SUPER_ADMIN',
     },
   });
 
@@ -34,6 +35,7 @@ async function main() {
       phone: '+1-555-1000',
       language_preference: 'en',
       organization_id: org1.id,
+      user_role: 'ADMIN',
     },
   });
 
@@ -86,6 +88,7 @@ async function main() {
       phone: '+1-555-2000',
       language_preference: 'en',
       organization_id: org2.id,
+      user_role: 'ADMIN',
     },
   });
 
@@ -118,7 +121,7 @@ async function main() {
   //
   const [superRole, orgAdminRole, siteManagerRole] = await Promise.all([
     prisma.role.create({ data: { name: 'SUPER_ADMIN' } }),
-    prisma.role.create({ data: { name: 'ORG_ADMIN' } }),
+    prisma.role.create({ data: { name: 'ADMIN' } }),
     prisma.role.create({ data: { name: 'SITE_MANAGER' } }),
   ]);
 
