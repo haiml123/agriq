@@ -15,11 +15,33 @@ export function useCurrentUser() {
         return session.user as unknown as User
     }, [session?.user, status])
 
+    const userRole = useMemo(() => {
+        if (!user) return null
+        const roles = user.roles ?? []
+
+        if (user.userRole && Object.values(RoleTypeEnum).includes(user.userRole as RoleTypeEnum)) {
+            return user.userRole as RoleTypeEnum
+        }
+
+        if (roles.find(role => role.role === RoleTypeEnum.SUPER_ADMIN)) {
+            return RoleTypeEnum.SUPER_ADMIN
+        }
+        if (roles.find(role => role.role === RoleTypeEnum.ADMIN)) {
+            return RoleTypeEnum.ADMIN
+        }
+        if (roles.find(role => role.role === RoleTypeEnum.OPERATOR)) {
+            return RoleTypeEnum.OPERATOR
+        }
+
+        return null
+    }, [user])
+
     return {
         user,
         isLoading: status === 'loading',
-        isSuperAdmin: user?.roles.find(role => role.role === RoleTypeEnum.SUPER_ADMIN),
-        isAdmin: user?.roles.find(role => role.role === RoleTypeEnum.ORG_ADMIN),
-        isOperator: user?.roles.find(role => role.role === RoleTypeEnum.OPERATOR),
+        userRole,
+        isSuperAdmin: userRole === RoleTypeEnum.SUPER_ADMIN,
+        isAdmin: userRole === RoleTypeEnum.ADMIN,
+        isOperator: userRole === RoleTypeEnum.OPERATOR,
     }
 }

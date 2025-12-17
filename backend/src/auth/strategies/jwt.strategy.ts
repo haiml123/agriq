@@ -3,6 +3,7 @@ import { PassportStrategy } from '@nestjs/passport';
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { UserService } from '../../user/user.service';
+import { getUserLevelRole } from '../../user/user.utils';
 
 export interface JwtPayload {
   sub: string;
@@ -33,6 +34,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
 
     // Return user without password
     const { password, ...result } = user;
-    return result;
+    const userRole = getUserLevelRole(user as any);
+    return { ...result, userRole };
   }
 }

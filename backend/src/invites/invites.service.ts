@@ -244,6 +244,7 @@ export class InvitesService {
           name: `${firstName} ${lastName}`,
           phone,
           organizationId: invite.organizationId,
+          userRole: role_type.OPERATOR,
         },
       });
 

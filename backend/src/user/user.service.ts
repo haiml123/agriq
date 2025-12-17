@@ -7,7 +7,7 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateUserDto, ListUsersQueryDto } from './dto';
-import { Prisma, role_type, User } from '@prisma/client';
+import { Prisma, role_type } from '@prisma/client';
 import { UpdateUserDto } from './dto/update-user.dto';
 import * as bcrypt from 'bcryptjs';
 import {
@@ -109,6 +109,7 @@ export class UserService {
         ...userData,
         password: hashedPassword,
         organizationId,
+        userRole: role,
         roles: {
           create: roleRecords,
         },
@@ -166,7 +167,8 @@ export class UserService {
 
     // Only update roles if role or siteIds were explicitly provided
     if (role || siteIds) {
-      const newRole = role ?? user.roles[0]?.role;
+      const newRole =
+        role ?? user.roles[0]?.role ?? user.userRole ?? role_type.OPERATOR;
       const organizationId = user.organizationId;
 
       // Extra safety: org admins should never reach here with SUPER_ADMIN
@@ -210,6 +212,8 @@ export class UserService {
       await this.prisma.userRole.createMany({
         data: roleRecords,
       });
+
+      updateData.userRole = newRole;
     }
 
     return this.prisma.user.update({
@@ -297,7 +301,7 @@ export class UserService {
     return user;
   }
 
-  async findByEmail(email: string): Promise<User | null> {
+  async findByEmail(email: string): Promise<AppUser | null> {
     return this.prisma.user.findUnique({
       where: { email },
       include: {
@@ -306,7 +310,7 @@ export class UserService {
     });
   }
 
-  async findById(id: string): Promise<User | null> {
+  async findById(id: string): Promise<AppUser | null> {
     return this.prisma.user.findUnique({
       where: { id },
       include: {

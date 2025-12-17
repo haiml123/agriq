@@ -25,7 +25,7 @@ export class UserController {
     console.log('user controller');
   }
 
-  @Roles(role_type.SUPER_ADMIN, role_type.ORG_ADMIN)
+  @Roles(role_type.SUPER_ADMIN, role_type.ADMIN)
   @Get()
   findAll(
     @Query() query: ListUsersQueryDto,
@@ -35,7 +35,7 @@ export class UserController {
     return this.userService.findAll(user, query);
   }
 
-  @Roles(role_type.SUPER_ADMIN, role_type.ORG_ADMIN)
+  @Roles(role_type.SUPER_ADMIN, role_type.ADMIN)
   @Post()
   create(@Body() dto: CreateUserDto, @CurrentUser() user: userType.AppUser) {
     return this.userService.create(user, dto);

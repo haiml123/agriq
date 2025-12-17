@@ -23,7 +23,13 @@ import { SiteModal } from '@/components/modals/site.modal'
 
 export default function SitesPage() {
     const modal = useModal()
-    const { user, isSuperAdmin, isLoading: isCurrentUserLoading } = useCurrentUser()
+    const {
+        user,
+        isSuperAdmin,
+        isAdmin,
+        isOperator,
+        isLoading: isCurrentUserLoading,
+    } = useCurrentUser()
     const {
         getSites,
         createSite,
@@ -43,6 +49,7 @@ export default function SitesPage() {
 
     const [sites, setSites] = useState<Site[]>([])
     const [selectedOrganizationId, setSelectedOrganizationId] = useState<string>('all')
+    const canManageSites = isSuperAdmin || isAdmin
 
     const fetchSites = useCallback(async () => {
         if (isCurrentUserLoading || !user) return
@@ -65,6 +72,7 @@ export default function SitesPage() {
     }, [fetchSites])
 
     const openCreateSiteModal = async () => {
+        if (isOperator) return
         const result = await modal.open<{ name: string; address?: string } | null>((onClose) => (
             <SiteModal onClose={onClose} />
         ))
@@ -75,6 +83,8 @@ export default function SitesPage() {
 
     // Site handlers
     const handleCreateSite = async (data: CreateSiteDto) => {
+        if (!canManageSites) return
+
         const organizationId = isSuperAdmin && selectedOrganizationId !== 'all'
             ? selectedOrganizationId
             : user?.organizationId
@@ -238,7 +248,6 @@ export default function SitesPage() {
         }
     }
 
-    console.log('sites', sites);
     const totalCompounds = sites?.reduce((acc, s) => acc + (s.compounds?.length ?? 0), 0)
     const totalCells = sites?.reduce(
         (acc, s) => acc + (s.compounds?.reduce((a, c) => a + (c.cells?.length ?? 0), 0) ?? 0),
@@ -246,6 +255,7 @@ export default function SitesPage() {
     )
 
     const isProcessing = isCreating || isUpdating || isDeleting
+    const heading = canManageSites ? 'All Sites' : 'My Sites'
 
     return (
         <div className="space-y-6">
@@ -253,20 +263,24 @@ export default function SitesPage() {
                 <div className="flex items-center gap-3">
                     <SidebarTrigger />
                     <div>
-                        <h1 className="text-2xl font-semibold text-foreground">Sites</h1>
+                        <h1 className="text-2xl font-semibold text-foreground">{heading}</h1>
                         <p className="text-sm text-muted-foreground mt-1">
-                            Manage sites, compounds, and cells
+                            {canManageSites
+                                ? 'Manage sites, compounds, and cells across your organization'
+                                : 'View the sites you have been assigned to'}
                         </p>
                     </div>
                 </div>
-                <Button
-                    onClick={openCreateSiteModal}
-                    disabled={isProcessing}
-                    className="bg-emerald-500 hover:bg-emerald-600"
-                >
-                    <Plus className="w-4 h-4 mr-2" />
-                    Add Site
-                </Button>
+                {canManageSites && (
+                    <Button
+                        onClick={openCreateSiteModal}
+                        disabled={isProcessing}
+                        className="bg-emerald-500 hover:bg-emerald-600"
+                    >
+                        <Plus className="w-4 h-4 mr-2" />
+                        Add Site
+                    </Button>
+                )}
             </div>
 
             <div className="bg-card border border-border rounded-lg overflow-hidden">
@@ -307,9 +321,13 @@ export default function SitesPage() {
                 ) : (
                     <div className="p-8 text-center">
                         <Building2 className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-                        <h3 className="font-medium text-foreground mb-1">No sites yet</h3>
+                        <h3 className="font-medium text-foreground mb-1">
+                            {canManageSites ? 'No sites yet' : 'No site assignments'}
+                        </h3>
                         <p className="text-sm text-muted-foreground mb-4">
-                            Get started by creating your first site
+                            {canManageSites
+                                ? 'Get started by creating your first site'
+                                : 'You do not have any assigned sites yet.'}
                         </p>
                     </div>
                 )}
