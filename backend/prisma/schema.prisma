@@ -72,6 +72,13 @@ enum entity_status {
   DELETED
 }
 
+// NEW: users.user_role enum
+enum user_role {
+  SUPER_ADMIN
+  ADMIN
+  OPERATOR
+}
+
 //
 // ORGANIZATION & ACCESS CONTROL
 //
@@ -84,9 +91,10 @@ model Organization {
   // Relations
   users         User[]
   sites         Site[]
-  roles         UserRole[]
   eventTriggers EventTrigger[]
   invites       Invite[]
+  commodities   Commodity[]
+  alerts        Alert[]
 
   // Audit
   createdBy String?  @map("created_by")
@@ -105,13 +113,16 @@ model User {
   name     String
   status   entity_status @default(ACTIVE)
 
+  // NEW: user-level role enum
+  userRole user_role @default(OPERATOR) @map("user_role")
+
   languagePreference String? @map("language_preference")
 
   organizationId String?       @map("organization_id")
   organization   Organization? @relation(fields: [organizationId], references: [id])
 
-  // Roles
-  roles UserRole[]
+  // site_users: many-to-many User <-> Site
+  siteUsers SiteUser[]
 
   // Auth - Refresh tokens
   refreshTokens RefreshToken[]
@@ -125,7 +136,8 @@ model User {
   updatedTriggers EventTrigger[] @relation("trigger_updater")
 
   // Alerts
-  resolvedAlerts Alert[]
+  resolvedAlerts Alert[] @relation("alert_resolver")
+  alerts         Alert[] @relation("alert_user")
 
   // Notifications received
   notifications AlertNotification[]
@@ -159,10 +171,6 @@ model Invite {
   token String @unique
   email String
 
-  // Pre-configured role
-  roleId Int  @map("role_id")
-  role   Role @relation(fields: [roleId], references: [id])
-
   // Organization the user is invited to
   organizationId String       @map("organization_id")
   organization   Organization @relation(fields: [organizationId], references: [id])
@@ -193,41 +201,6 @@ model Invite {
   @@map("invite")
 }
 
-model Role {
-  id   Int    @id @default(autoincrement())
-  name String @unique
-
-  users   UserRole[]
-  invites Invite[]
-
-  @@map("role")
-}
-
-model UserRole {
-  id Int @id @default(autoincrement())
-
-  userId String @map("user_id")
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  role role_type
-
-  organizationId String?       @map("organization_id")
-  organization   Organization? @relation(fields: [organizationId], references: [id])
-
-  siteId String? @map("site_id")
-  site   Site?   @relation(fields: [siteId], references: [id])
-
-  grantedByUserId String? @map("granted_by_user_id")
-
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
-  Role      Role?    @relation(fields: [roleId], references: [id])
-  roleId    Int?
-
-  @@unique([userId, role, organizationId, siteId])
-  @@map("user_role")
-}
-
 //
 // STRUCTURE: SITE → COMPOUND → CELL
 //
@@ -248,9 +221,11 @@ model Site {
   compounds Compound[]
   alerts    Alert[]
   trades    Trade[]
-  roles     UserRole[]
   triggers  EventTrigger[]
   invites   Invite[]
+
+  // site_users: many-to-many Site <-> User
+  siteUsers SiteUser[]
 
   // Audit
   createdBy String?  @map("created_by")
@@ -258,6 +233,19 @@ model Site {
   updatedAt DateTime @updatedAt @map("updated_at")
 
   @@map("site")
+}
+
+// site_users join table
+model SiteUser {
+  userId   String    @map("user_id")
+  siteId   String    @map("site_id")
+  siteRole user_role @default(OPERATOR) @map("site_role")
+
+  user User @relation(fields: [userId], references: [id])
+  site Site @relation(fields: [siteId], references: [id])
+
+  @@id([userId, siteId])
+  @@map("site_user")
 }
 
 model Compound {
@@ -288,13 +276,15 @@ model Cell {
   status   entity_status
   capacity Float
 
-  compoundId String          @map("compound_id")
-  compound   Compound        @relation(fields: [compoundId], references: [id])
+  compoundId String   @map("compound_id")
+  compound   Compound @relation(fields: [compoundId], references: [id])
+
   // Relations
-  sensors    Sensor[]
-  alerts     Alert[]
-  readings   SensorReading[]
-  trades     Trade[]
+  sensors       Sensor[]
+  alerts        Alert[]
+  readings      SensorReading[]
+  trades        Trade[]
+  eventTriggers EventTrigger[]
 
   // Audit
   createdBy String?  @map("created_by")
@@ -318,10 +308,12 @@ model Sensor {
   cell   Cell   @relation(fields: [cellId], references: [id])
 
   readings SensorReading[]
+  alerts   Alert[]
 
-  createdBy String?  @map("created_by")
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
+  createdBy    String?        @map("created_by")
+  createdAt    DateTime       @default(now()) @map("created_at")
+  updatedAt    DateTime       @updatedAt @map("updated_at")
+  EventTrigger EventTrigger[]
 
   @@map("sensor")
 }
@@ -359,6 +351,10 @@ model EventTrigger {
   commodityTypeId String?        @map("commodity_type_id")
   commodityType   CommodityType? @relation(fields: [commodityTypeId], references: [id])
 
+  // link trigger directly to a commodity (triggers.commodity_id > commodities.id)
+  commodityId String?    @map("commodity_id")
+  commodity   Commodity? @relation(fields: [commodityId], references: [id])
+
   organizationId String?       @map("organization_id")
   organization   Organization? @relation(fields: [organizationId], references: [id])
 
@@ -368,7 +364,14 @@ model EventTrigger {
   compoundId String?   @map("compound_id")
   compound   Compound? @relation(fields: [compoundId], references: [id])
 
-  conditionLogic String @default("AND") // Add this line
+  // link trigger to specific sensor and cell (triggers.sensor_id > sensors.id, triggers.cell_id > cells.id)
+  sensorId String? @map("sensor_id")
+  sensor   Sensor? @relation(fields: [sensorId], references: [id])
+
+  cellId String? @map("cell_id")
+  cell   Cell?   @relation(fields: [cellId], references: [id])
+
+  conditionLogic String @default("AND")
   conditions     Json
   actions        Json
 
@@ -412,6 +415,22 @@ model Alert {
   cellId String? @map("cell_id")
   cell   Cell?   @relation(fields: [cellId], references: [id])
 
+  // alert.sensor_id > sensors.id
+  sensorId String? @map("sensor_id")
+  sensor   Sensor? @relation(fields: [sensorId], references: [id])
+
+  // alert.commodity_id > commodities.id
+  commodityId String?    @map("commodity_id")
+  commodity   Commodity? @relation(fields: [commodityId], references: [id])
+
+  // alert.org_id > orgs.id
+  organizationId String?       @map("organization_id")
+  organization   Organization? @relation(fields: [organizationId], references: [id])
+
+  // separate user_id on alerts (assigned/owner/etc)
+  userId String? @map("user_id")
+  user   User?   @relation("alert_user", fields: [userId], references: [id])
+
   title       String?
   description String
 
@@ -425,7 +444,7 @@ model Alert {
   resolvedAt DateTime? @map("resolved_at")
 
   resolvedByUserId String? @map("resolved_by_user_id")
-  resolvedByUser   User?   @relation(fields: [resolvedByUserId], references: [id])
+  resolvedByUser   User?   @relation("alert_resolver", fields: [resolvedByUserId], references: [id])
 
   notifications AlertNotification[]
 
@@ -435,6 +454,9 @@ model Alert {
   @@index([siteId, status])
   @@index([cellId, status])
   @@index([triggerId, status])
+  @@index([sensorId])
+  @@index([commodityId])
+  @@index([organizationId])
   @@map("alert")
 }
 
@@ -522,7 +544,13 @@ model Commodity {
   commodityTypeId String?        @map("commodity_type_id")
   commodityType   CommodityType? @relation(fields: [commodityTypeId], references: [id])
 
-  trades Trade[]
+  // commodities.org_id > orgs.id
+  organizationId String?       @map("organization_id")
+  organization   Organization? @relation(fields: [organizationId], references: [id])
+
+  trades   Trade[]
+  alerts   Alert[]
+  triggers EventTrigger[]
 
   createdBy String?  @map("created_by")
   updatedBy String?  @map("updated_by")
@@ -531,6 +559,7 @@ model Commodity {
 
   @@index([name])
   @@index([commodityTypeId])
+  @@index([organizationId])
   @@map("commodity")
 }
 
