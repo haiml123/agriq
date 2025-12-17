@@ -2,6 +2,9 @@
 
 import { LoginForm } from '@/components/auth/LoginForm';
 import { ThemeToggle } from '@/theme/ThemeToggle';
+import Image from 'next/image';
+import LogoBlack from '@/public/logo-black.png';
+import LogoWhite from '@/public/logo-white.png';
 
 export default function LoginPage() {
     return (
@@ -11,10 +14,21 @@ export default function LoginPage() {
             </div>
 
             <div className="w-full max-w-md">
-                <div className="text-center mb-8">
-                    <h1 className="text-4xl font-bold text-foreground mb-2">
-                        AgriQ
-                    </h1>
+                <div className="text-center flex flex-col mb-8">
+                    <div className="flex items-center justify-center mb-4">
+                        <Image
+                            src={LogoBlack}
+                            alt="AgriQ logo"
+                            className="block h-16 w-auto dark:hidden"
+                            priority
+                        />
+                        <Image
+                            src={LogoWhite}
+                            alt="AgriQ logo"
+                            className="hidden h-16 w-auto dark:block"
+                            priority
+                        />
+                    </div>
                     <p className="text-text-secondary">
                         Grain Storage Management Platform
                     </p>

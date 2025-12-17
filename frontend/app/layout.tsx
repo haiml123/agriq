@@ -18,6 +18,9 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
     title: 'AgriQ - Grain Storage Management',
     description: 'Quality protection, loss reduction, action at the right time',
+    icons: {
+        icon: '/favicon.ico',
+    },
 };
 
 export default function RootLayout({
