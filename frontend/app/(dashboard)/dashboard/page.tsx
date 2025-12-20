@@ -1,79 +1,11 @@
 'use client';
 
 import { Badge } from '@/components/ui/badge';
-
-const activeAlerts = [
-    {
-        id: '1',
-        description: 'Temperature raised 5° in 2 days to 32°',
-        severity: 'LOW' as const,
-        status: 'OPEN' as const,
-        location: 'Ashdod › Northern Storage › Cell 1',
-        daysAgo: 328,
-        assignee: null,
-    },
-    {
-        id: '2',
-        description: 'Humidity raised 3% in 5 days',
-        severity: 'HIGH' as const,
-        status: 'ACKNOWLEDGED' as const,
-        location: 'Ashdod › Northern Storage › Cell 3',
-        daysAgo: 329,
-        assignee: 'John D.',
-    },
-    {
-        id: '3',
-        description: '13% Humidity',
-        severity: 'HIGH' as const,
-        status: 'IN_PROGRESS' as const,
-        location: 'Central Storage › Western Complex › Cell 9',
-        daysAgo: 48,
-        assignee: 'David Martinez',
-    },
-];
-
-const recentGoods = [
-    {
-        id: '1',
-        name: 'Non-GMO Soy',
-        origin: 'Missouri, USA',
-        quantity: '1,700 kg',
-        location: 'Great Plains Storage Center › Prairie Storage › Cell 14',
-        date: '21.2.2025',
-    },
-    {
-        id: '2',
-        name: 'Soy #1',
-        origin: 'North Dakota, USA',
-        quantity: '1,600 kg',
-        location: 'Northern Plains Center › Eastern Wing › Cell 8',
-        date: '19.2.2025',
-    },
-    {
-        id: '3',
-        name: 'Yellow Corn #1',
-        origin: 'Kansas, USA',
-        quantity: '2,900 kg',
-        location: 'Great Plains Storage Center › Western Complex › Cell 13',
-        date: '17.2.2025',
-    },
-    {
-        id: '4',
-        name: 'Sorghum',
-        origin: 'Nebraska, USA',
-        quantity: '1,900 kg',
-        location: 'Midwest Storage › Southern Wing › Cell 3',
-        date: '14.2.2025',
-    },
-    {
-        id: '5',
-        name: 'Durum Wheat',
-        origin: 'Montana, USA',
-        quantity: '1,800 kg',
-        location: 'Northwest Hub › Storage A › Cell 17',
-        date: '13.2.2025',
-    },
-];
+import { useEffect, useState } from 'react';
+import { useAlertApi } from '@/hooks/use-alert-api';
+import { useTradeApi } from '@/hooks/use-trade-api';
+import type { DashboardAlert } from '@/schemas/alert.schema';
+import type { DashboardTrade } from '@/schemas/trade.schema';
 
 const severityStyles = {
     LOW: 'bg-emerald-500 text-white border-transparent',
@@ -99,10 +31,80 @@ const statusLabels = {
 };
 
 export default function DashboardPage() {
+    const { getList: getAlerts } = useAlertApi();
+    const { getRecent: getRecentTrades, isLoading: isLoadingTrades } = useTradeApi();
+    const [activeAlerts, setActiveAlerts] = useState<DashboardAlert[]>([]);
+    const [recentGoods, setRecentGoods] = useState<DashboardTrade[]>([]);
+    const [isLoadingAlerts, setIsLoadingAlerts] = useState(true);
+
+    useEffect(() => {
+        const fetchAlerts = async () => {
+            setIsLoadingAlerts(true);
+            const response = await getAlerts({ limit: 10 });
+            setIsLoadingAlerts(false);
+            if (response.data) {
+                const formattedAlerts = response.data.map((alert) => {
+                        const locationParts = [];
+                        if (alert.site?.name) locationParts.push(alert.site.name);
+                        if (alert.compound?.name) locationParts.push(alert.compound.name);
+                        if (alert.cell?.name) locationParts.push(alert.cell.name);
+
+                        const startedAt = new Date(alert.startedAt);
+                        const now = new Date();
+                        const daysAgo = Math.floor((now.getTime() - startedAt.getTime()) / (1000 * 60 * 60 * 24));
+
+                        return {
+                            id: alert.id,
+                            description: alert.description || alert.title || 'No description',
+                            severity: alert.severity,
+                            status: alert.status,
+                            location: locationParts.join(' › ') || 'Unknown location',
+                            daysAgo,
+                            assignee: alert.user?.name || null,
+                        } satisfies DashboardAlert;
+                    });
+                    setActiveAlerts(formattedAlerts);
+                }
+        };
+
+        const fetchTrades = async () => {
+            const response = await getRecentTrades({ limit: 10 });
+            if (response.data) {
+                const formattedTrades = response.data.map((trade) => {
+                        const locationParts = [];
+                        if (trade.site?.name) locationParts.push(trade.site.name);
+                        if (trade.compound?.name) locationParts.push(trade.compound.name);
+                        if (trade.cell?.name) locationParts.push(trade.cell.name);
+
+                        const tradedAt = new Date(trade.tradedAt);
+                        const formattedDate = tradedAt.toLocaleDateString('en-GB', {
+                            day: '2-digit',
+                            month: '2-digit',
+                            year: 'numeric',
+                        }).replace(/\//g, '.');
+
+                        return {
+                            id: trade.id,
+                            name: trade.commodity?.name || 'Unknown commodity',
+                            origin: trade.commodity?.origin || 'Unknown origin',
+                            quantity: `${trade.amountKg.toLocaleString()} kg`,
+                            location: locationParts.join(' › ') || 'Unknown location',
+                            date: formattedDate,
+                        } satisfies DashboardTrade;
+                    });
+                    setRecentGoods(formattedTrades);
+                }
+        };
+
+        fetchAlerts();
+        fetchTrades();
+    }, [getAlerts, getRecentTrades]);
+
     return (
-        <div className="space-y-6">
-            {/* Active Alerts Section */}
-            <section className="bg-card border border-border rounded-lg overflow-hidden">
+        <div className="container mx-auto px-4 py-6" dir="ltr">
+            <div className="space-y-6">
+                {/* Active Alerts Section */}
+                <section className="bg-card border border-border rounded-lg overflow-hidden">
                 <div className="p-6 pb-4">
                     <h2 className="text-xl font-semibold text-foreground mb-1">
                         Active Alerts
@@ -113,7 +115,16 @@ export default function DashboardPage() {
                 </div>
 
                 <div className="px-6 pb-6 space-y-3">
-                    {activeAlerts.map((alert) => (
+                    {isLoadingAlerts ? (
+                        <div className="text-center text-muted-foreground py-8">
+                            Loading alerts...
+                        </div>
+                    ) : activeAlerts.length === 0 ? (
+                        <div className="text-center text-muted-foreground py-8">
+                            No active alerts
+                        </div>
+                    ) : (
+                        activeAlerts.map((alert) => (
                         <div
                             key={alert.id}
                             className="border border-border rounded-lg p-4 hover:bg-muted/30 transition-colors cursor-pointer"
@@ -149,7 +160,8 @@ export default function DashboardPage() {
                                 )}
                             </div>
                         </div>
-                    ))}
+                        ))
+                    )}
                 </div>
             </section>
 
@@ -165,24 +177,23 @@ export default function DashboardPage() {
                 </div>
 
                 <div className="px-6 pb-6 space-y-3">
-                    {recentGoods.map((goods) => (
+                    {isLoadingTrades ? (
+                        <div className="text-center text-muted-foreground py-8">
+                            Loading trades...
+                        </div>
+                    ) : recentGoods.length === 0 ? (
+                        <div className="text-center text-muted-foreground py-8">
+                            No recent trades
+                        </div>
+                    ) : (
+                        recentGoods.map((goods) => (
                         <div
                             key={goods.id}
                             className="border border-border rounded-lg p-4 hover:bg-muted/30 transition-colors cursor-pointer"
                         >
-                            <div className="grid grid-cols-[100px_1fr_1fr] gap-4 items-start">
-                                {/* Left: Date */}
-                                <div className="text-sm text-muted-foreground">
-                                    {goods.date}
-                                </div>
-
-                                {/* Center: Quantity */}
-                                <div className="text-sm text-muted-foreground text-center">
-                                    Quantity: <span className="text-foreground font-medium">{goods.quantity}</span>
-                                </div>
-
-                                {/* Right: Name, Origin, Location */}
-                                <div className="text-right">
+                            <div className="grid grid-cols-[1fr_150px_100px] gap-4 items-start">
+                                {/* Left: Name, Origin, Location */}
+                                <div className="text-left">
                                     <p className="font-medium text-foreground mb-1">
                                         {goods.name}
                                     </p>
@@ -193,11 +204,23 @@ export default function DashboardPage() {
                                         Location: {goods.location}
                                     </p>
                                 </div>
+
+                                {/* Center: Quantity */}
+                                <div className="text-sm text-muted-foreground">
+                                    Quantity: <span className="text-foreground font-medium">{goods.quantity}</span>
+                                </div>
+
+                                {/* Right: Date */}
+                                <div className="text-sm text-muted-foreground">
+                                    {goods.date}
+                                </div>
                             </div>
                         </div>
-                    ))}
+                        ))
+                    )}
                 </div>
             </section>
+            </div>
         </div>
     );
 }

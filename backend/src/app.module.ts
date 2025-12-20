@@ -13,6 +13,8 @@ import { TriggerModule } from './trigger';
 import { CommodityTypeModule } from './commodity-type';
 import { SiteModule } from './site';
 import { EventsModule } from './events';
+import { AlertModule } from './alert';
+import { TradeModule } from './trade';
 
 @Module({
   imports: [
@@ -31,6 +33,8 @@ import { EventsModule } from './events';
     TriggerModule,
     CommodityTypeModule,
     EventsModule,
+    AlertModule,
+    TradeModule,
   ],
   controllers: [AppController],
   providers: [AppService],
