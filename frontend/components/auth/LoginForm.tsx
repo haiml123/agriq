@@ -2,7 +2,7 @@
 
 import { FormEvent, useState } from 'react';
 import { signIn } from 'next-auth/react';
-import { useRouter } from 'next/navigation';
+import { Link, useRouter } from '@/i18n/navigation';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 
@@ -101,11 +101,12 @@ export function LoginForm() {
 
             {/* Forgot Password Link */}
             <div className="text-center">
-
-                <a href="/forgot-password"
-                   className="text-sm text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300">
+                <Link
+                    href="/forgot-password"
+                    className="text-sm text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300"
+                >
                     Forgot your password?
-                </a>
+                </Link>
             </div>
         </form>
     );

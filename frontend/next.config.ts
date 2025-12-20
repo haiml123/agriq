@@ -1,13 +1,16 @@
 import type { NextConfig } from 'next';
+import createNextIntlPlugin from 'next-intl/plugin';
+
+const withNextIntl = createNextIntlPlugin('./i18n/request.ts');
 
 const nextConfig: NextConfig = {
-  /* config options here */
+    /* config options here */
     turbopack: {
-        debugIds: true
+        debugIds: true,
     },
     experimental: {
-        turbopackSourceMaps: true
-    }
+        turbopackSourceMaps: true,
+    },
 };
 
-export default nextConfig;
+export default withNextIntl(nextConfig);

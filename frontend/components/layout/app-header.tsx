@@ -1,11 +1,11 @@
 'use client'
 
-import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { Link, usePathname } from '@/i18n/navigation'
 import { ThemeToggle } from '@/theme/ThemeToggle'
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { BarChart3, Menu, X } from 'lucide-react'
+import { LanguageSwitcher } from '@/components/language-switcher'
 
 interface Tab {
     label: string
@@ -54,6 +54,7 @@ export function AppHeader({ title, subtitle, tabs = defaultTabs }: AppHeaderProp
                             </div>
                         </div>
                         <div className="flex items-center gap-2">
+                            <LanguageSwitcher />
                             <ThemeToggle />
                             <Button
                                 variant="ghost"
