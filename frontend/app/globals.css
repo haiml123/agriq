@@ -5,6 +5,8 @@
 
 /* Light mode (default) */
 :root {
+  --spacing-start: 1rem;
+  --spacing-end: 0;
 
   /* Custom accent color (teal/green) */
   --accent: oklch(0.97 0 0);
@@ -47,6 +49,11 @@
   --sidebar-accent-foreground: oklch(0.205 0 0);
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
+}
+
+[dir="rtl"] {
+  --spacing-start: 0;
+  --spacing-end: 1rem;
 }
 
 /* Dark mode */

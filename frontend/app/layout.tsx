@@ -1,9 +1,6 @@
-import type { Metadata } from 'next';
 import './globals.css';
 import { Geist, Geist_Mono } from 'next/font/google';
-import { ThemeProvider } from '@/theme/ThemeProvider';
-import { ModalProvider } from '@/components/providers/modal-provider';
-import { SessionProvider } from '@/components/providers/session-provider';
+import { getLocale } from 'next-intl/server';
 
 const geistSans = Geist({
     variable: '--font-geist-sans',
@@ -15,30 +12,17 @@ const geistMono = Geist_Mono({
     subsets: ['latin'],
 });
 
-export const metadata: Metadata = {
-    title: 'AgriQ - Grain Storage Management',
-    description: 'Quality protection, loss reduction, action at the right time',
-    icons: {
-        icon: '/favicon.ico',
-    },
-};
-
-export default function RootLayout({
-                                       children,
-                                   }: Readonly<{
+export default async function RootLayout({
+                                             children,
+                                         }: Readonly<{
     children: React.ReactNode;
 }>) {
-    console.log('RootLayout rendered');
+    const locale = await getLocale();
+
     return (
-        <html lang="en" suppressHydrationWarning>
+        <html lang={locale} dir={locale === 'he' ? 'rtl' : 'ltr'} suppressHydrationWarning>
         <body className={`${geistSans.variable} ${geistMono.variable} bg-background antialiased`}>
-        <SessionProvider>
-            <ThemeProvider>
-                <ModalProvider>
-                    {children}
-                </ModalProvider>
-            </ThemeProvider>
-        </SessionProvider>
+        {children}
         </body>
         </html>
     );

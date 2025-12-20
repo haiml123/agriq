@@ -1,6 +1,9 @@
 import { auth } from '@/lib/auth';
+import createMiddleware from 'next-intl/middleware';
 import { NextResponse } from 'next/server';
+import { routing } from '@/i18n/routing';
 
+const intlMiddleware = createMiddleware(routing);
 
 const isJwtValid = (token?: string) => {
     if (!token) return false;
@@ -23,27 +26,44 @@ const isJwtValid = (token?: string) => {
     }
 };
 
+const getLocaleFromPathname = (pathname: string) =>
+    routing.locales.find(
+        (locale) => pathname === `/${locale}` || pathname.startsWith(`/${locale}/`),
+    );
 
 export default auth((req) => {
+    const intlResponse = intlMiddleware(req);
+    const redirectLocation = intlResponse.headers.get('location');
+
+    if (redirectLocation) {
+        return intlResponse;
+    }
+
     const accessToken = req.auth?.accessToken as string | undefined;
     const isLoggedIn = isJwtValid(accessToken);
+    const pathname = req.nextUrl.pathname;
+    const locale = getLocaleFromPathname(pathname) ?? routing.defaultLocale;
+    const localePrefix = `/${locale}`;
+    const pathnameWithoutLocale = pathname.startsWith(localePrefix)
+        ? pathname.slice(localePrefix.length) || '/'
+        : pathname;
     const isProtectedRoute =
-        req.nextUrl.pathname.startsWith('/dashboard') ||
-        req.nextUrl.pathname.startsWith('/sites') ||
-        req.nextUrl.pathname.startsWith('/alerts') ||
-        req.nextUrl.pathname.startsWith('/settings') ||
-        req.nextUrl.pathname.startsWith('/admin');
-    const isAuthRoute = req.nextUrl.pathname === '/login';
+        pathnameWithoutLocale.startsWith('/dashboard') ||
+        pathnameWithoutLocale.startsWith('/sites') ||
+        pathnameWithoutLocale.startsWith('/alerts') ||
+        pathnameWithoutLocale.startsWith('/settings') ||
+        pathnameWithoutLocale.startsWith('/admin');
+    const isAuthRoute = pathnameWithoutLocale === '/login';
 
     if (isProtectedRoute && !isLoggedIn) {
-        return NextResponse.redirect(new URL('/login', req.nextUrl));
+        return NextResponse.redirect(new URL(`${localePrefix}/login`, req.nextUrl));
     }
 
     if (isAuthRoute && isLoggedIn) {
-        return NextResponse.redirect(new URL('/dashboard', req.nextUrl));
+        return NextResponse.redirect(new URL(`${localePrefix}/dashboard`, req.nextUrl));
     }
 
-    return NextResponse.next();
+    return intlResponse;
 });
 
 export const config = {

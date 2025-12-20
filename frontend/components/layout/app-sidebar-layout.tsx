@@ -2,11 +2,11 @@
 
 import type React from 'react'
 import { createContext, useContext, useState } from 'react'
-import { usePathname } from 'next/navigation'
+import { useLocale } from 'next-intl'
+import { Link, usePathname } from '@/i18n/navigation'
 import { Menu } from 'lucide-react'
 import { Sheet, SheetContent } from '@/components/ui/sheet'
 import { Button } from '@/components/ui/button'
-import Link from 'next/link';
 import { RoleType } from '@/schemas/common.schema';
 
 export interface NavItem {
@@ -79,8 +79,10 @@ function SidebarContent({ menuItems, pathname, setOpen }: SidebarContentProps) {
 }
 
 export function AppSidebarLayout({ children, menuItems, title = "Menu" }: AppSidebarLayoutProps) {
+    const locale = useLocale()
     const pathname = usePathname()
     const [open, setOpen] = useState(false)
+    const sheetSide = locale === 'he' ? 'right' : 'left'
 
     return (
         <SidebarContext.Provider value={{ open, setOpen }}>
@@ -94,7 +96,7 @@ export function AppSidebarLayout({ children, menuItems, title = "Menu" }: AppSid
                 </aside>
 
                 <Sheet open={open} onOpenChange={setOpen}>
-                    <SheetContent side="left" className="w-64">
+                    <SheetContent side={sheetSide} className="w-64">
                         <h2 className="mb-4 text-lg font-semibold">{title}</h2>
                         <SidebarContent menuItems={menuItems} pathname={pathname} setOpen={setOpen} />
                     </SheetContent>

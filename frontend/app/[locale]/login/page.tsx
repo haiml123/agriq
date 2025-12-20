@@ -1,6 +1,7 @@
 "use client"
 
 import { LoginForm } from '@/components/auth/LoginForm';
+import { LanguageSwitcher } from '@/components/language-switcher';
 import { ThemeToggle } from '@/theme/ThemeToggle';
 import Image from 'next/image';
 import LogoBlack from '@/public/logo-black.png';
@@ -9,7 +10,8 @@ import LogoWhite from '@/public/logo-white.png';
 export default function LoginPage() {
     return (
         <div className="min-h-screen flex items-center justify-center px-4 relative">
-            <div className="absolute top-4 right-4">
+            <div className="absolute top-4 right-4 flex items-center gap-2">
+                <LanguageSwitcher />
                 <ThemeToggle />
             </div>
 
