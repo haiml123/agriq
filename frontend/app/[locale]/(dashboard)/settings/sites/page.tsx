@@ -70,11 +70,11 @@ export default function SitesPage() {
 
     const openCreateSiteModal = async () => {
         if (!canCreateSite) return
-        const result = await modal.open<{ name: string; address?: string } | null>((onClose) => (
+        const result = await modal.open<UpdateSiteDto | null>((onClose) => (
             <SiteModal onClose={onClose} />
         ))
         if (result) {
-            await handleCreateSite(result)
+            await handleCreateSite(result as CreateSiteDto)
         }
     }
 

@@ -1,4 +1,4 @@
-import type { Severity } from '@/schemas/trigger.schema';
+import type { Severity } from '@/schemas/common.schema';
 
 const severityStyles: Record<Severity, string> = {
     LOW: 'bg-emerald-500 text-white',

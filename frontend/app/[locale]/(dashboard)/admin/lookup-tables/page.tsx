@@ -46,7 +46,7 @@ export default function LookupTablesPage() {
             const response = await getCommodityTypes({ limit: 100 })
             if (response?.data?.items) {
                 setCommodityTypes(response.data.items)
-                setSelectedTypeId((current) => current || response.data.items[0]?.id || '')
+                setSelectedTypeId((current) => current || response.data?.items[0]?.id || '')
             }
         }
 

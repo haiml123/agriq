@@ -31,7 +31,7 @@ export function TemplateEditor({
     const smsBodyRef = useRef<HTMLTextAreaElement>(null);
 
     const insertVariable = (
-        ref: React.RefObject<HTMLInputElement | HTMLTextAreaElement>,
+        ref: React.RefObject<HTMLInputElement | HTMLTextAreaElement | null>,
         variable: string,
         currentValue: string,
         onUpdate: (value: string) => void

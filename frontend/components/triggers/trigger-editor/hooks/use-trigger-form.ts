@@ -75,7 +75,7 @@ export function useTriggerForm(initialTrigger: Trigger | null): UseTriggerFormRe
         const result = TriggerSchema.safeParse(dataToValidate);
 
         if (!result.success) {
-            setErrors(result.error.errors.map((e) => e.message));
+            setErrors(result.error.issues.map((e) => e.message));
             return null;
         }
 

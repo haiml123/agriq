@@ -68,7 +68,7 @@ export const SitesList: React.FC<SitesListProps> = ({
   };
 
   const handleEditSite = async (site: Site) => {
-    const result: UpdateSiteDto | undefined = await modal.open<UpdateSiteDto>((onClose) => (
+    const result = await modal.open<UpdateSiteDto | null>((onClose) => (
         <SiteModal site={site} onClose={onClose} />
     ))
     if (result) {
@@ -115,11 +115,11 @@ export const SitesList: React.FC<SitesListProps> = ({
 
   // Cell handlers
   const handleCreateCell = async (compound: Compound) => {
-    const result = await modal.open<CreateCellDto | null>((onClose) => (
+    const result = await modal.open<CreateCellDto | UpdateCellDto | null>((onClose) => (
         <CellModal compoundName={compound.name} onClose={onClose} />
     ));
     if (result) {
-      onCreateCell?.(compound.id, result);
+      onCreateCell?.(compound.id, result as CreateCellDto);
     }
   };
 

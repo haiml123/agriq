@@ -25,7 +25,7 @@ export default function TriggersPage() {
         try {
             const response = await getList();
             if (response?.data?.items) {
-                setTriggers(response.data.items);
+                setTriggers(response.data.items as Trigger[]);
             }
         } finally {
             setIsLoading(false);
@@ -51,7 +51,7 @@ export default function TriggersPage() {
             const response = existing
                 ? await update(existing.id, payload)
                 : await create(payload);
-            return response?.data ?? null;
+            return (response?.data as Trigger) ?? null;
         },
         [create, update]
     );
@@ -89,7 +89,7 @@ export default function TriggersPage() {
     const handleToggleActive = async (trigger: Trigger) => {
         const response = await toggleActive(trigger.id, !trigger.isActive);
         if (response?.data) {
-            const updatedTrigger = response.data;
+            const updatedTrigger = response.data as Trigger;
             setTriggers((prev) =>
                 prev.map((t) => (t.id === trigger.id ? updatedTrigger : t))
             );

@@ -1,10 +1,9 @@
-import type { LoggerInstance } from 'next-auth';
 import NextAuth from 'next-auth';
 import Credentials from 'next-auth/providers/credentials';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3005";
 
-const logger: LoggerInstance = {
+const logger = {
     error: (code: any, ...message: any[]) => {
         if (code.name === 'CredentialsSignin') {
             return;
@@ -78,10 +77,10 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         async jwt({ token, user }) {
             if (user) {
                 token.id = user.id;
-                token.accessToken = user.accessToken;
-                token.userRole = user.userRole;
-                token.siteUsers = user.siteUsers;
-                token.organizationId = user.organizationId;
+                token.accessToken = (user as any).accessToken;
+                token.userRole = (user as any).userRole;
+                token.siteUsers = (user as any).siteUsers;
+                token.organizationId = (user as any).organizationId;
             }
             return token;
         },

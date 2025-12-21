@@ -1,6 +1,11 @@
-import { redirect } from '@/i18n/routing';
+import { redirect } from 'next/navigation';
 
-export default function Home() {
+export default async function Home({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}) {
+  const { locale } = await params;
   // Redirect to dashboard as default page
-  redirect('/dashboard');
+  redirect(`/${locale}/dashboard`);
 }
