@@ -208,45 +208,6 @@ export default function SitesPage() {
     };
   };
 
-  const loadCellDetails = async (
-    cellId: string,
-    dateRange: '7days' | 'month' | 'year' | 'custom',
-    customStartDate: string,
-    customEndDate: string
-  ) => {
-    setLoading(true);
-    try {
-      const params = getDateRangeParams(dateRange, customStartDate, customEndDate);
-      if (!params) {
-        setLoading(false);
-        return;
-      }
-
-      const cacheKey = getCacheKey(cellId, params.startDate, params.endDate);
-
-      // Check cache first
-      if (cellDetailsCache[cacheKey]) {
-        setCellDetails(cellDetailsCache[cacheKey]);
-        setLoading(false);
-        return;
-      }
-
-      const queryString = new URLSearchParams(params).toString();
-      const endpoint = `/sites/cells/${cellId}/details${queryString ? `?${queryString}` : ''}`;
-      const response = await get<CellDetails>(endpoint);
-
-      if (response?.data) {
-        // Store in cache
-        cellDetailsCache[cacheKey] = response.data;
-        setCellDetails(response.data);
-      }
-    } catch (error) {
-      console.error('Failed to load cell details:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const loadMultipleCellsDetails = async (
     cellIds: string[],
     dateRange: '7days' | 'month' | 'year' | 'custom',
@@ -294,7 +255,7 @@ export default function SitesPage() {
   const handleCellToggle = (cellId: string) => {
     setSelectedCellIds(prev =>
       prev.includes(cellId)
-        ? prev.filter(id => id !== cellId)
+        ? prev.filter((id: string) => id !== cellId)
         : [...prev, cellId]
     );
   };
@@ -305,11 +266,11 @@ export default function SitesPage() {
     const compoundCellIds = compound?.cells?.map((cell: any) => cell.id) || [];
 
     // Check if all cells in this compound are selected
-    const allSelected = compoundCellIds.every(id => selectedCellIds.includes(id));
+    const allSelected = compoundCellIds.every((id: string) => selectedCellIds.includes(id));
 
     if (allSelected) {
       // Deselect all cells in this compound
-      setSelectedCellIds(prev => prev.filter(id => !compoundCellIds.includes(id)));
+      setSelectedCellIds(prev => prev.filter((id: string) => !compoundCellIds.includes(id)));
     } else {
       // Select all cells in this compound
       setSelectedCellIds(prev => [...new Set([...prev, ...compoundCellIds])]);
@@ -326,7 +287,7 @@ export default function SitesPage() {
     });
 
     // Check if all cells are selected
-    const allSelected = allCellIds.length > 0 && allCellIds.every(id => selectedCellIds.includes(id));
+    const allSelected = allCellIds.length > 0 && allCellIds.every((id: string) => selectedCellIds.includes(id));
 
     if (allSelected) {
       setSelectedCellIds([]);
@@ -339,14 +300,14 @@ export default function SitesPage() {
     const site = sites.find(s => s.id === selectedSiteId);
     const compound = site?.compounds?.find((c: any) => c.id === compoundId);
     const compoundCellIds = compound?.cells?.map((cell: any) => cell.id) || [];
-    return compoundCellIds.length > 0 && compoundCellIds.every(id => selectedCellIds.includes(id));
+    return compoundCellIds.length > 0 && compoundCellIds.every((id: string) => selectedCellIds.includes(id));
   };
 
   const isCompoundIndeterminate = (compoundId: string) => {
     const site = sites.find(s => s.id === selectedSiteId);
     const compound = site?.compounds?.find((c: any) => c.id === compoundId);
     const compoundCellIds = compound?.cells?.map((cell: any) => cell.id) || [];
-    const selectedCount = compoundCellIds.filter(id => selectedCellIds.includes(id)).length;
+    const selectedCount = compoundCellIds.filter((id: string) => selectedCellIds.includes(id)).length;
     return selectedCount > 0 && selectedCount < compoundCellIds.length;
   };
 
@@ -358,7 +319,7 @@ export default function SitesPage() {
         allCellIds.push(cell.id);
       });
     });
-    return allCellIds.length > 0 && allCellIds.every(id => selectedCellIds.includes(id));
+    return allCellIds.length > 0 && allCellIds.every((id: string) => selectedCellIds.includes(id));
   };
 
   // Get selected cell names for display
