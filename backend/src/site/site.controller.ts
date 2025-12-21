@@ -133,4 +133,31 @@ export class SiteController {
   deleteCell(@Param('id') id: string, @CurrentUser() user: userType.AppUser) {
     return this.siteService.deleteCell(user, id);
   }
+
+  @Get('cells/:id/details')
+  getCellDetails(
+    @Param('id') id: string,
+    @CurrentUser() user: userType.AppUser,
+    @Query('startDate') startDate?: string,
+    @Query('endDate') endDate?: string,
+  ) {
+    const parsedStartDate = startDate ? new Date(startDate) : undefined;
+    const parsedEndDate = endDate ? new Date(endDate) : undefined;
+    return this.siteService.getCellDetails(user, id, parsedStartDate, parsedEndDate);
+  }
+
+  @Post('cells/details')
+  getMultipleCellsDetails(
+    @Body() body: { cellIds: string[]; startDate?: string; endDate?: string },
+    @CurrentUser() user: userType.AppUser,
+  ) {
+    const parsedStartDate = body.startDate ? new Date(body.startDate) : undefined;
+    const parsedEndDate = body.endDate ? new Date(body.endDate) : undefined;
+    return this.siteService.getMultipleCellsDetails(
+      user,
+      body.cellIds,
+      parsedStartDate,
+      parsedEndDate,
+    );
+  }
 }

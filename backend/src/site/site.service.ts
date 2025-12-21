@@ -334,4 +334,171 @@ export class SiteService {
     await this.validateCellAccess(user, id);
     return this.prisma.cell.delete({ where: { id } });
   }
+
+  // ─────────────────────────────────────────────────────────────
+  // CELL DETAILS (for sites page)
+  // ─────────────────────────────────────────────────────────────
+
+  async getCellDetails(
+    user: AppUser,
+    cellId: string,
+    startDate?: Date,
+    endDate?: Date,
+  ) {
+    await this.validateCellAccess(user, cellId);
+
+    const cell = await this.prisma.cell.findUnique({
+      where: { id: cellId },
+      include: {
+        compound: {
+          include: {
+            site: true,
+          },
+        },
+        sensors: true,
+      },
+    });
+
+    if (!cell) {
+      throw new NotFoundException(`Cell with ID "${cellId}" not found`);
+    }
+
+    // Default to last 7 days if no date range provided
+    const defaultStartDate = new Date();
+    defaultStartDate.setDate(defaultStartDate.getDate() - 7);
+
+    const effectiveStartDate = startDate || defaultStartDate;
+    const effectiveEndDate = endDate || new Date();
+
+    const sensorReadings = await this.prisma.sensorReading.findMany({
+      where: {
+        cellId,
+        recordedAt: {
+          gte: effectiveStartDate,
+          lte: effectiveEndDate,
+        },
+      },
+      orderBy: {
+        recordedAt: 'asc',
+      },
+    });
+
+    // Get trades in this cell
+    const trades = await this.prisma.trade.findMany({
+      where: { cellId },
+      include: {
+        commodity: {
+          include: {
+            commodityType: true,
+          },
+        },
+      },
+      orderBy: {
+        tradedAt: 'desc',
+      },
+    });
+
+    // Get active alerts for this cell
+    const alerts = await this.prisma.alert.findMany({
+      where: {
+        cellId,
+        status: {
+          in: ['OPEN', 'ACKNOWLEDGED', 'IN_PROGRESS'],
+        },
+      },
+      orderBy: {
+        startedAt: 'desc',
+      },
+    });
+
+    return {
+      cell,
+      sensorReadings,
+      trades,
+      alerts,
+    };
+  }
+
+  async getMultipleCellsDetails(
+    user: AppUser,
+    cellIds: string[],
+    startDate?: Date,
+    endDate?: Date,
+  ) {
+    if (!cellIds || cellIds.length === 0) {
+      throw new NotFoundException('No cell IDs provided');
+    }
+
+    // Validate access to all cells
+    await Promise.all(cellIds.map((cellId) => this.validateCellAccess(user, cellId)));
+
+    // Default to last 7 days if no date range provided
+    const defaultStartDate = new Date();
+    defaultStartDate.setDate(defaultStartDate.getDate() - 7);
+
+    const effectiveStartDate = startDate || defaultStartDate;
+    const effectiveEndDate = endDate || new Date();
+
+    // Fetch all cells data
+    const cells = await this.prisma.cell.findMany({
+      where: { id: { in: cellIds } },
+      include: {
+        compound: {
+          include: {
+            site: true,
+          },
+        },
+        sensors: true,
+      },
+    });
+
+    // Fetch sensor readings for all cells
+    const sensorReadings = await this.prisma.sensorReading.findMany({
+      where: {
+        cellId: { in: cellIds },
+        recordedAt: {
+          gte: effectiveStartDate,
+          lte: effectiveEndDate,
+        },
+      },
+      orderBy: {
+        recordedAt: 'asc',
+      },
+    });
+
+    // Fetch trades for all cells
+    const trades = await this.prisma.trade.findMany({
+      where: { cellId: { in: cellIds } },
+      include: {
+        commodity: {
+          include: {
+            commodityType: true,
+          },
+        },
+      },
+      orderBy: {
+        tradedAt: 'desc',
+      },
+    });
+
+    // Fetch alerts for all cells
+    const alerts = await this.prisma.alert.findMany({
+      where: {
+        cellId: { in: cellIds },
+        status: {
+          in: ['OPEN', 'ACKNOWLEDGED', 'IN_PROGRESS'],
+        },
+      },
+      orderBy: {
+        startedAt: 'desc',
+      },
+    });
+
+    return {
+      cells,
+      sensorReadings,
+      trades,
+      alerts,
+    };
+  }
 }

@@ -94,6 +94,20 @@ async function seedCommodityTypesAndLookupTables() {
 async function seedDemoData() {
   console.log('[seed] Starting demo data seeding...');
 
+  // Clear existing demo data to prevent duplicates
+  console.log('[seed] Cleaning up existing demo data...');
+  await prisma.alert.deleteMany({ where: { organizationId: 'demo-org-1' } });
+  await prisma.trade.deleteMany({ where: { siteId: { in: ['site-1', 'site-2', 'site-3'] } } });
+  await prisma.sensorReading.deleteMany({});
+  await prisma.sensor.deleteMany({ where: { cellId: { in: ['cell-1', 'cell-2', 'cell-3', 'cell-4', 'cell-5'] } } });
+  await prisma.cell.deleteMany({ where: { compoundId: { in: ['compound-1', 'compound-2', 'compound-3', 'compound-4'] } } });
+  await prisma.compound.deleteMany({ where: { siteId: { in: ['site-1', 'site-2', 'site-3'] } } });
+  await prisma.site.deleteMany({ where: { organizationId: 'demo-org-1' } });
+  await prisma.commodity.deleteMany({ where: { organizationId: 'demo-org-1' } });
+  console.log('[seed] Cleanup completed');
+
+  const now = new Date();
+
   // Get the super admin user
   const superAdmin = await prisma.user.findUnique({
     where: { email: 'levihai49@gmail.com' },
@@ -274,7 +288,139 @@ async function seedDemoData() {
   ]);
   console.log('[seed] Created demo cells');
 
-  // 5. Get or create commodity types
+  // 5. Create Sensors (one per cell)
+  const sensors = await Promise.all([
+    prisma.sensor.upsert({
+      where: { id: 'sensor-1' },
+      update: {},
+      create: {
+        id: 'sensor-1',
+        externalId: 'SENSOR-CELL14-01',
+        name: 'Temperature & Humidity Sensor - Cell 14',
+        status: entity_status.ACTIVE,
+        cellId: cells[0].id,
+        createdBy: superAdmin.id,
+      },
+    }),
+    prisma.sensor.upsert({
+      where: { id: 'sensor-2' },
+      update: {},
+      create: {
+        id: 'sensor-2',
+        externalId: 'SENSOR-CELL13-01',
+        name: 'Temperature & Humidity Sensor - Cell 13',
+        status: entity_status.ACTIVE,
+        cellId: cells[1].id,
+        createdBy: superAdmin.id,
+      },
+    }),
+    prisma.sensor.upsert({
+      where: { id: 'sensor-3' },
+      update: {},
+      create: {
+        id: 'sensor-3',
+        externalId: 'SENSOR-CELL8-01',
+        name: 'Temperature & Humidity Sensor - Cell 8',
+        status: entity_status.ACTIVE,
+        cellId: cells[2].id,
+        createdBy: superAdmin.id,
+      },
+    }),
+    prisma.sensor.upsert({
+      where: { id: 'sensor-4' },
+      update: {},
+      create: {
+        id: 'sensor-4',
+        externalId: 'SENSOR-CELL3-01',
+        name: 'Temperature & Humidity Sensor - Cell 3',
+        status: entity_status.ACTIVE,
+        cellId: cells[3].id,
+        createdBy: superAdmin.id,
+      },
+    }),
+    prisma.sensor.upsert({
+      where: { id: 'sensor-5' },
+      update: {},
+      create: {
+        id: 'sensor-5',
+        externalId: 'SENSOR-CELL1-01',
+        name: 'Temperature & Humidity Sensor - Cell 1',
+        status: entity_status.ACTIVE,
+        cellId: cells[4].id,
+        createdBy: superAdmin.id,
+      },
+    }),
+  ]);
+  console.log('[seed] Created demo sensors');
+
+  // 6. Create Sensor Readings (temperature and humidity data for the last year)
+  const daysToGenerate = 365; // Generate data for 1 year
+  const batchSize = 50; // Process readings in batches
+
+  // Generate readings for each sensor
+  for (let sensorIdx = 0; sensorIdx < sensors.length; sensorIdx++) {
+    const sensor = sensors[sensorIdx];
+    const cell = cells[sensorIdx];
+
+    // Base temperature and humidity for this sensor
+    const baseTemp = 20 + Math.random() * 10; // Random between 20-30°C
+    const baseHumidity = 8 + Math.random() * 6; // Random between 8-14%
+
+    // Process in batches to avoid connection pool exhaustion
+    for (let batchStart = 0; batchStart < daysToGenerate; batchStart += batchSize) {
+      const batch: any[] = [];
+      const batchEnd = Math.min(batchStart + batchSize, daysToGenerate);
+
+      for (let day = batchStart; day < batchEnd; day++) {
+        const date = new Date(now.getTime() - day * 24 * 60 * 60 * 1000);
+
+        // Add some variation to make the chart interesting
+        // Create seasonal patterns over the year
+        const seasonalTemp = Math.sin((day / 365) * Math.PI * 2) * 5;
+        const tempVariation = seasonalTemp + (Math.random() - 0.5) * 2;
+        const humidityVariation = Math.sin((day / 365) * Math.PI * 2) * 2 + (Math.random() - 0.5) * 1;
+
+        // Temperature reading
+        batch.push(
+          prisma.sensorReading.upsert({
+            where: { id: `reading-${sensorIdx}-${day}-temp` },
+            update: {},
+            create: {
+              id: `reading-${sensorIdx}-${day}-temp`,
+              sensorId: sensor.id,
+              cellId: cell.id,
+              metric: 'TEMPERATURE',
+              value: parseFloat((baseTemp + tempVariation).toFixed(2)),
+              recordedAt: date,
+            },
+          })
+        );
+
+        // Humidity reading
+        batch.push(
+          prisma.sensorReading.upsert({
+            where: { id: `reading-${sensorIdx}-${day}-humidity` },
+            update: {},
+            create: {
+              id: `reading-${sensorIdx}-${day}-humidity`,
+              sensorId: sensor.id,
+              cellId: cell.id,
+              metric: 'HUMIDITY',
+              value: parseFloat((baseHumidity + humidityVariation).toFixed(2)),
+              recordedAt: date,
+            },
+          })
+        );
+      }
+
+      await Promise.all(batch);
+      console.log(`[seed] Processed sensor ${sensorIdx + 1}/${sensors.length}, days ${batchStart}-${batchEnd}/${daysToGenerate}`);
+    }
+  }
+
+  console.log('[seed] Created demo sensor readings (temperature and humidity for 1 year)');
+
+  // 7. Get or create commodity types
   const soyType = await prisma.commodityType.findFirst({
     where: { name: { contains: 'Soy', mode: 'insensitive' } },
   });
@@ -325,14 +471,14 @@ async function seedDemoData() {
       })
     ).id;
 
-  // 6. Create Commodities
+  // 8. Create Commodities (using commodity type names only, differentiated by origin)
   const commodities = await Promise.all([
     prisma.commodity.upsert({
       where: { id: 'commodity-1' },
       update: {},
       create: {
         id: 'commodity-1',
-        name: 'Non-GMO Soy',
+        name: '', // Empty - will use commodity type name
         origin: 'Missouri, USA',
         commodityTypeId: soyTypeId,
         organizationId: demoOrg.id,
@@ -344,7 +490,7 @@ async function seedDemoData() {
       update: {},
       create: {
         id: 'commodity-2',
-        name: 'Soy #1',
+        name: '', // Empty - will use commodity type name
         origin: 'North Dakota, USA',
         commodityTypeId: soyTypeId,
         organizationId: demoOrg.id,
@@ -356,7 +502,7 @@ async function seedDemoData() {
       update: {},
       create: {
         id: 'commodity-3',
-        name: 'Yellow Corn #1',
+        name: '', // Empty - will use commodity type name
         origin: 'Kansas, USA',
         commodityTypeId: cornTypeId,
         organizationId: demoOrg.id,
@@ -368,7 +514,7 @@ async function seedDemoData() {
       update: {},
       create: {
         id: 'commodity-4',
-        name: 'Sorghum',
+        name: '', // Empty - will use commodity type name
         origin: 'Nebraska, USA',
         commodityTypeId: cornTypeId,
         organizationId: demoOrg.id,
@@ -380,7 +526,7 @@ async function seedDemoData() {
       update: {},
       create: {
         id: 'commodity-5',
-        name: 'Durum Wheat',
+        name: '', // Empty - will use commodity type name
         origin: 'Montana, USA',
         commodityTypeId: wheatTypeId,
         organizationId: demoOrg.id,
@@ -388,26 +534,57 @@ async function seedDemoData() {
       },
     }),
   ]);
-  console.log('[seed] Created demo commodities');
+  console.log('[seed] Created demo commodities (using commodity type names)');
 
-  // 7. Create Trades (recent goods)
-  const now = new Date();
+  // 9. Create Trades (with 3 different commodities spread over a year for Cell 14)
   await Promise.all([
+    // Cell 14 (cell-1) - 3 different commodities over the year
     prisma.trade.upsert({
       where: { id: 'trade-1' },
       update: {},
       create: {
         id: 'trade-1',
-        commodityId: commodities[0].id,
+        commodityId: commodities[4].id, // Durum Wheat
         siteId: sites[0].id,
         compoundId: compounds[0].id,
-        cellId: cells[0].id,
-        amountKg: 1700,
-        tradedAt: new Date(now.getTime() - 2 * 24 * 60 * 60 * 1000), // 2 days ago
-        notes: 'Initial delivery',
+        cellId: cells[0].id, // Cell 14
+        amountKg: 1500,
+        tradedAt: new Date(now.getTime() - 350 * 24 * 60 * 60 * 1000), // ~12 months ago
+        notes: 'Initial wheat delivery for winter storage',
         createdBy: superAdmin.id,
       },
     }),
+    prisma.trade.upsert({
+      where: { id: 'trade-1b' },
+      update: {},
+      create: {
+        id: 'trade-1b',
+        commodityId: commodities[2].id, // Yellow Corn
+        siteId: sites[0].id,
+        compoundId: compounds[0].id,
+        cellId: cells[0].id, // Cell 14
+        amountKg: 2200,
+        tradedAt: new Date(now.getTime() - 180 * 24 * 60 * 60 * 1000), // ~6 months ago
+        notes: 'Spring corn harvest',
+        createdBy: superAdmin.id,
+      },
+    }),
+    prisma.trade.upsert({
+      where: { id: 'trade-1c' },
+      update: {},
+      create: {
+        id: 'trade-1c',
+        commodityId: commodities[0].id, // Non-GMO Soy
+        siteId: sites[0].id,
+        compoundId: compounds[0].id,
+        cellId: cells[0].id, // Cell 14
+        amountKg: 1800,
+        tradedAt: new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000), // ~1 month ago
+        notes: 'Recent soybean delivery',
+        createdBy: superAdmin.id,
+      },
+    }),
+    // Other cells - regular trades
     prisma.trade.upsert({
       where: { id: 'trade-2' },
       update: {},
@@ -469,9 +646,9 @@ async function seedDemoData() {
       },
     }),
   ]);
-  console.log('[seed] Created demo trades');
+  console.log('[seed] Created demo trades with 3 commodities over a year for Cell 14');
 
-  // 8. Create Alerts
+  // 10. Create Alerts
   await Promise.all([
     prisma.alert.upsert({
       where: { id: 'alert-1' },
