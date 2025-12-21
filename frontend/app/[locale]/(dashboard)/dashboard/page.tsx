@@ -4,6 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { useEffect, useState } from 'react';
 import { useAlertApi } from '@/hooks/use-alert-api';
 import { useTradeApi } from '@/hooks/use-trade-api';
+import { useTranslations } from 'next-intl';
 import type { DashboardAlert } from '@/schemas/alert.schema';
 import type { DashboardTrade } from '@/schemas/trade.schema';
 
@@ -31,6 +32,7 @@ const statusLabels = {
 };
 
 export default function DashboardPage() {
+    const t = useTranslations();
     const { getList: getAlerts } = useAlertApi();
     const { getRecent: getRecentTrades, isLoading: isLoadingTrades } = useTradeApi();
     const [activeAlerts, setActiveAlerts] = useState<DashboardAlert[]>([]);
@@ -101,27 +103,27 @@ export default function DashboardPage() {
     }, [getAlerts, getRecentTrades]);
 
     return (
-        <div className="container mx-auto px-4 py-6" dir="ltr">
+        <div className="container mx-auto px-4 py-6">
             <div className="space-y-6">
                 {/* Active Alerts Section */}
                 <section className="bg-card border border-border rounded-lg overflow-hidden">
                 <div className="p-6 pb-4">
                     <h2 className="text-xl font-semibold text-foreground mb-1">
-                        Active Alerts
+                        {t('dashboard.activeAlerts.title')}
                     </h2>
                     <p className="text-sm text-muted-foreground">
-                        Currently active alerts across all sites
+                        {t('dashboard.activeAlerts.description')}
                     </p>
                 </div>
 
                 <div className="px-6 pb-6 space-y-3">
                     {isLoadingAlerts ? (
                         <div className="text-center text-muted-foreground py-8">
-                            Loading alerts...
+                            {t('dashboard.activeAlerts.loading')}
                         </div>
                     ) : activeAlerts.length === 0 ? (
                         <div className="text-center text-muted-foreground py-8">
-                            No active alerts
+                            {t('dashboard.activeAlerts.noAlerts')}
                         </div>
                     ) : (
                         activeAlerts.map((alert) => (
@@ -133,13 +135,13 @@ export default function DashboardPage() {
                             <div className="flex items-center gap-3 mb-2">
                                 <Badge className={severityStyles[alert.severity]}>
                                     <span className="w-1.5 h-1.5 rounded-full bg-white/80 mr-1" />
-                                    {alert.severity.charAt(0) + alert.severity.slice(1).toLowerCase()}
+                                    {t(`severity.${alert.severity}`)}
                                 </Badge>
                                 <span className="font-medium text-foreground">
                                     {alert.description}
                                 </span>
                                 <span className="text-sm text-muted-foreground">
-                                    {alert.daysAgo} days ago
+                                    {t('dashboard.activeAlerts.daysAgo', { count: alert.daysAgo })}
                                 </span>
                             </div>
 
@@ -151,11 +153,11 @@ export default function DashboardPage() {
                             {/* Status + Assignee */}
                             <div className="flex items-center gap-3">
                                 <Badge variant="outline" className={statusStyles[alert.status]}>
-                                    {statusLabels[alert.status]}
+                                    {t(`alertStatus.${alert.status}`)}
                                 </Badge>
                                 {alert.assignee && (
                                     <span className="text-sm text-muted-foreground">
-                                        Assigned to {alert.assignee}
+                                        {t('dashboard.activeAlerts.assignedTo', { name: alert.assignee })}
                                     </span>
                                 )}
                             </div>
@@ -169,21 +171,21 @@ export default function DashboardPage() {
             <section className="bg-card border border-border rounded-lg overflow-hidden">
                 <div className="p-6 pb-4">
                     <h2 className="text-xl font-semibold text-foreground mb-1">
-                        Recent Goods
+                        {t('dashboard.recentGoods.title')}
                     </h2>
                     <p className="text-sm text-muted-foreground">
-                        Recently arrived goods across all sites
+                        {t('dashboard.recentGoods.description')}
                     </p>
                 </div>
 
                 <div className="px-6 pb-6 space-y-3">
                     {isLoadingTrades ? (
                         <div className="text-center text-muted-foreground py-8">
-                            Loading trades...
+                            {t('dashboard.recentGoods.loading')}
                         </div>
                     ) : recentGoods.length === 0 ? (
                         <div className="text-center text-muted-foreground py-8">
-                            No recent trades
+                            {t('dashboard.recentGoods.noTrades')}
                         </div>
                     ) : (
                         recentGoods.map((goods) => (
@@ -198,16 +200,16 @@ export default function DashboardPage() {
                                         {goods.name}
                                     </p>
                                     <p className="text-sm text-muted-foreground">
-                                        Origin: <span className="text-foreground">{goods.origin}</span>
+                                        {t('dashboard.recentGoods.origin')}: <span className="text-foreground">{goods.origin}</span>
                                     </p>
                                     <p className="text-sm text-muted-foreground">
-                                        Location: {goods.location}
+                                        {t('dashboard.recentGoods.location')}: {goods.location}
                                     </p>
                                 </div>
 
                                 {/* Center: Quantity */}
                                 <div className="text-sm text-muted-foreground">
-                                    Quantity: <span className="text-foreground font-medium">{goods.quantity}</span>
+                                    {t('dashboard.recentGoods.quantity')}: <span className="text-foreground font-medium">{goods.quantity}</span>
                                 </div>
 
                                 {/* Right: Date */}

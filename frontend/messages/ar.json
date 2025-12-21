@@ -1,0 +1,114 @@
+{
+  "common": {
+    "loading": "جارٍ التحميل...",
+    "noData": "لا توجد بيانات متاحة",
+    "error": "حدث خطأ",
+    "cancel": "إلغاء"
+  },
+  "dashboard": {
+    "title": "لوحة التحكم",
+    "subtitle": "نظرة عامة تشغيلية",
+    "activeAlerts": {
+      "title": "التنبيهات النشطة",
+      "description": "التنبيهات النشطة حالياً عبر جميع المواقع",
+      "loading": "جارٍ تحميل التنبيهات...",
+      "noAlerts": "لا توجد تنبيهات نشطة",
+      "daysAgo": "منذ {count} أيام",
+      "assignedTo": "مُسند إلى {name}"
+    },
+    "recentGoods": {
+      "title": "البضائع الأخيرة",
+      "description": "البضائع الواردة مؤخراً عبر جميع المواقع",
+      "loading": "جارٍ تحميل الصفقات...",
+      "noTrades": "لا توجد صفقات حديثة",
+      "quantity": "الكمية",
+      "origin": "المنشأ",
+      "location": "الموقع"
+    }
+  },
+  "severity": {
+    "LOW": "منخفض",
+    "MEDIUM": "متوسط",
+    "HIGH": "عالٍ",
+    "CRITICAL": "حرج"
+  },
+  "alertStatus": {
+    "OPEN": "مفتوح",
+    "IN_PROGRESS": "قيد التحقيق",
+    "ACKNOWLEDGED": "تم الإقرار",
+    "RESOLVED": "تم الحل",
+    "DISMISSED": "تم الرفض"
+  },
+  "language": {
+    "label": "اللغة",
+    "english": "English",
+    "hebrew": "עברית",
+    "arabic": "العربية",
+    "thai": "ไทย"
+  },
+  "navigation": {
+    "menu": "القائمة",
+    "dashboard": "لوحة التحكم",
+    "sites": "المواقع",
+    "alerts": "التنبيهات",
+    "settings": "الإعدادات",
+    "admin": "الإدارة"
+  },
+  "settings": {
+    "title": "الإعدادات",
+    "sites": "المواقع",
+    "usersAndRoles": "المستخدمون والأدوار",
+    "languages": "اللغات",
+    "about": "حول"
+  },
+  "pages": {
+    "settingsSites": {
+      "allSites": "جميع المواقع",
+      "mySites": "مواقعي",
+      "manageSites": "إدارة المواقع والمجمعات والخلايا",
+      "viewSites": "عرض المواقع المخصصة لك",
+      "addSite": "إضافة موقع",
+      "sitesCount": "{sites} موقع • {compounds} مجمع • {cells} خلية",
+      "loadingSites": "جارٍ تحميل المواقع...",
+      "noSites": "لا توجد مواقع بعد",
+      "getStartedAdmin": "ابدأ بإنشاء موقعك الأول",
+      "getStartedUser": "لم يتم تخصيص أي مواقع لك بعد"
+    }
+  },
+  "modals": {
+    "site": {
+      "createTitle": "إنشاء موقع",
+      "editTitle": "تحرير موقع",
+      "createDescription": "أضف موقعًا جديدًا إلى مؤسستك.",
+      "editDescription": "قم بتحديث معلومات الموقع أدناه.",
+      "siteName": "اسم الموقع",
+      "siteNamePlaceholder": "على سبيل المثال: مرفق التخزين الشمالي",
+      "address": "العنوان",
+      "addressPlaceholder": "على سبيل المثال: الرياض، السعودية",
+      "createButton": "إنشاء موقع",
+      "saveButton": "حفظ التغييرات"
+    },
+    "compound": {
+      "createTitle": "إضافة مجمع إلى {siteName}",
+      "editTitle": "تحرير مجمع",
+      "createDescription": "أضف مجمعًا جديدًا إلى هذا الموقع.",
+      "editDescription": "قم بتحديث معلومات المجمع أدناه.",
+      "compoundName": "اسم المجمع",
+      "compoundNamePlaceholder": "على سبيل المثال: كتلة الحبوب أ",
+      "createButton": "إنشاء مجمع",
+      "saveButton": "حفظ التغييرات"
+    },
+    "cell": {
+      "createTitle": "إضافة خلية إلى {compoundName}",
+      "editTitle": "تحرير خلية",
+      "createDescription": "أضف خلية جديدة إلى هذا المجمع.",
+      "editDescription": "قم بتحديث معلومات الخلية أدناه.",
+      "cellName": "اسم الخلية",
+      "cellNamePlaceholder": "على سبيل المثال: الخلية أ-101",
+      "capacity": "السعة (طن)",
+      "capacityPlaceholder": "على سبيل المثال: 5000",
+      "createButton": "إنشاء خلية",
+      "saveButton": "حفظ التغييرات"
+    }
+  }
+}

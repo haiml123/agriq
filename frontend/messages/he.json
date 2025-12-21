@@ -1,0 +1,114 @@
+{
+  "common": {
+    "loading": "טוען...",
+    "noData": "אין מידע זמין",
+    "error": "אירעה שגיאה",
+    "cancel": "ביטול"
+  },
+  "dashboard": {
+    "title": "לוח בקרה",
+    "subtitle": "סקירה תפעולית",
+    "activeAlerts": {
+      "title": "התראות פעילות",
+      "description": "התראות פעילות כרגע בכל האתרים",
+      "loading": "טוען התראות...",
+      "noAlerts": "אין התראות פעילות",
+      "daysAgo": "לפני {count} ימים",
+      "assignedTo": "הוקצה ל-{name}"
+    },
+    "recentGoods": {
+      "title": "סחורות אחרונות",
+      "description": "סחורות שהגיעו לאחרונה בכל האתרים",
+      "loading": "טוען עסקאות...",
+      "noTrades": "אין עסקאות אחרונות",
+      "quantity": "כמות",
+      "origin": "מקור",
+      "location": "מיקום"
+    }
+  },
+  "severity": {
+    "LOW": "נמוכה",
+    "MEDIUM": "בינונית",
+    "HIGH": "גבוהה",
+    "CRITICAL": "קריטית"
+  },
+  "alertStatus": {
+    "OPEN": "פתוח",
+    "IN_PROGRESS": "בטיפול",
+    "ACKNOWLEDGED": "אושר",
+    "RESOLVED": "נפתר",
+    "DISMISSED": "נדחה"
+  },
+  "language": {
+    "label": "שפה",
+    "english": "English",
+    "hebrew": "עברית",
+    "arabic": "العربية",
+    "thai": "ไทย"
+  },
+  "navigation": {
+    "menu": "תפריט",
+    "dashboard": "לוח בקרה",
+    "sites": "אתרים",
+    "alerts": "התראות",
+    "settings": "הגדרות",
+    "admin": "ניהול"
+  },
+  "settings": {
+    "title": "הגדרות",
+    "sites": "אתרים",
+    "usersAndRoles": "משתמשים ותפקידים",
+    "languages": "שפות",
+    "about": "אודות"
+  },
+  "pages": {
+    "settingsSites": {
+      "allSites": "כל האתרים",
+      "mySites": "האתרים שלי",
+      "manageSites": "ניהול אתרים, מתחמים ותאים",
+      "viewSites": "צפייה באתרים המוקצים לך",
+      "addSite": "הוסף אתר",
+      "sitesCount": "{sites} אתר{sites, plural, =1 {} other {ים}} • {compounds} מתחם{compounds, plural, =1 {} other {ים}} • {cells} תא{cells, plural, =1 {} other {ים}}",
+      "loadingSites": "טוען אתרים...",
+      "noSites": "אין אתרים עדיין",
+      "getStartedAdmin": "התחל על ידי יצירת האתר הראשון שלך",
+      "getStartedUser": "טרם הוקצו לך אתרים"
+    }
+  },
+  "modals": {
+    "site": {
+      "createTitle": "צור אתר",
+      "editTitle": "ערוך אתר",
+      "createDescription": "הוסף אתר חדש לארגון שלך.",
+      "editDescription": "עדכן את פרטי האתר למטה.",
+      "siteName": "שם האתר",
+      "siteNamePlaceholder": "לדוגמה: מתקן אחסון צפוני",
+      "address": "כתובת",
+      "addressPlaceholder": "לדוגמה: תל אביב, ישראל",
+      "createButton": "צור אתר",
+      "saveButton": "שמור שינויים"
+    },
+    "compound": {
+      "createTitle": "הוסף מתחם ל-{siteName}",
+      "editTitle": "ערוך מתחם",
+      "createDescription": "הוסף מתחם חדש לאתר זה.",
+      "editDescription": "עדכן את פרטי המתחם למטה.",
+      "compoundName": "שם המתחם",
+      "compoundNamePlaceholder": "לדוגמה: גוש תבואה א'",
+      "createButton": "צור מתחם",
+      "saveButton": "שמור שינויים"
+    },
+    "cell": {
+      "createTitle": "הוסף תא ל-{compoundName}",
+      "editTitle": "ערוך תא",
+      "createDescription": "הוסף תא חדש למתחם זה.",
+      "editDescription": "עדכן את פרטי התא למטה.",
+      "cellName": "שם התא",
+      "cellNamePlaceholder": "לדוגמה: תא א-101",
+      "capacity": "קיבולת (טון)",
+      "capacityPlaceholder": "לדוגמה: 5000",
+      "createButton": "צור תא",
+      "saveButton": "שמור שינויים"
+    }
+  }
+}

@@ -45,7 +45,7 @@ const alertsMenuItems: NavItem[] = [
 
 export default function AlertsLayout({ children }: AlertsLayoutProps) {
     return (
-        <AppSidebarLayout menuItems={alertsMenuItems} title="Alerts">
+        <AppSidebarLayout menuItems={alertsMenuItems} title="Menu">
             {children}
         </AppSidebarLayout>
     );

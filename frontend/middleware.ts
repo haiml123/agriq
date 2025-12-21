@@ -1,6 +1,7 @@
 import { auth } from '@/lib/auth';
 import { NextResponse } from 'next/server';
-
+import createMiddleware from 'next-intl/middleware';
+import { routing } from './i18n/routing';
 
 const isJwtValid = (token?: string) => {
     if (!token) return false;
@@ -23,27 +24,42 @@ const isJwtValid = (token?: string) => {
     }
 };
 
+// Create the next-intl middleware
+const intlMiddleware = createMiddleware(routing);
 
 export default auth((req) => {
     const accessToken = req.auth?.accessToken as string | undefined;
     const isLoggedIn = isJwtValid(accessToken);
+
+    const pathname = req.nextUrl.pathname;
+
+    // Extract the pathname without locale prefix for route matching
+    const pathnameWithoutLocale = pathname.replace(/^\/(en|he|ar|th)/, '') || '/';
+
     const isProtectedRoute =
-        req.nextUrl.pathname.startsWith('/dashboard') ||
-        req.nextUrl.pathname.startsWith('/sites') ||
-        req.nextUrl.pathname.startsWith('/alerts') ||
-        req.nextUrl.pathname.startsWith('/settings') ||
-        req.nextUrl.pathname.startsWith('/admin');
-    const isAuthRoute = req.nextUrl.pathname === '/login';
+        pathnameWithoutLocale.startsWith('/dashboard') ||
+        pathnameWithoutLocale.startsWith('/sites') ||
+        pathnameWithoutLocale.startsWith('/alerts') ||
+        pathnameWithoutLocale.startsWith('/settings') ||
+        pathnameWithoutLocale.startsWith('/admin');
+    const isAuthRoute = pathnameWithoutLocale === '/login';
 
     if (isProtectedRoute && !isLoggedIn) {
-        return NextResponse.redirect(new URL('/login', req.nextUrl));
+        // Extract locale from pathname
+        const localeMatch = pathname.match(/^\/(en|he|ar|th)/);
+        const locale = localeMatch ? localeMatch[1] : 'en';
+        return NextResponse.redirect(new URL(`/${locale}/login`, req.nextUrl));
     }
 
     if (isAuthRoute && isLoggedIn) {
-        return NextResponse.redirect(new URL('/dashboard', req.nextUrl));
+        // Extract locale from pathname
+        const localeMatch = pathname.match(/^\/(en|he|ar|th)/);
+        const locale = localeMatch ? localeMatch[1] : 'en';
+        return NextResponse.redirect(new URL(`/${locale}/dashboard`, req.nextUrl));
     }
 
-    return NextResponse.next();
+    // Run the next-intl middleware
+    return intlMiddleware(req);
 });
 
 export const config = {

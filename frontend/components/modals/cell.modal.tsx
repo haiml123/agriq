@@ -1,9 +1,12 @@
+'use client';
+
 import { DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useForm } from 'react-hook-form';
 import { Cell, CreateCellDto, UpdateCellDto, updateCellSchema } from '@/schemas/sites.schema';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { useTranslations } from 'next-intl';
 
 
 interface CellModalProps {
@@ -13,6 +16,8 @@ interface CellModalProps {
 }
 
 export function CellModal({ compoundName, cell, onClose }: CellModalProps) {
+    const t = useTranslations('modals.cell');
+    const tCommon = useTranslations('common');
     const isEdit = !!cell?.id;
 
     const {
@@ -33,26 +38,24 @@ export function CellModal({ compoundName, cell, onClose }: CellModalProps) {
         onClose(data);
     };
 
-    const title = isEdit ? 'Edit Cell' : `Add Cell to ${compoundName}`;
-
     return (
         <>
             <DialogHeader>
-                <DialogTitle>{title}</DialogTitle>
+                <DialogTitle>
+                    {isEdit ? t('editTitle') : t('createTitle', { compoundName })}
+                </DialogTitle>
                 <DialogDescription>
-                    {isEdit
-                        ? 'Update the cell information below.'
-                        : 'Add a new cell to this compound.'}
+                    {isEdit ? t('editDescription') : t('createDescription')}
                 </DialogDescription>
             </DialogHeader>
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 py-4">
                 <div className="space-y-2">
                     <label htmlFor="cellName" className="text-sm font-medium text-foreground">
-                        Cell Name
+                        {t('cellName')}
                     </label>
                     <Input
                         id="cellName"
-                        placeholder="e.g. Cell A-101"
+                        placeholder={t('cellNamePlaceholder')}
                         {...register('name')}
                     />
                     {errors.name && (
@@ -61,13 +64,13 @@ export function CellModal({ compoundName, cell, onClose }: CellModalProps) {
                 </div>
                 <div className="space-y-2">
                     <label htmlFor="capacity" className="text-sm font-medium text-foreground">
-                        Capacity (tons)
+                        {t('capacity')}
                     </label>
                     <Input
                         id="capacity"
                         type="number"
                         min={0}
-                        placeholder="e.g. 5000"
+                        placeholder={t('capacityPlaceholder')}
                         {...register('capacity', { valueAsNumber: true })}
                     />
                     {errors.capacity && (
@@ -76,14 +79,14 @@ export function CellModal({ compoundName, cell, onClose }: CellModalProps) {
                 </div>
                 <DialogFooter>
                     <Button type="button" variant="outline" onClick={() => onClose()}>
-                        Cancel
+                        {tCommon('cancel')}
                     </Button>
                     <Button
                         type="submit"
                         disabled={!isValid}
                         className="bg-emerald-500 hover:bg-emerald-600"
                     >
-                        {isEdit ? 'Save Changes' : 'Create Cell'}
+                        {isEdit ? t('saveButton') : t('createButton')}
                     </Button>
                 </DialogFooter>
             </form>

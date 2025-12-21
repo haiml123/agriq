@@ -3,9 +3,11 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { ThemeToggle } from '@/theme/ThemeToggle'
+import { LanguageSwitcher } from '@/components/language-switcher'
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { BarChart3, Menu, X } from 'lucide-react'
+import { useTranslations } from 'next-intl'
 
 interface Tab {
     label: string
@@ -18,17 +20,20 @@ interface AppHeaderProps {
     tabs?: Tab[]
 }
 
-const defaultTabs: Tab[] = [
-    { label: "Dashboard", href: "/dashboard" },
-    { label: "Sites", href: "/sites" },
-    { label: "Alerts", href: "/alerts" },
-    { label: "Settings", href: "/settings" },
-    { label: "Admin", href: "/admin" },
-]
-
-export function AppHeader({ title, subtitle, tabs = defaultTabs }: AppHeaderProps) {
+export function AppHeader({ title, subtitle, tabs }: AppHeaderProps) {
+    const t = useTranslations('navigation')
     const pathname = usePathname()
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+
+    const defaultTabs: Tab[] = [
+        { label: t('dashboard'), href: "/dashboard" },
+        { label: t('sites'), href: "/sites" },
+        { label: t('alerts'), href: "/alerts" },
+        { label: t('settings'), href: "/settings" },
+        { label: t('admin'), href: "/admin" },
+    ]
+
+    const navTabs = tabs || defaultTabs
 
     const isActiveTab = (href: string) => {
         if (href === "/dashboard") {
@@ -54,6 +59,7 @@ export function AppHeader({ title, subtitle, tabs = defaultTabs }: AppHeaderProp
                             </div>
                         </div>
                         <div className="flex items-center gap-2">
+                            <LanguageSwitcher />
                             <ThemeToggle />
                             <Button
                                 variant="ghost"
@@ -71,7 +77,7 @@ export function AppHeader({ title, subtitle, tabs = defaultTabs }: AppHeaderProp
 
             <nav className="hidden md:block sticky top-0 z-50 border-b border-border bg-background">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex gap-1">
-                    {tabs.map((tab) => {
+                    {navTabs.map((tab) => {
                         const isActive = isActiveTab(tab.href)
                         return (
                             <Link
@@ -103,7 +109,7 @@ export function AppHeader({ title, subtitle, tabs = defaultTabs }: AppHeaderProp
                         <div className="flex flex-col h-full">
                             {/* Menu Header */}
                             <div className="flex items-center justify-between p-4 border-b border-border">
-                                <h2 className="text-lg font-semibold text-foreground">Menu</h2>
+                                <h2 className="text-lg font-semibold text-foreground">{t('menu')}</h2>
                                 <Button variant="ghost" size="icon" onClick={() => setIsMobileMenuOpen(false)} aria-label="Close menu">
                                     <X className="h-5 w-5" />
                                 </Button>
@@ -111,7 +117,7 @@ export function AppHeader({ title, subtitle, tabs = defaultTabs }: AppHeaderProp
 
                             {/* Menu Items */}
                             <nav className="flex flex-col p-2 gap-1">
-                                {tabs.map((tab) => {
+                                {navTabs.map((tab) => {
                                     const isActive = isActiveTab(tab.href)
                                     return (
                                         <Link

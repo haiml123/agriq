@@ -1,19 +1,6 @@
 import type { Metadata } from 'next';
-import './globals.css';
-import { Geist, Geist_Mono } from 'next/font/google';
-import { ThemeProvider } from '@/theme/ThemeProvider';
-import { ModalProvider } from '@/components/providers/modal-provider';
-import { SessionProvider } from '@/components/providers/session-provider';
-
-const geistSans = Geist({
-    variable: '--font-geist-sans',
-    subsets: ['latin'],
-});
-
-const geistMono = Geist_Mono({
-    variable: '--font-geist-mono',
-    subsets: ['latin'],
-});
+import { routing } from '@/i18n/routing';
+import { notFound } from 'next/navigation';
 
 export const metadata: Metadata = {
     title: 'AgriQ - Grain Storage Management',
@@ -23,23 +10,12 @@ export const metadata: Metadata = {
     },
 };
 
-export default function RootLayout({
-                                       children,
-                                   }: Readonly<{
+export default async function RootLayout({
+    children,
+    params,
+}: Readonly<{
     children: React.ReactNode;
+    params: Promise<{ locale: string }>;
 }>) {
-    console.log('RootLayout rendered');
-    return (
-        <html lang="en" suppressHydrationWarning>
-        <body className={`${geistSans.variable} ${geistMono.variable} bg-background antialiased`}>
-        <SessionProvider>
-            <ThemeProvider>
-                <ModalProvider>
-                    {children}
-                </ModalProvider>
-            </ThemeProvider>
-        </SessionProvider>
-        </body>
-        </html>
-    );
+    return children;
 }

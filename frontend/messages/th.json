@@ -1,0 +1,114 @@
+{
+  "common": {
+    "loading": "กำลังโหลด...",
+    "noData": "ไม่มีข้อมูล",
+    "error": "เกิดข้อผิดพลาด",
+    "cancel": "ยกเลิก"
+  },
+  "dashboard": {
+    "title": "แดชบอร์ด",
+    "subtitle": "ภาพรวมการดำเนินงาน",
+    "activeAlerts": {
+      "title": "การแจ้งเตือนที่ใช้งานอยู่",
+      "description": "การแจ้งเตือนที่ใช้งานอยู่ในขณะนี้ทั่วทุกไซต์",
+      "loading": "กำลังโหลดการแจ้งเตือน...",
+      "noAlerts": "ไม่มีการแจ้งเตือนที่ใช้งานอยู่",
+      "daysAgo": "{count} วันที่แล้ว",
+      "assignedTo": "มอบหมายให้ {name}"
+    },
+    "recentGoods": {
+      "title": "สินค้าล่าสุด",
+      "description": "สินค้าที่เพิ่งมาถึงล่าสุดทั่วทุกไซต์",
+      "loading": "กำลังโหลดธุรกรรม...",
+      "noTrades": "ไม่มีธุรกรรมล่าสุด",
+      "quantity": "ปริมาณ",
+      "origin": "แหล่งกำเนิด",
+      "location": "สถานที่"
+    }
+  },
+  "severity": {
+    "LOW": "ต่ำ",
+    "MEDIUM": "ปานกลาง",
+    "HIGH": "สูง",
+    "CRITICAL": "วิกฤติ"
+  },
+  "alertStatus": {
+    "OPEN": "เปิด",
+    "IN_PROGRESS": "กำลังตรวจสอบ",
+    "ACKNOWLEDGED": "รับทราบแล้ว",
+    "RESOLVED": "แก้ไขแล้ว",
+    "DISMISSED": "ยกเลิกแล้ว"
+  },
+  "language": {
+    "label": "ภาษา",
+    "english": "English",
+    "hebrew": "עברית",
+    "arabic": "العربية",
+    "thai": "ไทย"
+  },
+  "navigation": {
+    "menu": "เมนู",
+    "dashboard": "แดชบอร์ด",
+    "sites": "ไซต์",
+    "alerts": "การแจ้งเตือน",
+    "settings": "การตั้งค่า",
+    "admin": "ผู้ดูแลระบบ"
+  },
+  "settings": {
+    "title": "การตั้งค่า",
+    "sites": "ไซต์",
+    "usersAndRoles": "ผู้ใช้และบทบาท",
+    "languages": "ภาษา",
+    "about": "เกี่ยวกับ"
+  },
+  "pages": {
+    "settingsSites": {
+      "allSites": "ไซต์ทั้งหมด",
+      "mySites": "ไซต์ของฉัน",
+      "manageSites": "จัดการไซต์ คอมเพาด์ และเซลล์",
+      "viewSites": "ดูไซต์ที่ได้รับมอบหมาย",
+      "addSite": "เพิ่มไซต์",
+      "sitesCount": "{sites} ไซต์ • {compounds} คอมเพาด์ • {cells} เซลล์",
+      "loadingSites": "กำลังโหลดไซต์...",
+      "noSites": "ยังไม่มีไซต์",
+      "getStartedAdmin": "เริ่มต้นด้วยการสร้างไซต์แรกของคุณ",
+      "getStartedUser": "คุณยังไม่ได้รับมอบหมายให้ดูแลไซต์ใดๆ"
+    }
+  },
+  "modals": {
+    "site": {
+      "createTitle": "สร้างไซต์",
+      "editTitle": "แก้ไขไซต์",
+      "createDescription": "เพิ่มไซต์ใหม่ให้กับองค์กรของคุณ",
+      "editDescription": "อัปเดตข้อมูลไซต์ด้านล่าง",
+      "siteName": "ชื่อไซต์",
+      "siteNamePlaceholder": "เช่น คลังเก็บภาคเหนือ",
+      "address": "ที่อยู่",
+      "addressPlaceholder": "เช่น กรุงเทพมหานคร ประเทศไทย",
+      "createButton": "สร้างไซต์",
+      "saveButton": "บันทึกการเปลี่ยนแปลง"
+    },
+    "compound": {
+      "createTitle": "เพิ่มคอมเพาด์ให้กับ {siteName}",
+      "editTitle": "แก้ไขคอมเพาด์",
+      "createDescription": "เพิ่มคอมเพาด์ใหม่ให้กับไซต์นี้",
+      "editDescription": "อัปเดตข้อมูลคอมเพาด์ด้านล่าง",
+      "compoundName": "ชื่อคอมเพาด์",
+      "compoundNamePlaceholder": "เช่น บล็อกข้าว A",
+      "createButton": "สร้างคอมเพาด์",
+      "saveButton": "บันทึกการเปลี่ยนแปลง"
+    },
+    "cell": {
+      "createTitle": "เพิ่มเซลล์ให้กับ {compoundName}",
+      "editTitle": "แก้ไขเซลล์",
+      "createDescription": "เพิ่มเซลล์ใหม่ให้กับคอมเพาด์นี้",
+      "editDescription": "อัปเดตข้อมูลเซลล์ด้านล่าง",
+      "cellName": "ชื่อเซลล์",
+      "cellNamePlaceholder": "เช่น เซลล์ A-101",
+      "capacity": "ความจุ (ตัน)",
+      "capacityPlaceholder": "เช่น 5000",
+      "createButton": "สร้างเซลล์",
+      "saveButton": "บันทึกการเปลี่ยนแปลง"
+    }
+  }
+}

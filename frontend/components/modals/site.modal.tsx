@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Site, UpdateSiteDto, updateSiteSchema } from '@/schemas/sites.schema';
+import { useTranslations } from 'next-intl';
 
 interface SiteModalProps {
   site?: Site | null;
@@ -13,6 +14,8 @@ interface SiteModalProps {
 }
 
 export function SiteModal({ site, onClose }: SiteModalProps) {
+  const t = useTranslations('modals.site');
+  const tCommon = useTranslations('common');
   const isEdit = !!site?.id;
 
   const {
@@ -35,26 +38,22 @@ export function SiteModal({ site, onClose }: SiteModalProps) {
     });
   };
 
-  const title = isEdit ? 'Edit Site' : 'Create Site';
-
   return (
       <>
         <DialogHeader>
-          <DialogTitle>{title}</DialogTitle>
+          <DialogTitle>{isEdit ? t('editTitle') : t('createTitle')}</DialogTitle>
           <DialogDescription>
-            {isEdit
-                ? 'Update the site information below.'
-                : 'Add a new site to your organization.'}
+            {isEdit ? t('editDescription') : t('createDescription')}
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 py-4">
           <div className="space-y-2">
             <label htmlFor="siteName" className="text-sm font-medium text-foreground">
-              Site Name
+              {t('siteName')}
             </label>
             <Input
                 id="siteName"
-                placeholder="e.g. Northern Storage Facility"
+                placeholder={t('siteNamePlaceholder')}
                 {...register('name')}
             />
             {errors.name && (
@@ -63,11 +62,11 @@ export function SiteModal({ site, onClose }: SiteModalProps) {
           </div>
           <div className="space-y-2">
             <label htmlFor="siteAddress" className="text-sm font-medium text-foreground">
-              Address
+              {t('address')}
             </label>
             <Input
                 id="siteAddress"
-                placeholder="e.g. Minneapolis, MN"
+                placeholder={t('addressPlaceholder')}
                 {...register('address')}
             />
             {errors.address && (
@@ -76,14 +75,14 @@ export function SiteModal({ site, onClose }: SiteModalProps) {
           </div>
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => onClose()}>
-              Cancel
+              {tCommon('cancel')}
             </Button>
             <Button
                 type="submit"
                 disabled={!isValid}
                 className="bg-emerald-500 hover:bg-emerald-600"
             >
-              {isEdit ? 'Save Changes' : 'Create Site'}
+              {isEdit ? t('saveButton') : t('createButton')}
             </Button>
           </DialogFooter>
         </form>

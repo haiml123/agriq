@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Compound, CreateCompoundDto, createCompoundSchema } from '@/schemas/sites.schema';
+import { useTranslations } from 'next-intl';
 
 interface CompoundModalProps {
   siteName: string;
@@ -14,6 +15,8 @@ interface CompoundModalProps {
 }
 
 export function CompoundModal({ siteName, compound, onClose }: CompoundModalProps) {
+  const t = useTranslations('modals.compound');
+  const tCommon = useTranslations('common');
   const isEdit = !!(compound && compound.id);
 
   const {
@@ -33,26 +36,25 @@ export function CompoundModal({ siteName, compound, onClose }: CompoundModalProp
   };
 
   console.log(errors, isValid)
-  const title = isEdit ? 'Edit Compound' : `Add Compound to ${siteName}`;
 
   return (
       <>
         <DialogHeader>
-          <DialogTitle>{title}</DialogTitle>
+          <DialogTitle>
+            {isEdit ? t('editTitle') : t('createTitle', { siteName })}
+          </DialogTitle>
           <DialogDescription>
-            {isEdit
-                ? 'Update the compound information below.'
-                : 'Add a new compound to this site.'}
+            {isEdit ? t('editDescription') : t('createDescription')}
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 py-4">
           <div className="space-y-2">
             <label htmlFor="compoundName" className="text-sm font-medium text-foreground">
-              Compound Name
+              {t('compoundName')}
             </label>
             <Input
                 id="compoundName"
-                placeholder="e.g. Grain Block A"
+                placeholder={t('compoundNamePlaceholder')}
                 {...register('name')}
             />
             {errors.name && (
@@ -61,14 +63,14 @@ export function CompoundModal({ siteName, compound, onClose }: CompoundModalProp
           </div>
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => onClose()}>
-              Cancel
+              {tCommon('cancel')}
             </Button>
             <Button
                 type="submit"
                 disabled={!isValid}
                 className="bg-emerald-500 hover:bg-emerald-600"
             >
-              {isEdit ? 'Save Changes' : 'Create Compound'}
+              {isEdit ? t('saveButton') : t('createButton')}
             </Button>
           </DialogFooter>
         </form>
