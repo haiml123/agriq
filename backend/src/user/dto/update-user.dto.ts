@@ -6,7 +6,7 @@ import {
   MinLength,
 } from 'class-validator';
 import { user_role as RoleType } from '@prisma/client';
-import { EntityStatus } from '../../../consts';
+import { EntityStatus } from '../../consts';
 
 export class UpdateUserDto {
   @IsOptional()

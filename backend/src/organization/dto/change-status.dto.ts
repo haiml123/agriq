@@ -1,5 +1,5 @@
 import { IsEnum, IsNotEmpty } from 'class-validator';
-import { EntityStatus } from 'consts';
+import { EntityStatus } from '../../consts';
 
 export class ChangeStatusDto {
   @IsEnum(EntityStatus)
