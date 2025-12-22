@@ -8,9 +8,12 @@ import { useModal } from '@/components/providers/modal-provider';
 import { CreateOrganizationModal } from '@/components/modals/create-org.modal';
 import { useOrganizationApi } from '@/hooks';
 import { Organization } from '@/schemas/organization.schema';
+import { toast } from 'sonner';
+import { useTranslations } from 'next-intl';
 
 export default function OrganizationsPage() {
     const modal = useModal();
+    const t = useTranslations('toast.organization');
     const {create, getList, isLoading, isCreating} = useOrganizationApi();
     const [organizations, setOrganizations] = useState<Organization[]>([])
 
@@ -26,13 +29,20 @@ export default function OrganizationsPage() {
     const handleCreateOrganization = async (newOrgName: string) => {
         if (!newOrgName.trim()) return
 
+        try {
+            const result = await create({name: newOrgName});
 
-        await create({name: newOrgName});
-
-        const response = await getList();
-
-        if (response?.data?.items) {
-            setOrganizations(response.data.items);
+            if (result?.data) {
+                toast.success(t('createSuccess'));
+                const response = await getList();
+                if (response?.data?.items) {
+                    setOrganizations(response.data.items);
+                }
+            } else {
+                toast.error(result?.error || t('createError'));
+            }
+        } catch (error) {
+            toast.error(t('createError'));
         }
     }
 

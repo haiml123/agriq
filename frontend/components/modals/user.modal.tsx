@@ -14,6 +14,7 @@ import { useCurrentUser } from '@/hooks'
 import { Loader2 } from 'lucide-react'
 import { RoleType, RoleTypeEnum } from '@/schemas/common.schema';
 import { useTranslations } from 'next-intl';
+import { toast } from 'sonner';
 
 interface UserModalProps {
     user?: User
@@ -24,6 +25,7 @@ export function UserModal({ user, onClose }: UserModalProps) {
     const t = useTranslations('modals.user');
     const tCommon = useTranslations('common');
     const tRoles = useTranslations('roles');
+    const tToast = useTranslations('toast.user');
     const { user: appUser, isSuperAdmin, isAdmin } = useCurrentUser()
     const { create, update, isCreating } = useUserApi()
     const { getList: getOrganizations } = useOrganizationApi()
@@ -146,7 +148,10 @@ export function UserModal({ user, onClose }: UserModalProps) {
 
             const response = await update(user.id, payload)
             if (response?.data) {
+                toast.success(tToast('updateSuccess'))
                 onClose(response.data)
+            } else {
+                toast.error(response?.error || tToast('updateError'))
             }
         } else {
             const payload: Record<string, any> = {
@@ -165,7 +170,10 @@ export function UserModal({ user, onClose }: UserModalProps) {
 
             const response = await create(payload as any)
             if (response?.data) {
+                toast.success(tToast('createSuccess'))
                 onClose(response.data)
+            } else {
+                toast.error(response?.error || tToast('createError'))
             }
         }
     }

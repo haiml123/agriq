@@ -23,6 +23,94 @@
     "creating": "جارٍ الإنشاء...",
     "deleting": "جارٍ الحذف..."
   },
+  "toast": {
+    "organization": {
+      "createSuccess": "تم إنشاء المنظمة بنجاح",
+      "createError": "فشل إنشاء المنظمة",
+      "updateSuccess": "تم تحديث المنظمة بنجاح",
+      "updateError": "فشل تحديث المنظمة",
+      "deleteSuccess": "تم حذف المنظمة بنجاح",
+      "deleteError": "فشل حذف المنظمة",
+      "statusChangeSuccess": "تم تحديث حالة المنظمة",
+      "statusChangeError": "فشل تحديث حالة المنظمة"
+    },
+    "site": {
+      "createSuccess": "تم إنشاء الموقع بنجاح",
+      "createError": "فشل إنشاء الموقع",
+      "updateSuccess": "تم تحديث الموقع بنجاح",
+      "updateError": "فشل تحديث الموقع",
+      "deleteSuccess": "تم حذف الموقع بنجاح",
+      "deleteError": "فشل حذف الموقع"
+    },
+    "compound": {
+      "createSuccess": "تم إنشاء المجمع بنجاح",
+      "createError": "فشل إنشاء المجمع",
+      "updateSuccess": "تم تحديث المجمع بنجاح",
+      "updateError": "فشل تحديث المجمع",
+      "deleteSuccess": "تم حذف المجمع بنجاح",
+      "deleteError": "فشل حذف المجمع"
+    },
+    "cell": {
+      "createSuccess": "تم إنشاء الخلية بنجاح",
+      "createError": "فشل إنشاء الخلية",
+      "updateSuccess": "تم تحديث الخلية بنجاح",
+      "updateError": "فشل تحديث الخلية",
+      "deleteSuccess": "تم حذف الخلية بنجاح",
+      "deleteError": "فشل حذف الخلية"
+    },
+    "user": {
+      "createSuccess": "تم إنشاء المستخدم بنجاح",
+      "createError": "فشل إنشاء المستخدم",
+      "updateSuccess": "تم تحديث المستخدم بنجاح",
+      "updateError": "فشل تحديث المستخدم",
+      "deleteSuccess": "تم حذف المستخدم بنجاح",
+      "deleteError": "فشل حذف المستخدم"
+    },
+    "commodityType": {
+      "createSuccess": "تم إنشاء نوع السلعة بنجاح",
+      "createError": "فشل إنشاء نوع السلعة",
+      "updateSuccess": "تم تحديث نوع السلعة بنجاح",
+      "updateError": "فشل تحديث نوع السلعة",
+      "deleteSuccess": "تم حذف نوع السلعة بنجاح",
+      "deleteError": "فشل حذف نوع السلعة",
+      "statusChangeSuccess": "تم تحديث حالة نوع السلعة",
+      "statusChangeError": "فشل تحديث حالة نوع السلعة"
+    },
+    "commodity": {
+      "createSuccess": "تمت إضافة السلعة بنجاح",
+      "createError": "فشلت إضافة السلعة",
+      "updateSuccess": "تم تحديث السلعة بنجاح",
+      "updateError": "فشل تحديث السلعة",
+      "deleteSuccess": "تم حذف السلعة بنجاح",
+      "deleteError": "فشل حذف السلعة",
+      "transferOutSuccess": "تم نقل السلعة للخارج بنجاح",
+      "transferOutError": "فشل نقل السلعة للخارج"
+    },
+    "alert": {
+      "acknowledgeSuccess": "تم الاعتراف بالتنبيه",
+      "acknowledgeError": "فشل الاعتراف بالتنبيه",
+      "statusChangeSuccess": "تم تحديث حالة التنبيه",
+      "statusChangeError": "فشل تحديث حالة التنبيه"
+    },
+    "trigger": {
+      "createSuccess": "تم إنشاء المحفز بنجاح",
+      "createError": "فشل إنشاء المحفز",
+      "updateSuccess": "تم تحديث المحفز بنجاح",
+      "updateError": "فشل تحديث المحفز",
+      "deleteSuccess": "تم حذف المحفز بنجاح",
+      "deleteError": "فشل حذف المحفز",
+      "toggleSuccess": "تم تحديث حالة المحفز",
+      "toggleError": "فشل تحديث حالة المحفز"
+    },
+    "lookupTable": {
+      "createSuccess": "تم إنشاء جدول البحث بنجاح",
+      "createError": "فشل إنشاء جدول البحث",
+      "updateSuccess": "تم تحديث جدول البحث بنجاح",
+      "updateError": "فشل تحديث جدول البحث",
+      "deleteSuccess": "تم حذف جدول البحث بنجاح",
+      "deleteError": "فشل حذف جدول البحث"
+    }
+  },
   "commodityModal": {
     "addTitle": "إضافة سلعة جديدة",
     "editTitle": "تحرير السلعة",

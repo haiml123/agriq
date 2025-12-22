@@ -23,6 +23,94 @@
     "creating": "Creating...",
     "deleting": "Deleting..."
   },
+  "toast": {
+    "organization": {
+      "createSuccess": "Organization created successfully",
+      "createError": "Failed to create organization",
+      "updateSuccess": "Organization updated successfully",
+      "updateError": "Failed to update organization",
+      "deleteSuccess": "Organization deleted successfully",
+      "deleteError": "Failed to delete organization",
+      "statusChangeSuccess": "Organization status updated",
+      "statusChangeError": "Failed to update organization status"
+    },
+    "site": {
+      "createSuccess": "Site created successfully",
+      "createError": "Failed to create site",
+      "updateSuccess": "Site updated successfully",
+      "updateError": "Failed to update site",
+      "deleteSuccess": "Site deleted successfully",
+      "deleteError": "Failed to delete site"
+    },
+    "compound": {
+      "createSuccess": "Compound created successfully",
+      "createError": "Failed to create compound",
+      "updateSuccess": "Compound updated successfully",
+      "updateError": "Failed to update compound",
+      "deleteSuccess": "Compound deleted successfully",
+      "deleteError": "Failed to delete compound"
+    },
+    "cell": {
+      "createSuccess": "Cell created successfully",
+      "createError": "Failed to create cell",
+      "updateSuccess": "Cell updated successfully",
+      "updateError": "Failed to update cell",
+      "deleteSuccess": "Cell deleted successfully",
+      "deleteError": "Failed to delete cell"
+    },
+    "user": {
+      "createSuccess": "User created successfully",
+      "createError": "Failed to create user",
+      "updateSuccess": "User updated successfully",
+      "updateError": "Failed to update user",
+      "deleteSuccess": "User deleted successfully",
+      "deleteError": "Failed to delete user"
+    },
+    "commodityType": {
+      "createSuccess": "Commodity type created successfully",
+      "createError": "Failed to create commodity type",
+      "updateSuccess": "Commodity type updated successfully",
+      "updateError": "Failed to update commodity type",
+      "deleteSuccess": "Commodity type deleted successfully",
+      "deleteError": "Failed to delete commodity type",
+      "statusChangeSuccess": "Commodity type status updated",
+      "statusChangeError": "Failed to update commodity type status"
+    },
+    "commodity": {
+      "createSuccess": "Commodity added successfully",
+      "createError": "Failed to add commodity",
+      "updateSuccess": "Commodity updated successfully",
+      "updateError": "Failed to update commodity",
+      "deleteSuccess": "Commodity deleted successfully",
+      "deleteError": "Failed to delete commodity",
+      "transferOutSuccess": "Commodity transferred out successfully",
+      "transferOutError": "Failed to transfer commodity out"
+    },
+    "alert": {
+      "acknowledgeSuccess": "Alert acknowledged",
+      "acknowledgeError": "Failed to acknowledge alert",
+      "statusChangeSuccess": "Alert status updated",
+      "statusChangeError": "Failed to update alert status"
+    },
+    "trigger": {
+      "createSuccess": "Trigger created successfully",
+      "createError": "Failed to create trigger",
+      "updateSuccess": "Trigger updated successfully",
+      "updateError": "Failed to update trigger",
+      "deleteSuccess": "Trigger deleted successfully",
+      "deleteError": "Failed to delete trigger",
+      "toggleSuccess": "Trigger status updated",
+      "toggleError": "Failed to update trigger status"
+    },
+    "lookupTable": {
+      "createSuccess": "Lookup table created successfully",
+      "createError": "Failed to create lookup table",
+      "updateSuccess": "Lookup table updated successfully",
+      "updateError": "Failed to update lookup table",
+      "deleteSuccess": "Lookup table deleted successfully",
+      "deleteError": "Failed to delete lookup table"
+    }
+  },
   "commodityModal": {
     "addTitle": "Add New Commodity",
     "editTitle": "Edit Commodity",

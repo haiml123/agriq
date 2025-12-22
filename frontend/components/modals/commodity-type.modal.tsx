@@ -5,6 +5,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { useState } from 'react';
 import { CommodityType, CreateCommodityTypeDto, UpdateCommodityTypeDto } from '@/schemas/commodity-type.schema';
 import { useCommodityTypeApi } from '@/hooks/use-commodity-type-api';
+import { toast } from 'sonner';
+import { useTranslations } from 'next-intl';
 
 interface CommodityTypeModalProps {
     commodityType?: CommodityType;
@@ -12,6 +14,7 @@ interface CommodityTypeModalProps {
 }
 
 export function CommodityTypeModal({ commodityType, onClose }: CommodityTypeModalProps) {
+    const t = useTranslations('toast.commodityType');
     const { create, update, isCreating, isUpdating } = useCommodityTypeApi();
 
     const [formData, setFormData] = useState({
@@ -30,7 +33,10 @@ export function CommodityTypeModal({ commodityType, onClose }: CommodityTypeModa
             };
             const response = await update(commodityType.id, updateData);
             if (response?.data) {
+                toast.success(t('updateSuccess'));
                 onClose(response.data);
+            } else {
+                toast.error(response?.error || t('updateError'));
             }
         } else {
             const createData: CreateCommodityTypeDto = {
@@ -39,7 +45,10 @@ export function CommodityTypeModal({ commodityType, onClose }: CommodityTypeModa
             };
             const response = await create(createData);
             if (response?.data) {
+                toast.success(t('createSuccess'));
                 onClose(response.data);
+            } else {
+                toast.error(response?.error || t('createError'));
             }
         }
     };

@@ -11,9 +11,12 @@ import type { Trigger } from '@/schemas/trigger.schema';
 import { useTriggerApi } from '@/hooks/use-trigger-api';
 import { useOrganizationApi } from '@/hooks/use-organization-api';
 import type { Organization } from '@/schemas/organization.schema';
+import { toast } from 'sonner';
+import { useTranslations } from 'next-intl';
 
 export default function TriggersPage() {
     const modal = useModal();
+    const t = useTranslations('toast.trigger');
     const { getList, create, update, toggleActive, remove, isLoading: isApiLoading } = useTriggerApi();
     const { getList: getOrganizationList, isLoading: isOrgLoading } = useOrganizationApi();
     const [triggers, setTriggers] = useState<Trigger[]>([]);
@@ -51,9 +54,16 @@ export default function TriggersPage() {
             const response = existing
                 ? await update(existing.id, payload)
                 : await create(payload);
-            return (response?.data as Trigger) ?? null;
+
+            if (response?.data) {
+                toast.success(existing ? t('updateSuccess') : t('createSuccess'));
+                return response.data as Trigger;
+            } else {
+                toast.error(response?.error || (existing ? t('updateError') : t('createError')));
+                return null;
+            }
         },
-        [create, update]
+        [create, update, t]
     );
 
     const openTriggerModal = async (trigger?: Trigger) => {
@@ -82,17 +92,23 @@ export default function TriggersPage() {
     const handleDelete = async (trigger: Trigger) => {
         const response = await remove(trigger.id);
         if (!response?.error) {
+            toast.success(t('deleteSuccess'));
             setTriggers((prev) => prev.filter((t) => t.id !== trigger.id));
+        } else {
+            toast.error(response.error || t('deleteError'));
         }
     };
 
     const handleToggleActive = async (trigger: Trigger) => {
         const response = await toggleActive(trigger.id, !trigger.isActive);
         if (response?.data) {
+            toast.success(t('toggleSuccess'));
             const updatedTrigger = response.data as Trigger;
             setTriggers((prev) =>
                 prev.map((t) => (t.id === trigger.id ? updatedTrigger : t))
             );
+        } else {
+            toast.error(response?.error || t('toggleError'));
         }
     };
 

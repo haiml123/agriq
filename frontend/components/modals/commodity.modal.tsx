@@ -26,6 +26,7 @@ import { useApi } from '@/hooks/use-api';
 import type { CreateTradeDto } from '@/schemas/trade.schema';
 import type { CommodityType } from '@/schemas/commodity-type.schema';
 import { AlertTriangle } from 'lucide-react';
+import { toast } from 'sonner';
 
 interface CommodityModalProps {
   open: boolean;
@@ -42,6 +43,7 @@ export function CommodityModal({
 }: CommodityModalProps) {
   const t = useTranslations('commodityModal');
   const tCommon = useTranslations('common');
+  const tToast = useTranslations('toast.commodity');
 
   const { create } = useTradeApi();
   const { getList: getCommodityTypes } = useCommodityTypeApi();
@@ -280,7 +282,9 @@ export function CommodityModal({
 
       if (response.error) {
         setError(response.error);
+        toast.error(tToast('createError'));
       } else if (response.data) {
+        toast.success(tToast('createSuccess'));
         onSuccess?.();
         onClose();
       }

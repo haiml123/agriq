@@ -10,6 +10,8 @@ import { LookupTable, LookupTableData } from '@/schemas/lookup-table.schema'
 import { CommodityType } from '@/schemas/commodity-type.schema'
 import { useCommodityTypeApi } from '@/hooks/use-commodity-type-api'
 import { useLookupTableApi } from '@/hooks/use-lookup-table-api'
+import { toast } from 'sonner'
+import { useTranslations } from 'next-intl'
 
 function createDefaultTableData(): LookupTableData {
     return {
@@ -25,6 +27,7 @@ function createDefaultTableData(): LookupTableData {
 }
 
 export default function LookupTablesPage() {
+    const t = useTranslations('toast.lookupTable')
     const { getList: getCommodityTypes } = useCommodityTypeApi()
     const { getByCommodityType, create, update, remove, isLoading: isLookupLoading, isSaving } = useLookupTableApi()
 
@@ -91,8 +94,10 @@ export default function LookupTablesPage() {
         })
 
         if (response?.data) {
+            toast.success(t('createSuccess'))
             setLookupTables((prev) => ({ ...prev, [selectedTypeId]: response.data }))
         } else if (response?.error) {
+            toast.error(response.error || t('createError'))
             setLookupError(response.error)
         }
     }
@@ -115,11 +120,13 @@ export default function LookupTablesPage() {
         })
 
         if (response?.data) {
+            toast.success(t('updateSuccess'))
             setLookupTables((prev) => ({
                 ...prev,
                 [currentTable.commodityTypeId]: response.data,
             }))
         } else if (response?.error) {
+            toast.error(response.error || t('updateError'))
             setLookupError(response.error)
         }
     }
@@ -130,8 +137,10 @@ export default function LookupTablesPage() {
 
         const response = await remove(selectedTypeId)
         if (response?.status === 200 || response?.status === 204 || response?.data === null) {
+            toast.success(t('deleteSuccess'))
             setLookupTables((prev) => ({ ...prev, [selectedTypeId]: null }))
         } else if (response?.error) {
+            toast.error(response.error || t('deleteError'))
             setLookupError(response.error)
         }
     }

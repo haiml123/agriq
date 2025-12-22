@@ -19,6 +19,7 @@ import { useSiteApi } from '@/hooks/use-site-api';
 import { useApi } from '@/hooks/use-api';
 import type { CreateTradeDto, ApiTrade } from '@/schemas/trade.schema';
 import { Loader2, Package } from 'lucide-react';
+import { toast } from 'sonner';
 
 interface CellInventory {
   commodityTypeId: string;
@@ -33,6 +34,7 @@ interface TransferOutModalProps {
 export function TransferOutModal({ onClose }: TransferOutModalProps) {
   const t = useTranslations('modals.transferOut');
   const tCommon = useTranslations('common');
+  const tToast = useTranslations('toast.commodity');
   const { create, isCreating } = useTradeApi();
   const { getSites } = useSiteApi();
   const { get, post } = useApi();
@@ -271,7 +273,9 @@ export function TransferOutModal({ onClose }: TransferOutModalProps) {
 
     if (response?.error) {
       setError(response.error);
+      toast.error(tToast('transferOutError'));
     } else if (response?.data) {
+      toast.success(tToast('transferOutSuccess'));
       onClose(response.data);
     }
   };

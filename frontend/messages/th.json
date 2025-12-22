@@ -23,6 +23,94 @@
     "creating": "กำลังสร้าง...",
     "deleting": "กำลังลบ..."
   },
+  "toast": {
+    "organization": {
+      "createSuccess": "สร้างองค์กรสำเร็จ",
+      "createError": "สร้างองค์กรล้มเหลว",
+      "updateSuccess": "อัปเดตองค์กรสำเร็จ",
+      "updateError": "อัปเดตองค์กรล้มเหลว",
+      "deleteSuccess": "ลบองค์กรสำเร็จ",
+      "deleteError": "ลบองค์กรล้มเหลว",
+      "statusChangeSuccess": "อัปเดตสถานะองค์กรสำเร็จ",
+      "statusChangeError": "อัปเดตสถานะองค์กรล้มเหลว"
+    },
+    "site": {
+      "createSuccess": "สร้างไซต์สำเร็จ",
+      "createError": "สร้างไซต์ล้มเหลว",
+      "updateSuccess": "อัปเดตไซต์สำเร็จ",
+      "updateError": "อัปเดตไซต์ล้มเหลว",
+      "deleteSuccess": "ลบไซต์สำเร็จ",
+      "deleteError": "ลบไซต์ล้มเหลว"
+    },
+    "compound": {
+      "createSuccess": "สร้างคอมพาวด์สำเร็จ",
+      "createError": "สร้างคอมพาวด์ล้มเหลว",
+      "updateSuccess": "อัปเดตคอมพาวด์สำเร็จ",
+      "updateError": "อัปเดตคอมพาวด์ล้มเหลว",
+      "deleteSuccess": "ลบคอมพาวด์สำเร็จ",
+      "deleteError": "ลบคอมพาวด์ล้มเหลว"
+    },
+    "cell": {
+      "createSuccess": "สร้างเซลล์สำเร็จ",
+      "createError": "สร้างเซลล์ล้มเหลว",
+      "updateSuccess": "อัปเดตเซลล์สำเร็จ",
+      "updateError": "อัปเดตเซลล์ล้มเหลว",
+      "deleteSuccess": "ลบเซลล์สำเร็จ",
+      "deleteError": "ลบเซลล์ล้มเหลว"
+    },
+    "user": {
+      "createSuccess": "สร้างผู้ใช้สำเร็จ",
+      "createError": "สร้างผู้ใช้ล้มเหลว",
+      "updateSuccess": "อัปเดตผู้ใช้สำเร็จ",
+      "updateError": "อัปเดตผู้ใช้ล้มเหลว",
+      "deleteSuccess": "ลบผู้ใช้สำเร็จ",
+      "deleteError": "ลบผู้ใช้ล้มเหลว"
+    },
+    "commodityType": {
+      "createSuccess": "สร้างประเภทสินค้าสำเร็จ",
+      "createError": "สร้างประเภทสินค้าล้มเหลว",
+      "updateSuccess": "อัปเดตประเภทสินค้าสำเร็จ",
+      "updateError": "อัปเดตประเภทสินค้าล้มเหลว",
+      "deleteSuccess": "ลบประเภทสินค้าสำเร็จ",
+      "deleteError": "ลบประเภทสินค้าล้มเหลว",
+      "statusChangeSuccess": "อัปเดตสถานะประเภทสินค้าสำเร็จ",
+      "statusChangeError": "อัปเดตสถานะประเภทสินค้าล้มเหลว"
+    },
+    "commodity": {
+      "createSuccess": "เพิ่มสินค้าสำเร็จ",
+      "createError": "เพิ่มสินค้าล้มเหลว",
+      "updateSuccess": "อัปเดตสินค้าสำเร็จ",
+      "updateError": "อัปเดตสินค้าล้มเหลว",
+      "deleteSuccess": "ลบสินค้าสำเร็จ",
+      "deleteError": "ลบสินค้าล้มเหลว",
+      "transferOutSuccess": "โอนสินค้าออกสำเร็จ",
+      "transferOutError": "โอนสินค้าออกล้มเหลว"
+    },
+    "alert": {
+      "acknowledgeSuccess": "รับทราบการแจ้งเตือนแล้ว",
+      "acknowledgeError": "รับทราบการแจ้งเตือนล้มเหลว",
+      "statusChangeSuccess": "อัปเดตสถานะการแจ้งเตือนสำเร็จ",
+      "statusChangeError": "อัปเดตสถานะการแจ้งเตือนล้มเหลว"
+    },
+    "trigger": {
+      "createSuccess": "สร้างทริกเกอร์สำเร็จ",
+      "createError": "สร้างทริกเกอร์ล้มเหลว",
+      "updateSuccess": "อัปเดตทริกเกอร์สำเร็จ",
+      "updateError": "อัปเดตทริกเกอร์ล้มเหลว",
+      "deleteSuccess": "ลบทริกเกอร์สำเร็จ",
+      "deleteError": "ลบทริกเกอร์ล้มเหลว",
+      "toggleSuccess": "อัปเดตสถานะทริกเกอร์สำเร็จ",
+      "toggleError": "อัปเดตสถานะทริกเกอร์ล้มเหลว"
+    },
+    "lookupTable": {
+      "createSuccess": "สร้างตารางค้นหาสำเร็จ",
+      "createError": "สร้างตารางค้นหาล้มเหลว",
+      "updateSuccess": "อัปเดตตารางค้นหาสำเร็จ",
+      "updateError": "อัปเดตตารางค้นหาล้มเหลว",
+      "deleteSuccess": "ลบตารางค้นหาสำเร็จ",
+      "deleteError": "ลบตารางค้นหาล้มเหลว"
+    }
+  },
   "commodityModal": {
     "addTitle": "เพิ่มสินค้าใหม่",
     "editTitle": "แก้ไขสินค้า",

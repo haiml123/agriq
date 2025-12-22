@@ -10,9 +10,12 @@ import { useCommodityTypeApi } from '@/hooks/use-commodity-type-api';
 import { CommodityType } from '@/schemas/commodity-type.schema';
 import { EntityStatus } from '@/schemas/common.schema';
 import { formatDate } from '@/lib/utils';
+import { toast } from 'sonner';
+import { useTranslations } from 'next-intl';
 
 export default function CommodityTypesPage() {
     const modal = useModal();
+    const t = useTranslations('toast.commodityType');
     const { getList, setStatus, remove, isLoading, isUpdating, isDeleting } = useCommodityTypeApi();
     const [commodityTypes, setCommodityTypes] = useState<CommodityType[]>([]);
 
@@ -28,14 +31,32 @@ export default function CommodityTypesPage() {
     }, []);
 
     const handleToggleStatus = async (type: CommodityType) => {
-        const nextStatus: EntityStatus = type.status === 'ACTIVE' ? 'BLOCKED' : 'ACTIVE';
-        await setStatus(type.id, nextStatus);
-        await refreshList();
+        try {
+            const nextStatus: EntityStatus = type.status === 'ACTIVE' ? 'BLOCKED' : 'ACTIVE';
+            const result = await setStatus(type.id, nextStatus);
+            if (result?.data) {
+                toast.success(t('statusChangeSuccess'));
+                await refreshList();
+            } else {
+                toast.error(result?.error || t('statusChangeError'));
+            }
+        } catch (error) {
+            toast.error(t('statusChangeError'));
+        }
     };
 
     const handleDeleteCommodityType = async (id: string) => {
-        await remove(id);
-        await refreshList();
+        try {
+            const result = await remove(id);
+            if (result?.data !== undefined) {
+                toast.success(t('deleteSuccess'));
+                await refreshList();
+            } else {
+                toast.error(result?.error || t('deleteError'));
+            }
+        } catch (error) {
+            toast.error(t('deleteError'));
+        }
     };
 
     const openCommodityTypeModal = async (commodityType?: CommodityType) => {

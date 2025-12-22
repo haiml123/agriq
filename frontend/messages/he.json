@@ -23,6 +23,94 @@
     "creating": "יוצר...",
     "deleting": "מוחק..."
   },
+  "toast": {
+    "organization": {
+      "createSuccess": "הארגון נוצר בהצלחה",
+      "createError": "יצירת הארגון נכשלה",
+      "updateSuccess": "הארגון עודכן בהצלחה",
+      "updateError": "עדכון הארגון נכשל",
+      "deleteSuccess": "הארגון נמחק בהצלחה",
+      "deleteError": "מחיקת הארגון נכשלה",
+      "statusChangeSuccess": "מצב הארגון עודכן",
+      "statusChangeError": "עדכון מצב הארגון נכשל"
+    },
+    "site": {
+      "createSuccess": "האתר נוצר בהצלחה",
+      "createError": "יצירת האתר נכשלה",
+      "updateSuccess": "האתר עודכן בהצלחה",
+      "updateError": "עדכון האתר נכשל",
+      "deleteSuccess": "האתר נמחק בהצלחה",
+      "deleteError": "מחיקת האתר נכשלה"
+    },
+    "compound": {
+      "createSuccess": "המתחם נוצר בהצלחה",
+      "createError": "יצירת המתחם נכשלה",
+      "updateSuccess": "המתחם עודכן בהצלחה",
+      "updateError": "עדכון המתחם נכשל",
+      "deleteSuccess": "המתחם נמחק בהצלחה",
+      "deleteError": "מחיקת המתחם נכשלה"
+    },
+    "cell": {
+      "createSuccess": "התא נוצר בהצלחה",
+      "createError": "יצירת התא נכשלה",
+      "updateSuccess": "התא עודכן בהצלחה",
+      "updateError": "עדכון התא נכשל",
+      "deleteSuccess": "התא נמחק בהצלחה",
+      "deleteError": "מחיקת התא נכשלה"
+    },
+    "user": {
+      "createSuccess": "המשתמש נוצר בהצלחה",
+      "createError": "יצירת המשתמש נכשלה",
+      "updateSuccess": "המשתמש עודכן בהצלחה",
+      "updateError": "עדכון המשתמש נכשל",
+      "deleteSuccess": "המשתמש נמחק בהצלחה",
+      "deleteError": "מחיקת המשתמש נכשלה"
+    },
+    "commodityType": {
+      "createSuccess": "סוג הסחורה נוצר בהצלחה",
+      "createError": "יצירת סוג הסחורה נכשלה",
+      "updateSuccess": "סוג הסחורה עודכן בהצלחה",
+      "updateError": "עדכון סוג הסחורה נכשל",
+      "deleteSuccess": "סוג הסחורה נמחק בהצלחה",
+      "deleteError": "מחיקת סוג הסחורה נכשלה",
+      "statusChangeSuccess": "מצב סוג הסחורה עודכן",
+      "statusChangeError": "עדכון מצב סוג הסחורה נכשל"
+    },
+    "commodity": {
+      "createSuccess": "הסחורה נוספה בהצלחה",
+      "createError": "הוספת הסחורה נכשלה",
+      "updateSuccess": "הסחורה עודכנה בהצלחה",
+      "updateError": "עדכון הסחורה נכשל",
+      "deleteSuccess": "הסחורה נמחקה בהצלחה",
+      "deleteError": "מחיקת הסחורה נכשלה",
+      "transferOutSuccess": "הסחורה הועברה החוצה בהצלחה",
+      "transferOutError": "העברת הסחורה החוצה נכשלה"
+    },
+    "alert": {
+      "acknowledgeSuccess": "ההתראה אושרה",
+      "acknowledgeError": "אישור ההתראה נכשל",
+      "statusChangeSuccess": "מצב ההתראה עודכן",
+      "statusChangeError": "עדכון מצב ההתראה נכשל"
+    },
+    "trigger": {
+      "createSuccess": "הטריגר נוצר בהצלחה",
+      "createError": "יצירת הטריגר נכשלה",
+      "updateSuccess": "הטריגר עודכן בהצלחה",
+      "updateError": "עדכון הטריגר נכשל",
+      "deleteSuccess": "הטריגר נמחק בהצלחה",
+      "deleteError": "מחיקת הטריגר נכשלה",
+      "toggleSuccess": "מצב הטריגר עודכן",
+      "toggleError": "עדכון מצב הטריגר נכשל"
+    },
+    "lookupTable": {
+      "createSuccess": "טבלת החיפוש נוצרה בהצלחה",
+      "createError": "יצירת טבלת החיפוש נכשלה",
+      "updateSuccess": "טבלת החיפוש עודכנה בהצלחה",
+      "updateError": "עדכון טבלת החיפוש נכשל",
+      "deleteSuccess": "טבלת החיפוש נמחקה בהצלחה",
+      "deleteError": "מחיקת טבלת החיפוש נכשלה"
+    }
+  },
   "commodityModal": {
     "addTitle": "הוסף סחורה חדשה",
     "editTitle": "ערוך סחורה",

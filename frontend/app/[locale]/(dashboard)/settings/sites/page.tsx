@@ -21,9 +21,13 @@ import { SitesList } from '@/components/sites-table/sites-list'
 import { Button } from '@/components/ui/button'
 import { SiteModal } from '@/components/modals/site.modal'
 import { useTranslations } from 'next-intl'
+import { toast } from 'sonner'
 
 export default function SitesPage() {
     const t = useTranslations('pages.settingsSites')
+    const tToastSite = useTranslations('toast.site')
+    const tToastCompound = useTranslations('toast.compound')
+    const tToastCell = useTranslations('toast.cell')
     const modal = useModal()
     const { user, isSuperAdmin, isAdmin, isLoading: isCurrentUserLoading } = useCurrentUser()
     const {
@@ -86,6 +90,7 @@ export default function SitesPage() {
 
         if (!organizationId) {
             console.error('No organization ID available')
+            toast.error(tToastSite('createError'))
             return
         }
 
@@ -96,11 +101,15 @@ export default function SitesPage() {
                 organizationId,
             }
             const newSite = await createSite(dto)
-            if (newSite) {
+            if (newSite?.data) {
                 setSites(prev => [...prev, newSite.data as Site])
+                toast.success(tToastSite('createSuccess'))
+            } else {
+                toast.error(newSite?.error || tToastSite('createError'))
             }
         } catch (error) {
             console.error('Failed to create site:', error)
+            toast.error(tToastSite('createError'))
         }
     }
 
@@ -111,22 +120,32 @@ export default function SitesPage() {
                 address: data.address ?? undefined,
             }
             const updated = await updateSite(siteId, dto)
-            if (updated) {
+            if (updated?.data) {
                 setSites(prev => prev.map(site =>
                     site.id === siteId ? { ...site, ...data } : site
                 ))
+                toast.success(tToastSite('updateSuccess'))
+            } else {
+                toast.error(updated?.error || tToastSite('updateError'))
             }
         } catch (error) {
             console.error('Failed to update site:', error)
+            toast.error(tToastSite('updateError'))
         }
     }
 
     const handleDeleteSite = async (siteId: string) => {
         try {
-            await deleteSite(siteId)
-            setSites(prev => prev.filter(site => site.id !== siteId))
+            const result = await deleteSite(siteId)
+            if (result?.data !== undefined) {
+                setSites(prev => prev.filter(site => site.id !== siteId))
+                toast.success(tToastSite('deleteSuccess'))
+            } else {
+                toast.error(result?.error || tToastSite('deleteError'))
+            }
         } catch (error) {
             console.error('Failed to delete site:', error)
+            toast.error(tToastSite('deleteError'))
         }
     }
 
@@ -138,15 +157,19 @@ export default function SitesPage() {
                 siteId,
             }
             const newCompound = await createCompound(dto)
-            if (newCompound) {
+            if (newCompound?.data) {
                 setSites(prev => prev.map(site =>
                     site.id === siteId
                         ? { ...site, compounds: [...(site.compounds || []), newCompound.data as any] }
                         : site
                 ))
+                toast.success(tToastCompound('createSuccess'))
+            } else {
+                toast.error(newCompound?.error || tToastCompound('createError'))
             }
         } catch (error) {
             console.error('Failed to create compound:', error)
+            toast.error(tToastCompound('createError'))
         }
     }
 
@@ -156,28 +179,38 @@ export default function SitesPage() {
                 name: data.name,
             }
             const updated = await updateCompound(compoundId, dto)
-            if (updated) {
+            if (updated?.data) {
                 setSites(prev => prev.map(site => ({
                     ...site,
                     compounds: site.compounds?.map(compound =>
                         compound.id === compoundId ? { ...compound, ...data } : compound
                     )
                 })))
+                toast.success(tToastCompound('updateSuccess'))
+            } else {
+                toast.error(updated?.error || tToastCompound('updateError'))
             }
         } catch (error) {
             console.error('Failed to update compound:', error)
+            toast.error(tToastCompound('updateError'))
         }
     }
 
     const handleDeleteCompound = async (compoundId: string) => {
         try {
-            await deleteCompound(compoundId)
-            setSites(prev => prev.map(site => ({
-                ...site,
-                compounds: site.compounds?.filter(compound => compound.id !== compoundId)
-            })))
+            const result = await deleteCompound(compoundId)
+            if (result?.data !== undefined) {
+                setSites(prev => prev.map(site => ({
+                    ...site,
+                    compounds: site.compounds?.filter(compound => compound.id !== compoundId)
+                })))
+                toast.success(tToastCompound('deleteSuccess'))
+            } else {
+                toast.error(result?.error || tToastCompound('deleteError'))
+            }
         } catch (error) {
             console.error('Failed to delete compound:', error)
+            toast.error(tToastCompound('deleteError'))
         }
     }
 
@@ -190,7 +223,7 @@ export default function SitesPage() {
                 compoundId,
             }
             const newCell = await createCell(dto)
-            if (newCell) {
+            if (newCell?.data) {
                 setSites(prev => prev.map(site => ({
                     ...site,
                     compounds: site.compounds?.map(compound =>
@@ -199,9 +232,13 @@ export default function SitesPage() {
                             : compound
                     )
                 })))
+                toast.success(tToastCell('createSuccess'))
+            } else {
+                toast.error(newCell?.error || tToastCell('createError'))
             }
         } catch (error) {
             console.error('Failed to create cell:', error)
+            toast.error(tToastCell('createError'))
         }
     }
 
@@ -212,7 +249,7 @@ export default function SitesPage() {
                 capacity: data.capacity,
             }
             const updated = await updateCell(cellId, dto)
-            if (updated) {
+            if (updated?.data) {
                 setSites(prev => prev.map(site => ({
                     ...site,
                     compounds: site.compounds?.map(compound => ({
@@ -222,24 +259,34 @@ export default function SitesPage() {
                         )
                     }))
                 })))
+                toast.success(tToastCell('updateSuccess'))
+            } else {
+                toast.error(updated?.error || tToastCell('updateError'))
             }
         } catch (error) {
             console.error('Failed to update cell:', error)
+            toast.error(tToastCell('updateError'))
         }
     }
 
     const handleDeleteCell = async (cellId: string) => {
         try {
-            await deleteCell(cellId)
-            setSites(prev => prev.map(site => ({
-                ...site,
-                compounds: site.compounds?.map(compound => ({
-                    ...compound,
-                    cells: compound.cells?.filter(cell => cell.id !== cellId)
-                }))
-            })))
+            const result = await deleteCell(cellId)
+            if (result?.data !== undefined) {
+                setSites(prev => prev.map(site => ({
+                    ...site,
+                    compounds: site.compounds?.map(compound => ({
+                        ...compound,
+                        cells: compound.cells?.filter(cell => cell.id !== cellId)
+                    }))
+                })))
+                toast.success(tToastCell('deleteSuccess'))
+            } else {
+                toast.error(result?.error || tToastCell('deleteError'))
+            }
         } catch (error) {
             console.error('Failed to delete cell:', error)
+            toast.error(tToastCell('deleteError'))
         }
     }
 
