@@ -8,21 +8,15 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Checkbox } from '@/components/ui/checkbox';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuCheckboxItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger
-} from '@/components/ui/dropdown-menu';
-import { Plus, Calendar, ChevronDown } from 'lucide-react';
+import { CellSelect, type CellSelectSite } from '@/components/ui/cell-select';
+import { Plus, Calendar } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ReferenceLine } from 'recharts';
 import { useSiteApi } from '@/hooks/use-site-api';
 import { useApi } from '@/hooks/use-api';
 import { format, subDays, subMonths, subYears } from 'date-fns';
 import { storage, STORAGE_KEYS } from '@/lib/local-storage';
+import { CommodityModal } from '@/components/modals/commodity.modal';
+import { useApp } from '@/providers/app-provider';
 
 interface SensorReading {
   id: string;
@@ -107,10 +101,11 @@ export default function SitesPage() {
   const t = useTranslations('sites');
   const tSeverity = useTranslations('severity');
   const tStatus = useTranslations('alertStatus');
+  const { user } = useApp();
   const { getSites } = useSiteApi();
   const { get, post } = useApi();
 
-  const [sites, setSites] = useState<any[]>([]);
+  const [sites, setSites] = useState<CellSelectSite[]>([]);
   const [selectedSiteId, setSelectedSiteId] = useState<string>(() => {
     return storage.get<string>(STORAGE_KEYS.SITES_SELECTED_SITE) || '';
   });
@@ -122,7 +117,7 @@ export default function SitesPage() {
   const [dateRange, setDateRange] = useState<'7days' | 'month' | 'year' | 'custom'>('7days');
   const [customStartDate, setCustomStartDate] = useState<string>('');
   const [customEndDate, setCustomEndDate] = useState<string>('');
-  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [commodityModalOpen, setCommodityModalOpen] = useState(false);
 
   // Load sites on mount
   useEffect(() => {
@@ -244,99 +239,17 @@ export default function SitesPage() {
     // Auto-select all cells when site changes
     const site = sites.find(s => s.id === siteId);
     const allCellIds: string[] = [];
-    site?.compounds?.forEach((compound: any) => {
-      compound.cells?.forEach((cell: any) => {
+    site?.compounds?.forEach((compound) => {
+      compound.cells?.forEach((cell) => {
         allCellIds.push(cell.id);
       });
     });
     setSelectedCellIds(allCellIds);
   };
 
-  const handleCellToggle = (cellId: string) => {
-    setSelectedCellIds(prev =>
-      prev.includes(cellId)
-        ? prev.filter((id: string) => id !== cellId)
-        : [...prev, cellId]
-    );
+  const handleCellSelectionChange = (cellIds: string[]) => {
+    setSelectedCellIds(cellIds);
   };
-
-  const handleCompoundToggle = (compoundId: string) => {
-    const site = sites.find(s => s.id === selectedSiteId);
-    const compound = site?.compounds?.find((c: any) => c.id === compoundId);
-    const compoundCellIds = compound?.cells?.map((cell: any) => cell.id) || [];
-
-    // Check if all cells in this compound are selected
-    const allSelected = compoundCellIds.every((id: string) => selectedCellIds.includes(id));
-
-    if (allSelected) {
-      // Deselect all cells in this compound
-      setSelectedCellIds(prev => prev.filter((id: string) => !compoundCellIds.includes(id)));
-    } else {
-      // Select all cells in this compound
-      setSelectedCellIds(prev => [...new Set([...prev, ...compoundCellIds])]);
-    }
-  };
-
-  const handleSelectAll = () => {
-    const site = sites.find(s => s.id === selectedSiteId);
-    const allCellIds: string[] = [];
-    site?.compounds?.forEach((compound: any) => {
-      compound.cells?.forEach((cell: any) => {
-        allCellIds.push(cell.id);
-      });
-    });
-
-    // Check if all cells are selected
-    const allSelected = allCellIds.length > 0 && allCellIds.every((id: string) => selectedCellIds.includes(id));
-
-    if (allSelected) {
-      setSelectedCellIds([]);
-    } else {
-      setSelectedCellIds(allCellIds);
-    }
-  };
-
-  const isCompoundSelected = (compoundId: string) => {
-    const site = sites.find(s => s.id === selectedSiteId);
-    const compound = site?.compounds?.find((c: any) => c.id === compoundId);
-    const compoundCellIds = compound?.cells?.map((cell: any) => cell.id) || [];
-    return compoundCellIds.length > 0 && compoundCellIds.every((id: string) => selectedCellIds.includes(id));
-  };
-
-  const isCompoundIndeterminate = (compoundId: string) => {
-    const site = sites.find(s => s.id === selectedSiteId);
-    const compound = site?.compounds?.find((c: any) => c.id === compoundId);
-    const compoundCellIds = compound?.cells?.map((cell: any) => cell.id) || [];
-    const selectedCount = compoundCellIds.filter((id: string) => selectedCellIds.includes(id)).length;
-    return selectedCount > 0 && selectedCount < compoundCellIds.length;
-  };
-
-  const isAllSelected = () => {
-    const site = sites.find(s => s.id === selectedSiteId);
-    const allCellIds: string[] = [];
-    site?.compounds?.forEach((compound: any) => {
-      compound.cells?.forEach((cell: any) => {
-        allCellIds.push(cell.id);
-      });
-    });
-    return allCellIds.length > 0 && allCellIds.every((id: string) => selectedCellIds.includes(id));
-  };
-
-  // Get selected cell names for display
-  const getSelectedCellNames = () => {
-    const names: string[] = [];
-    const selectedSite = sites.find(s => s.id === selectedSiteId);
-    selectedSite?.compounds?.forEach((compound: any) => {
-      compound.cells?.forEach((cell: any) => {
-        if (selectedCellIds.includes(cell.id)) {
-          names.push(cell.name);
-        }
-      });
-    });
-    return names;
-  };
-
-  const selectedSite = sites.find(s => s.id === selectedSiteId);
 
   // Prepare chart data with dynamic formatting based on date range
   const getDateFormat = () => {
@@ -479,9 +392,9 @@ export default function SitesPage() {
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-semibold">{t('title')}</h1>
-        <Button className="gap-2">
+        <Button className="gap-2" onClick={() => setCommodityModalOpen(true)}>
           <Plus className="h-4 w-4" />
-          {t('addSiteButton')}
+          {t('addCommodityButton')}
         </Button>
       </div>
 
@@ -508,70 +421,15 @@ export default function SitesPage() {
           {/* Cell Multi-Selector */}
           <div className="space-y-2">
             <label className="text-sm font-medium">{t('cell')}</label>
-            <DropdownMenu open={dropdownOpen} onOpenChange={setDropdownOpen}>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline" className="w-full justify-between" disabled={!selectedSiteId}>
-                  {selectedCellIds.length > 0
-                    ? `${selectedCellIds.length} cell${selectedCellIds.length > 1 ? 's' : ''} selected`
-                    : t('selectCell')}
-                  <ChevronDown className="ml-2 h-4 w-4 opacity-50" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent
-                className="w-[300px] max-h-[400px] overflow-y-auto"
-                onCloseAutoFocus={(e) => e.preventDefault()}
-              >
-                {/* Select All Option */}
-                <DropdownMenuCheckboxItem
-                  checked={isAllSelected()}
-                  onCheckedChange={handleSelectAll}
-                  onSelect={(e) => e.preventDefault()}
-                  className="font-semibold"
-                >
-                  Select All
-                </DropdownMenuCheckboxItem>
-                <DropdownMenuSeparator />
-
-                {/* Compounds and Cells */}
-                {selectedSite?.compounds?.map((compound: any) => (
-                  <div key={compound.id}>
-                    {/* Compound Checkbox */}
-                    <div className="flex items-center px-2 py-1.5 hover:bg-accent cursor-pointer" onClick={() => handleCompoundToggle(compound.id)}>
-                      <Checkbox
-                        checked={isCompoundSelected(compound.id)}
-                        onCheckedChange={() => handleCompoundToggle(compound.id)}
-                        className="mr-2"
-                        {...(isCompoundIndeterminate(compound.id) && {
-                          'data-state': 'indeterminate' as any
-                        })}
-                      />
-                      <span className="text-xs font-semibold text-muted-foreground uppercase">
-                        {compound.name}
-                      </span>
-                    </div>
-
-                    {/* Cells under compound */}
-                    {compound.cells?.map((cell: any) => (
-                      <DropdownMenuCheckboxItem
-                        key={cell.id}
-                        checked={selectedCellIds.includes(cell.id)}
-                        onCheckedChange={() => handleCellToggle(cell.id)}
-                        onSelect={(e) => e.preventDefault()}
-                        className="pl-8"
-                      >
-                        {cell.name}
-                      </DropdownMenuCheckboxItem>
-                    ))}
-                    <DropdownMenuSeparator />
-                  </div>
-                ))}
-              </DropdownMenuContent>
-            </DropdownMenu>
-            {selectedCellIds.length > 0 && (
-              <p className="text-xs text-muted-foreground mt-1">
-                {getSelectedCellNames().join(', ')}
-              </p>
-            )}
+            <CellSelect
+              sites={sites}
+              selectedSiteId={selectedSiteId}
+              selectedCellIds={selectedCellIds}
+              onCellSelectionChange={handleCellSelectionChange}
+              multiSelect={true}
+              disabled={!selectedSiteId}
+              placeholder={t('selectCell')}
+            />
           </div>
         </div>
       </div>
@@ -993,6 +851,20 @@ export default function SitesPage() {
           {t('selectCell')}
         </div>
       )}
+
+      {/* Commodity Modal */}
+      <CommodityModal
+        open={commodityModalOpen}
+        onClose={() => setCommodityModalOpen(false)}
+        onSuccess={() => {
+          setCommodityModalOpen(false);
+          // Reload cell details to show the new commodity
+          if (selectedCellIds.length > 0) {
+            loadMultipleCellsDetails(selectedCellIds, dateRange, customStartDate, customEndDate);
+          }
+        }}
+        organizationId={user?.organizationId || undefined}
+      />
     </div>
   );
 }

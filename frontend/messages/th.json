@@ -1,4 +1,10 @@
 {
+  "auth": {
+    "loading": {
+      "title": "กำลังโหลด",
+      "subtitle": "กรุณารอสักครู่ในขณะที่เรากำลังตรวจสอบเซสชันของคุณ..."
+    }
+  },
   "common": {
     "loading": "กำลังโหลด...",
     "noData": "ไม่มีข้อมูล",
@@ -16,6 +22,17 @@
     "saving": "กำลังบันทึก...",
     "creating": "กำลังสร้าง...",
     "deleting": "กำลังลบ..."
+  },
+  "commodityModal": {
+    "addTitle": "เพิ่มสินค้าใหม่",
+    "editTitle": "แก้ไขสินค้า",
+    "commodityType": "ประเภทสินค้า",
+    "selectCommodityType": "เลือกประเภทสินค้า (ข้าว, ข้าวโพด ฯลฯ)",
+    "name": "ชื่อ",
+    "namePlaceholder": "ป้อนชื่อสินค้า",
+    "origin": "แหล่งกำเนิด",
+    "originPlaceholder": "ป้อนสถานที่แหล่งกำเนิด",
+    "create": "สร้าง"
   },
   "dashboard": {
     "title": "แดชบอร์ด",
@@ -82,7 +99,8 @@
     "noCommodity": "ไม่มีสินค้า",
     "unknownCommodity": "ไม่ทราบ",
     "commodityTimeline": "ไทม์ไลน์สินค้า",
-    "commodityMarker": "เครื่องหมายสินค้า"
+    "commodityMarker": "เครื่องหมายสินค้า",
+    "addCommodityButton": "เพิ่มสินค้า"
   },
   "settings": {
     "title": "การตั้งค่า",

@@ -44,9 +44,22 @@ export const dashboardTradeSchema = z.object({
     date: z.string(),
 });
 
+// Create trade schema
+export const createTradeSchema = z.object({
+    siteId: z.string().min(1, 'Site is required'),
+    compoundId: z.string().optional(),
+    cellId: z.string().optional(),
+    commodityTypeId: z.string().min(1, 'Commodity type is required'),
+    origin: z.string().optional(),
+    amountKg: z.number().min(0.01, 'Amount must be greater than 0'),
+    tradedAt: z.string().optional(),
+    notes: z.string().optional(),
+});
+
 export type ApiTrade = z.infer<typeof apiTradeSchema>;
 export type DashboardTrade = z.infer<typeof dashboardTradeSchema>;
 export type TradeSite = z.infer<typeof tradeSiteSchema>;
 export type TradeCompound = z.infer<typeof tradeCompoundSchema>;
 export type TradeCell = z.infer<typeof tradeCellSchema>;
 export type TradeCommodity = z.infer<typeof tradeCommoditySchema>;
+export type CreateTradeDto = z.infer<typeof createTradeSchema>;

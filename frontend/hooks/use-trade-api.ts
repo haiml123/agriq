@@ -2,12 +2,24 @@
 
 import { useCallback, useState } from 'react';
 import { useApi } from './use-api';
-import type { ApiTrade } from '@/schemas/trade.schema';
+import type { ApiTrade, CreateTradeDto } from '@/schemas/trade.schema';
 
 export function useTradeApi() {
-    const { get } = useApi();
+    const { get, post, patch, del } = useApi();
 
     const [isLoading, setIsLoading] = useState(false);
+
+    const create = useCallback(
+        async (data: CreateTradeDto) => {
+            setIsLoading(true);
+            try {
+                return await post<ApiTrade>('/trades', data);
+            } finally {
+                setIsLoading(false);
+            }
+        },
+        [post]
+    );
 
     const getRecent = useCallback(
         async (params?: { organizationId?: string; limit?: number }) => {
@@ -34,6 +46,7 @@ export function useTradeApi() {
     );
 
     return {
+        create,
         getRecent,
         getById,
         isLoading,

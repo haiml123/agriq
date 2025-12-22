@@ -1,4 +1,10 @@
 {
+  "auth": {
+    "loading": {
+      "title": "Loading",
+      "subtitle": "Please wait while we verify your session..."
+    }
+  },
   "common": {
     "loading": "Loading...",
     "noData": "No data available",
@@ -16,6 +22,17 @@
     "saving": "Saving...",
     "creating": "Creating...",
     "deleting": "Deleting..."
+  },
+  "commodityModal": {
+    "addTitle": "Add New Commodity",
+    "editTitle": "Edit Commodity",
+    "commodityType": "Commodity Type",
+    "selectCommodityType": "Select commodity type (rice, corn, etc.)",
+    "name": "Name",
+    "namePlaceholder": "Enter commodity name",
+    "origin": "Origin",
+    "originPlaceholder": "Enter origin location",
+    "create": "Create"
   },
   "dashboard": {
     "title": "Dashboard",
@@ -105,6 +122,7 @@
     "cellsCount": "{count} cells",
     "sensorsCount": "{count} sensors",
     "addSiteButton": "Add Site",
+    "addCommodityButton": "Add Commodity",
     "storageRegion": "Storage Region",
     "site": "Site",
     "goButton": "Go",

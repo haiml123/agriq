@@ -1,4 +1,10 @@
 {
+  "auth": {
+    "loading": {
+      "title": "טוען",
+      "subtitle": "אנא המתן בזמן שאנו מאמתים את ההפעלה שלך..."
+    }
+  },
   "common": {
     "loading": "טוען...",
     "noData": "אין מידע זמין",
@@ -16,6 +22,17 @@
     "saving": "שומר...",
     "creating": "יוצר...",
     "deleting": "מוחק..."
+  },
+  "commodityModal": {
+    "addTitle": "הוסף סחורה חדשה",
+    "editTitle": "ערוך סחורה",
+    "commodityType": "סוג סחורה",
+    "selectCommodityType": "בחר סוג סחורה (אורז, תירס וכו')",
+    "name": "שם",
+    "namePlaceholder": "הזן שם סחורה",
+    "origin": "מקור",
+    "originPlaceholder": "הזן מיקום מקור",
+    "create": "יצור"
   },
   "dashboard": {
     "title": "לוח בקרה",
@@ -88,6 +105,7 @@
   "sites": {
     "title": "אתרים",
     "addSiteButton": "הוסף מחנה",
+    "addCommodityButton": "הוסף סחורה",
     "storageRegion": "אזור אחסון",
     "site": "מחנה",
     "cell": "תא",

@@ -1,4 +1,10 @@
 {
+  "auth": {
+    "loading": {
+      "title": "جار التحميل",
+      "subtitle": "يرجى الانتظار بينما نتحقق من جلستك..."
+    }
+  },
   "common": {
     "loading": "جارٍ التحميل...",
     "noData": "لا توجد بيانات متاحة",
@@ -16,6 +22,17 @@
     "saving": "جارٍ الحفظ...",
     "creating": "جارٍ الإنشاء...",
     "deleting": "جارٍ الحذف..."
+  },
+  "commodityModal": {
+    "addTitle": "إضافة سلعة جديدة",
+    "editTitle": "تحرير السلعة",
+    "commodityType": "نوع السلعة",
+    "selectCommodityType": "اختر نوع السلعة (أرز، ذرة، إلخ)",
+    "name": "الاسم",
+    "namePlaceholder": "أدخل اسم السلعة",
+    "origin": "المصدر",
+    "originPlaceholder": "أدخل موقع المصدر",
+    "create": "إنشاء"
   },
   "dashboard": {
     "title": "لوحة التحكم",
@@ -82,7 +99,8 @@
     "noCommodity": "لا توجد سلعة",
     "unknownCommodity": "غير معروف",
     "commodityTimeline": "الجدول الزمني للسلع",
-    "commodityMarker": "علامة السلعة"
+    "commodityMarker": "علامة السلعة",
+    "addCommodityButton": "إضافة سلعة"
   },
   "settings": {
     "title": "الإعدادات",

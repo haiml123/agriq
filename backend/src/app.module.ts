@@ -11,6 +11,7 @@ import { OrganizationModule } from './organization';
 import { UserModule } from './user/user.module';
 import { TriggerModule } from './trigger';
 import { CommodityTypeModule } from './commodity-type';
+import { CommodityModule } from './commodity';
 import { SiteModule } from './site';
 import { EventsModule } from './events';
 import { AlertModule } from './alert';
@@ -32,6 +33,7 @@ import { TradeModule } from './trade';
     SiteModule,
     TriggerModule,
     CommodityTypeModule,
+    CommodityModule,
     EventsModule,
     AlertModule,
     TradeModule,
