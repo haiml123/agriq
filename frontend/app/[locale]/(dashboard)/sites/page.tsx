@@ -9,14 +9,16 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
 import { CellSelect, type CellSelectSite } from '@/components/ui/cell-select';
-import { Plus, Calendar } from 'lucide-react';
+import { Plus, Calendar, ArrowRightFromLine } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ReferenceLine } from 'recharts';
 import { useSiteApi } from '@/hooks/use-site-api';
 import { useApi } from '@/hooks/use-api';
 import { format, subDays, subMonths, subYears } from 'date-fns';
 import { storage, STORAGE_KEYS } from '@/lib/local-storage';
 import { CommodityModal } from '@/components/modals/commodity.modal';
+import { TransferOutModal } from '@/components/modals/transfer-out.modal';
 import { useApp } from '@/providers/app-provider';
+import { useModal } from '@/components/providers/modal-provider';
 
 interface SensorReading {
   id: string;
@@ -104,6 +106,7 @@ export default function SitesPage() {
   const { user } = useApp();
   const { getSites } = useSiteApi();
   const { get, post } = useApi();
+  const modal = useModal();
 
   const [sites, setSites] = useState<CellSelectSite[]>([]);
   const [selectedSiteId, setSelectedSiteId] = useState<string>(() => {
@@ -387,15 +390,38 @@ export default function SitesPage() {
     };
   };
 
+  const handleTransferOut = async () => {
+    const result = await modal.open((onClose) => (
+      <TransferOutModal onClose={onClose} />
+    ));
+
+    if (result) {
+      // Reload cell details to reflect the transfer
+      if (selectedCellIds.length > 0) {
+        loadMultipleCellsDetails(selectedCellIds, dateRange, customStartDate, customEndDate);
+      }
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background p-6">
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-semibold">{t('title')}</h1>
-        <Button className="gap-2" onClick={() => setCommodityModalOpen(true)}>
-          <Plus className="h-4 w-4" />
-          {t('addCommodityButton')}
-        </Button>
+        <div className="flex gap-2">
+          <Button
+            variant="outline"
+            className="gap-2 border-amber-500 text-amber-500 hover:bg-amber-500 hover:text-white"
+            onClick={handleTransferOut}
+          >
+            <ArrowRightFromLine className="h-4 w-4" />
+            {t('transferOutButton')}
+          </Button>
+          <Button className="gap-2" onClick={() => setCommodityModalOpen(true)}>
+            <Plus className="h-4 w-4" />
+            {t('addCommodityButton')}
+          </Button>
+        </div>
       </div>
 
       {/* Filters */}
@@ -771,10 +797,10 @@ export default function SitesPage() {
 
                 {/* Bottom Cards */}
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                  {/* Goods in Cell */}
+                  {/* Commodities in Cell */}
                   <Card>
                     <CardHeader>
-                      <CardTitle>{t('goodsInCell')}</CardTitle>
+                      <CardTitle>{t('commoditiesInCell')}</CardTitle>
                     </CardHeader>
                     <CardContent>
                       {cellData.trades.length === 0 ? (

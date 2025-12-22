@@ -45,9 +45,9 @@
       "daysAgo": "{count} days ago",
       "assignedTo": "Assigned to {name}"
     },
-    "recentGoods": {
-      "title": "Recent Goods",
-      "description": "Recently arrived goods across all sites",
+    "recentCommodities": {
+      "title": "Recent Commodities",
+      "description": "Recently arrived commodities across all sites",
       "loading": "Loading trades...",
       "noTrades": "No recent trades",
       "quantity": "Quantity",
@@ -81,7 +81,8 @@
     "sites": "Sites",
     "alerts": "Alerts",
     "settings": "Settings",
-    "admin": "Admin"
+    "admin": "Admin",
+    "logout": "Logout"
   },
   "admin": {
     "menu": "Menu",
@@ -123,6 +124,7 @@
     "sensorsCount": "{count} sensors",
     "addSiteButton": "Add Site",
     "addCommodityButton": "Add Commodity",
+    "transferOutButton": "Transfer Out",
     "storageRegion": "Storage Region",
     "site": "Site",
     "goButton": "Go",
@@ -130,7 +132,7 @@
     "humidityTrends": "Humidity Trends",
     "temperatureLabel": "Temperature (°C)",
     "humidityLabel": "Humidity (%)",
-    "goodsInCell": "Goods in Cell",
+    "commoditiesInCell": "Commodities in Cell",
     "activeAlerts": "Active Alerts",
     "recentReadings": "Recent Readings",
     "selectStorageRegion": "Select storage region",
@@ -215,7 +217,7 @@
     },
     "commodities": {
       "title": "Commodity Types",
-      "description": "Manage commodity types for your stored goods",
+      "description": "Manage commodity types for your stored commodities",
       "createCommodityType": "Create Commodity Type",
       "commodityTypesCount": "{count} commodity type{count, plural, =1 {} other {s}} registered",
       "deactivate": "Deactivate",
@@ -400,6 +402,35 @@
       "organizationNamePlaceholder": "Enter organization name",
       "createButton": "Create Organization",
       "creating": "Creating..."
+    },
+    "transferOut": {
+      "title": "Transfer Commodity Out",
+      "description": "Record commodity leaving the system as a sale, shipment, or transfer to an external entity.",
+      "site": "Site",
+      "siteRequired": "Site *",
+      "selectSourceSite": "Select source site",
+      "cell": "Cell",
+      "cellRequired": "Cell *",
+      "selectSourceCell": "Select source cell",
+      "commodityType": "Commodity Type",
+      "commodityTypeRequired": "Commodity Type *",
+      "selectCommodityType": "Select commodity type",
+      "quantity": "Quantity (kg)",
+      "quantityRequired": "Quantity (kg) *",
+      "quantityPlaceholder": "Enter quantity in kg",
+      "buyer": "Buyer/Recipient",
+      "buyerOptional": "Buyer/Recipient",
+      "buyerPlaceholder": "Enter buyer or recipient name",
+      "notes": "Notes",
+      "notesOptional": "Notes",
+      "notesPlaceholder": "Additional notes",
+      "transferButton": "Transfer Out",
+      "transferring": "Transferring...",
+      "siteRequiredError": "Site is required",
+      "cellRequiredError": "Cell is required",
+      "commodityTypeRequiredError": "Commodity type is required",
+      "quantityRequiredError": "Quantity must be greater than 0",
+      "loadDataError": "Failed to load sites and commodity types"
     }
   }
 }

@@ -3,11 +3,13 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { ThemeToggle } from '@/theme/ThemeToggle'
+import { useTheme } from '@/theme/ThemeProvider'
 import { LanguageSwitcher } from '@/components/language-switcher'
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
-import { BarChart3, Menu, X } from 'lucide-react'
+import { Menu, X, LogOut } from 'lucide-react'
 import { useTranslations } from 'next-intl'
+import { signOut } from 'next-auth/react'
 
 interface Tab {
     label: string
@@ -23,6 +25,7 @@ interface AppHeaderProps {
 export function AppHeader({ title, subtitle, tabs }: AppHeaderProps) {
     const t = useTranslations('navigation')
     const pathname = usePathname()
+    const { theme } = useTheme()
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
 
     const defaultTabs: Tab[] = [
@@ -51,19 +54,24 @@ export function AppHeader({ title, subtitle, tabs }: AppHeaderProps) {
             <div className="border-b border-border bg-background shrink-0">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex items-center justify-between py-4">
-                        <div className="flex items-center gap-3">
-                            {/* Logo/Icon */}
-                            <div className="w-10 h-10 rounded-full bg-primary/10 border border-primary/30 flex items-center justify-center">
-                                <BarChart3 className="w-5 h-5 text-primary" />
-                            </div>
-                            <div>
-                                <h1 className="text-xl font-semibold text-foreground">{title}</h1>
-                                {subtitle && <p className="text-sm text-muted-foreground">{subtitle}</p>}
-                            </div>
-                        </div>
+                        {/* Logo */}
+                        <img
+                            src={theme === 'light' ? '/logo-black.png' : '/logo-white.png'}
+                            alt="Logo"
+                            className="h-10 w-auto"
+                        />
                         <div className="flex items-center gap-2">
                             <LanguageSwitcher />
                             <ThemeToggle />
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => signOut({ callbackUrl: '/login' })}
+                                aria-label={t('logout')}
+                                title={t('logout')}
+                            >
+                                <LogOut className="h-5 w-5" />
+                            </Button>
                             <Button
                                 variant="ghost"
                                 size="icon"
@@ -119,7 +127,7 @@ export function AppHeader({ title, subtitle, tabs }: AppHeaderProps) {
                             </div>
 
                             {/* Menu Items */}
-                            <nav className="flex flex-col p-2 gap-1">
+                            <nav className="flex flex-col p-2 gap-1 flex-1">
                                 {navTabs.map((tab) => {
                                     const isActive = isActiveTab(tab.href)
                                     return (
@@ -141,6 +149,18 @@ export function AppHeader({ title, subtitle, tabs }: AppHeaderProps) {
                                     )
                                 })}
                             </nav>
+
+                            {/* Logout Button */}
+                            <div className="p-2 border-t border-border">
+                                <Button
+                                    variant="ghost"
+                                    className="w-full justify-start text-destructive hover:text-destructive hover:bg-destructive/10"
+                                    onClick={() => signOut({ callbackUrl: '/login' })}
+                                >
+                                    <LogOut className="h-4 w-4 mr-2" />
+                                    {t('logout')}
+                                </Button>
+                            </div>
                         </div>
                     </div>
                 </>

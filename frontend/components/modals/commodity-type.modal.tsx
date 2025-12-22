@@ -53,7 +53,7 @@ export function CommodityTypeModal({ commodityType, onClose }: CommodityTypeModa
                 <DialogDescription>
                     {isEditing
                         ? 'Update the commodity type details.'
-                        : 'Add a new commodity type to categorize your stored goods. Examples: Wheat, Corn, Barley, etc.'}
+                        : 'Add a new commodity type to categorize your stored commodities. Examples: Wheat, Corn, Barley, etc.'}
                 </DialogDescription>
             </DialogHeader>
             <div className="space-y-4 py-4">

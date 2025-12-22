@@ -73,60 +73,6 @@ export default function AboutPage() {
                         </div>
                     </div>
                 </div>
-
-                <div className="bg-card border border-border rounded-lg p-6">
-                    <div className="flex items-center gap-3 mb-4">
-                        <div className="w-10 h-10 rounded-lg bg-purple-500/10 flex items-center justify-center">
-                            <Database className="w-5 h-5 text-purple-500" />
-                        </div>
-                        <div>
-                            <h2 className="font-semibold text-foreground">Data Statistics</h2>
-                            <p className="text-sm text-muted-foreground">Platform usage metrics</p>
-                        </div>
-                    </div>
-                    <div className="space-y-3">
-                        <div className="flex items-center justify-between">
-                            <span className="text-sm text-muted-foreground">Organizations</span>
-                            <span className="text-sm font-medium text-foreground">3</span>
-                        </div>
-                        <div className="flex items-center justify-between">
-                            <span className="text-sm text-muted-foreground">Total Sites</span>
-                            <span className="text-sm font-medium text-foreground">10</span>
-                        </div>
-                        <div className="flex items-center justify-between">
-                            <span className="text-sm text-muted-foreground">Active Sensors</span>
-                            <span className="text-sm font-medium text-foreground">156</span>
-                        </div>
-                    </div>
-                </div>
-
-                <div className="bg-card border border-border rounded-lg p-6">
-                    <div className="flex items-center gap-3 mb-4">
-                        <div className="w-10 h-10 rounded-lg bg-orange-500/10 flex items-center justify-center">
-                            <Shield className="w-5 h-5 text-orange-500" />
-                        </div>
-                        <div>
-                            <h2 className="font-semibold text-foreground">Security</h2>
-                            <p className="text-sm text-muted-foreground">Security information</p>
-                        </div>
-                    </div>
-                    <div className="space-y-3">
-                        <div className="flex items-center justify-between">
-                            <span className="text-sm text-muted-foreground">Encryption</span>
-                            <span className="text-sm font-medium text-foreground">AES-256</span>
-                        </div>
-                        <div className="flex items-center justify-between">
-                            <span className="text-sm text-muted-foreground">SSL/TLS</span>
-                            <Badge className="bg-emerald-500/10 text-emerald-500 border-emerald-500/30">
-                                Enabled
-                            </Badge>
-                        </div>
-                        <div className="flex items-center justify-between">
-                            <span className="text-sm text-muted-foreground">Last Audit</span>
-                            <span className="text-sm font-medium text-foreground">Oct 15, 2025</span>
-                        </div>
-                    </div>
-                </div>
             </div>
 
             <div className="bg-card border border-border rounded-lg p-6">

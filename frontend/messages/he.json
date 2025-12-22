@@ -45,7 +45,7 @@
       "daysAgo": "לפני {count} ימים",
       "assignedTo": "הוקצה ל-{name}"
     },
-    "recentGoods": {
+    "recentCommodities": {
       "title": "סחורות אחרונות",
       "description": "סחורות שהגיעו לאחרונה בכל האתרים",
       "loading": "טוען עסקאות...",
@@ -81,7 +81,8 @@
     "sites": "אתרים",
     "alerts": "התראות",
     "settings": "הגדרות",
-    "admin": "ניהול"
+    "admin": "ניהול",
+    "logout": "התנתק"
   },
   "admin": {
     "menu": "תפריט",
@@ -106,6 +107,7 @@
     "title": "אתרים",
     "addSiteButton": "הוסף מחנה",
     "addCommodityButton": "הוסף סחורה",
+    "transferOutButton": "העבר החוצה",
     "storageRegion": "אזור אחסון",
     "site": "מחנה",
     "cell": "תא",
@@ -114,7 +116,7 @@
     "humidityTrends": "מגמות לחות",
     "temperatureLabel": "טמפרטורה (°C)",
     "humidityLabel": "לחות (%)",
-    "goodsInCell": "סחורות בתא",
+    "commoditiesInCell": "סחורות בתא",
     "activeAlerts": "התראות פעילות",
     "recentReadings": "קריאות אחרונות",
     "selectStorageRegion": "בחר אזור אחסון",
@@ -280,6 +282,35 @@
       "organizationNamePlaceholder": "הזן שם ארגון",
       "createButton": "צור ארגון",
       "creating": "יוצר..."
+    },
+    "transferOut": {
+      "title": "העבר סחורה החוצה",
+      "description": "רשום סחורה היוצאת מהמערכת כמכירה, משלוח או העברה לגורם חיצוני.",
+      "site": "אתר",
+      "siteRequired": "אתר *",
+      "selectSourceSite": "בחר אתר מקור",
+      "cell": "תא",
+      "cellRequired": "תא *",
+      "selectSourceCell": "בחר תא מקור",
+      "commodityType": "סוג סחורה",
+      "commodityTypeRequired": "סוג סחורה *",
+      "selectCommodityType": "בחר סוג סחורה",
+      "quantity": "כמות (ק״ג)",
+      "quantityRequired": "כמות (ק״ג) *",
+      "quantityPlaceholder": "הזן כמות בק״ג",
+      "buyer": "קונה/נמען",
+      "buyerOptional": "קונה/נמען",
+      "buyerPlaceholder": "הזן שם קונה או נמען",
+      "notes": "הערות",
+      "notesOptional": "הערות",
+      "notesPlaceholder": "הערות נוספות",
+      "transferButton": "העבר החוצה",
+      "transferring": "מעביר...",
+      "siteRequiredError": "אתר הוא שדה חובה",
+      "cellRequiredError": "תא הוא שדה חובה",
+      "commodityTypeRequiredError": "סוג סחורה הוא שדה חובה",
+      "quantityRequiredError": "הכמות חייבת להיות גדולה מ-0",
+      "loadDataError": "נכשל בטעינת אתרים וסוגי סחורות"
     }
   }
 }

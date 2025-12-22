@@ -85,6 +85,8 @@ export class TradeService {
         amountKg: dto.amountKg,
         tradedAt: dto.tradedAt ? new Date(dto.tradedAt) : new Date(),
         notes: dto.notes,
+        direction: dto.direction || 'IN', // Default to IN for backwards compatibility
+        buyer: dto.buyer,
         createdBy: userId,
       },
       include: {

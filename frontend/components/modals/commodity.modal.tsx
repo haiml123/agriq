@@ -22,8 +22,10 @@ import { CellSelect, type CellSelectSite } from '@/components/ui/cell-select';
 import { useTradeApi } from '@/hooks/use-trade-api';
 import { useCommodityTypeApi } from '@/hooks/use-commodity-type-api';
 import { useSiteApi } from '@/hooks/use-site-api';
+import { useApi } from '@/hooks/use-api';
 import type { CreateTradeDto } from '@/schemas/trade.schema';
 import type { CommodityType } from '@/schemas/commodity-type.schema';
+import { AlertTriangle } from 'lucide-react';
 
 interface CommodityModalProps {
   open: boolean;
@@ -44,6 +46,7 @@ export function CommodityModal({
   const { create } = useTradeApi();
   const { getList: getCommodityTypes } = useCommodityTypeApi();
   const { getSites } = useSiteApi();
+  const { post } = useApi();
 
   const [formData, setFormData] = useState<Partial<CreateTradeDto>>({
     siteId: '',
@@ -54,12 +57,20 @@ export function CommodityModal({
     amountKg: 0,
     tradedAt: new Date().toISOString(),
     notes: '',
+    direction: 'IN',
   });
 
   const [sites, setSites] = useState<CellSelectSite[]>([]);
   const [commodityTypes, setCommodityTypes] = useState<CommodityType[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string>('');
+  const [existingCommodity, setExistingCommodity] = useState<{
+    commodityTypeId: string;
+    commodityTypeName: string;
+    availableKg: number;
+  } | null>(null);
+  const [showWarning, setShowWarning] = useState(false);
+  const [userConfirmed, setUserConfirmed] = useState(false);
 
   // Load sites and commodity types when modal opens
   useEffect(() => {
@@ -86,8 +97,12 @@ export function CommodityModal({
       amountKg: 0,
       tradedAt: new Date().toISOString(),
       notes: '',
+      direction: 'IN',
     });
     setError('');
+    setExistingCommodity(null);
+    setShowWarning(false);
+    setUserConfirmed(false);
   };
 
   const loadSites = async () => {
@@ -117,7 +132,7 @@ export function CommodityModal({
     });
   };
 
-  const handleCellSelection = (cellIds: string[]) => {
+  const handleCellSelection = async (cellIds: string[]) => {
     const cellId = cellIds[0] || '';
 
     // Find the compound that contains this cell
@@ -131,10 +146,92 @@ export function CommodityModal({
       cellId,
       compoundId: compound?.id || '',
     });
+
+    // Check if cell already has commodity
+    if (cellId) {
+      await checkCellInventory(cellId);
+    } else {
+      setExistingCommodity(null);
+      setShowWarning(false);
+      setUserConfirmed(false);
+    }
+  };
+
+  const checkCellInventory = async (cellId: string) => {
+    try {
+      interface MultipleCellsDetails {
+        cells: Array<{ id: string; name: string }>;
+        trades: Array<{
+          id: string;
+          cellId: string;
+          amountKg: number;
+          direction?: 'IN' | 'OUT';
+          commodity: {
+            commodityType: {
+              id: string;
+              name: string;
+            } | null;
+          };
+        }>;
+      }
+
+      const response = await post<MultipleCellsDetails>(`/sites/cells/details`, {
+        cellIds: [cellId],
+        startDate: new Date(0).toISOString(),
+        endDate: new Date().toISOString(),
+      });
+
+      const trades = response?.data?.trades?.filter(t => t.cellId === cellId) || [];
+
+      // Calculate net inventory
+      const inventoryMap = new Map<string, { name: string; net: number }>();
+
+      trades.forEach(trade => {
+        const commodityTypeId = trade.commodity?.commodityType?.id;
+        const commodityTypeName = trade.commodity?.commodityType?.name || 'Unknown';
+
+        if (!commodityTypeId) return;
+
+        const direction = trade.direction || 'IN';
+        const amount = direction === 'IN' ? trade.amountKg : -trade.amountKg;
+
+        if (!inventoryMap.has(commodityTypeId)) {
+          inventoryMap.set(commodityTypeId, { name: commodityTypeName, net: 0 });
+        }
+
+        const current = inventoryMap.get(commodityTypeId)!;
+        current.net += amount;
+      });
+
+      // Find commodity with positive inventory
+      let existing = null;
+      inventoryMap.forEach((value, commodityTypeId) => {
+        if (value.net > 0) {
+          existing = {
+            commodityTypeId,
+            commodityTypeName: value.name,
+            availableKg: value.net,
+          };
+        }
+      });
+
+      setExistingCommodity(existing);
+      setShowWarning(!!existing);
+      setUserConfirmed(false);
+    } catch (err) {
+      console.error('Failed to check cell inventory:', err);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // If there's existing commodity and user hasn't confirmed, show warning
+    if (existingCommodity && !userConfirmed) {
+      setShowWarning(true);
+      return;
+    }
+
     setLoading(true);
     setError('');
 
@@ -157,6 +254,28 @@ export function CommodityModal({
         return;
       }
 
+      // If there's existing commodity, transfer it out first
+      if (existingCommodity && userConfirmed) {
+        const transferOutData: CreateTradeDto = {
+          siteId: formData.siteId,
+          compoundId: formData.compoundId,
+          cellId: formData.cellId,
+          commodityTypeId: existingCommodity.commodityTypeId,
+          amountKg: existingCommodity.availableKg,
+          tradedAt: new Date().toISOString(),
+          notes: `Auto-transferred out to make space for new commodity`,
+          direction: 'OUT',
+        };
+
+        const outResponse = await create(transferOutData);
+        if (outResponse.error) {
+          setError(`Failed to transfer out existing commodity: ${outResponse.error}`);
+          setLoading(false);
+          return;
+        }
+      }
+
+      // Add the new commodity
       const response = await create(formData as CreateTradeDto);
 
       if (response.error) {
@@ -218,6 +337,60 @@ export function CommodityModal({
               className="w-full"
             />
           </div>
+
+          {/* Warning for existing commodity */}
+          {showWarning && existingCommodity && (
+            <div className="bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800 rounded-lg p-4">
+              <div className="flex gap-3">
+                <AlertTriangle className="h-5 w-5 text-amber-600 dark:text-amber-500 flex-shrink-0 mt-0.5" />
+                <div className="flex-1">
+                  <h4 className="font-semibold text-amber-900 dark:text-amber-200 mb-1">
+                    Cell Already Contains Commodity
+                  </h4>
+                  <p className="text-sm text-amber-800 dark:text-amber-300 mb-3">
+                    This cell currently has <strong>{existingCommodity.availableKg.toLocaleString()} kg</strong> of{' '}
+                    <strong>{existingCommodity.commodityTypeName}</strong>.
+                  </p>
+                  <p className="text-sm text-amber-800 dark:text-amber-300 mb-3">
+                    Adding a new commodity will automatically transfer out the existing commodity. Do you want to continue?
+                  </p>
+                  <div className="flex gap-2">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        setShowWarning(false);
+                        setUserConfirmed(false);
+                      }}
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      type="button"
+                      size="sm"
+                      className="bg-amber-600 hover:bg-amber-700"
+                      onClick={() => {
+                        setUserConfirmed(true);
+                        setShowWarning(false);
+                      }}
+                    >
+                      Yes, Replace Commodity
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Show confirmation badge when user confirmed */}
+          {userConfirmed && existingCommodity && (
+            <div className="bg-green-50 dark:bg-green-950/20 border border-green-200 dark:border-green-800 rounded-lg p-3">
+              <p className="text-sm text-green-800 dark:text-green-300">
+                ✓ Confirmed: Will replace {existingCommodity.commodityTypeName} ({existingCommodity.availableKg.toLocaleString()} kg) with new commodity
+              </p>
+            </div>
+          )}
 
           {/* Commodity Type */}
           <div className="space-y-2">

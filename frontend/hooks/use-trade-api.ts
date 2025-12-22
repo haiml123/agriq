@@ -8,14 +8,15 @@ export function useTradeApi() {
     const { get, post, patch, del } = useApi();
 
     const [isLoading, setIsLoading] = useState(false);
+    const [isCreating, setIsCreating] = useState(false);
 
     const create = useCallback(
         async (data: CreateTradeDto) => {
-            setIsLoading(true);
+            setIsCreating(true);
             try {
                 return await post<ApiTrade>('/trades', data);
             } finally {
-                setIsLoading(false);
+                setIsCreating(false);
             }
         },
         [post]
@@ -50,5 +51,6 @@ export function useTradeApi() {
         getRecent,
         getById,
         isLoading,
+        isCreating,
     };
 }

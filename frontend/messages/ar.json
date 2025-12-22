@@ -45,7 +45,7 @@
       "daysAgo": "منذ {count} أيام",
       "assignedTo": "مُسند إلى {name}"
     },
-    "recentGoods": {
+    "recentCommodities": {
       "title": "البضائع الأخيرة",
       "description": "البضائع الواردة مؤخراً عبر جميع المواقع",
       "loading": "جارٍ تحميل الصفقات...",
@@ -81,7 +81,8 @@
     "sites": "المواقع",
     "alerts": "التنبيهات",
     "settings": "الإعدادات",
-    "admin": "الإدارة"
+    "admin": "الإدارة",
+    "logout": "تسجيل الخروج"
   },
   "admin": {
     "menu": "القائمة",
@@ -100,7 +101,8 @@
     "unknownCommodity": "غير معروف",
     "commodityTimeline": "الجدول الزمني للسلع",
     "commodityMarker": "علامة السلعة",
-    "addCommodityButton": "إضافة سلعة"
+    "addCommodityButton": "إضافة سلعة",
+    "transferOutButton": "نقل للخارج"
   },
   "settings": {
     "title": "الإعدادات",
@@ -250,6 +252,35 @@
       "organizationNamePlaceholder": "أدخل اسم المؤسسة",
       "createButton": "إنشاء مؤسسة",
       "creating": "جارٍ الإنشاء..."
+    },
+    "transferOut": {
+      "title": "نقل البضائع للخارج",
+      "description": "تسجيل البضائع الخارجة من النظام كبيع أو شحنة أو نقل إلى كيان خارجي.",
+      "site": "الموقع",
+      "siteRequired": "الموقع *",
+      "selectSourceSite": "حدد الموقع المصدر",
+      "cell": "الخلية",
+      "cellRequired": "الخلية *",
+      "selectSourceCell": "حدد الخلية المصدر",
+      "commodityType": "نوع البضائع",
+      "commodityTypeRequired": "نوع البضائع *",
+      "selectCommodityType": "حدد نوع البضائع",
+      "quantity": "الكمية (كجم)",
+      "quantityRequired": "الكمية (كجم) *",
+      "quantityPlaceholder": "أدخل الكمية بالكيلوجرام",
+      "buyer": "المشتري/المستلم",
+      "buyerOptional": "المشتري/المستلم",
+      "buyerPlaceholder": "أدخل اسم المشتري أو المستلم",
+      "notes": "ملاحظات",
+      "notesOptional": "ملاحظات",
+      "notesPlaceholder": "ملاحظات إضافية",
+      "transferButton": "نقل للخارج",
+      "transferring": "جارٍ النقل...",
+      "siteRequiredError": "الموقع مطلوب",
+      "cellRequiredError": "الخلية مطلوبة",
+      "commodityTypeRequiredError": "نوع البضائع مطلوب",
+      "quantityRequiredError": "يجب أن تكون الكمية أكبر من 0",
+      "loadDataError": "فشل تحميل المواقع وأنواع البضائع"
     }
   }
 }

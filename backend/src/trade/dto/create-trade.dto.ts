@@ -5,7 +5,13 @@ import {
   IsOptional,
   IsDateString,
   Min,
+  IsEnum,
 } from 'class-validator';
+
+export enum TradeDirection {
+  IN = 'IN',
+  OUT = 'OUT',
+}
 
 export class CreateTradeDto {
   @IsString()
@@ -39,4 +45,12 @@ export class CreateTradeDto {
   @IsString()
   @IsOptional()
   notes?: string;
+
+  @IsEnum(TradeDirection)
+  @IsOptional()
+  direction?: TradeDirection;
+
+  @IsString()
+  @IsOptional()
+  buyer?: string;
 }

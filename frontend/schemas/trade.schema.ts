@@ -16,10 +16,16 @@ export const tradeCellSchema = z.object({
     name: z.string(),
 });
 
+export const tradeCommodityTypeSchema = z.object({
+    id: z.string(),
+    name: z.string(),
+});
+
 export const tradeCommoditySchema = z.object({
     id: z.string(),
     name: z.string(),
     origin: z.string().optional(),
+    commodityType: tradeCommodityTypeSchema.optional().nullable(),
 });
 
 // Main trade schema from API
@@ -28,6 +34,8 @@ export const apiTradeSchema = z.object({
     amountKg: z.number(),
     tradedAt: z.string(),
     notes: z.string().optional(),
+    direction: z.enum(['IN', 'OUT']).optional(),
+    buyer: z.string().optional(),
     commodity: tradeCommoditySchema.optional(),
     site: tradeSiteSchema.optional(),
     compound: tradeCompoundSchema.optional(),
@@ -54,6 +62,8 @@ export const createTradeSchema = z.object({
     amountKg: z.number().min(0.01, 'Amount must be greater than 0'),
     tradedAt: z.string().optional(),
     notes: z.string().optional(),
+    direction: z.enum(['IN', 'OUT']).optional(),
+    buyer: z.string().optional(),
 });
 
 export type ApiTrade = z.infer<typeof apiTradeSchema>;

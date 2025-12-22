@@ -45,7 +45,7 @@
       "daysAgo": "{count} วันที่แล้ว",
       "assignedTo": "มอบหมายให้ {name}"
     },
-    "recentGoods": {
+    "recentCommodities": {
       "title": "สินค้าล่าสุด",
       "description": "สินค้าที่เพิ่งมาถึงล่าสุดทั่วทุกไซต์",
       "loading": "กำลังโหลดธุรกรรม...",
@@ -81,7 +81,8 @@
     "sites": "ไซต์",
     "alerts": "การแจ้งเตือน",
     "settings": "การตั้งค่า",
-    "admin": "ผู้ดูแลระบบ"
+    "admin": "ผู้ดูแลระบบ",
+    "logout": "ออกจากระบบ"
   },
   "admin": {
     "menu": "เมนู",
@@ -100,7 +101,8 @@
     "unknownCommodity": "ไม่ทราบ",
     "commodityTimeline": "ไทม์ไลน์สินค้า",
     "commodityMarker": "เครื่องหมายสินค้า",
-    "addCommodityButton": "เพิ่มสินค้า"
+    "addCommodityButton": "เพิ่มสินค้า",
+    "transferOutButton": "โอนออก"
   },
   "settings": {
     "title": "การตั้งค่า",
@@ -250,6 +252,35 @@
       "organizationNamePlaceholder": "กรอกชื่อองค์กร",
       "createButton": "สร้างองค์กร",
       "creating": "กำลังสร้าง..."
+    },
+    "transferOut": {
+      "title": "โอนสินค้าออก",
+      "description": "บันทึกสินค้าที่ออกจากระบบในรูปแบบการขาย การจัดส่ง หรือการโอนไปยังหน่วยงานภายนอก",
+      "site": "ไซต์",
+      "siteRequired": "ไซต์ *",
+      "selectSourceSite": "เลือกไซต์ต้นทาง",
+      "cell": "เซลล์",
+      "cellRequired": "เซลล์ *",
+      "selectSourceCell": "เลือกเซลล์ต้นทาง",
+      "commodityType": "ประเภทสินค้า",
+      "commodityTypeRequired": "ประเภทสินค้า *",
+      "selectCommodityType": "เลือกประเภทสินค้า",
+      "quantity": "ปริมาณ (กก.)",
+      "quantityRequired": "ปริมาณ (กก.) *",
+      "quantityPlaceholder": "กรอกปริมาณเป็นกิโลกรัม",
+      "buyer": "ผู้ซื้อ/ผู้รับ",
+      "buyerOptional": "ผู้ซื้อ/ผู้รับ",
+      "buyerPlaceholder": "กรอกชื่อผู้ซื้อหรือผู้รับ",
+      "notes": "หมายเหตุ",
+      "notesOptional": "หมายเหตุ",
+      "notesPlaceholder": "หมายเหตุเพิ่มเติม",
+      "transferButton": "โอนออก",
+      "transferring": "กำลังโอน...",
+      "siteRequiredError": "ต้องระบุไซต์",
+      "cellRequiredError": "ต้องระบุเซลล์",
+      "commodityTypeRequiredError": "ต้องระบุประเภทสินค้า",
+      "quantityRequiredError": "ปริมาณต้องมากกว่า 0",
+      "loadDataError": "โหลดไซต์และประเภทสินค้าล้มเหลว"
     }
   }
 }

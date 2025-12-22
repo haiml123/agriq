@@ -24,11 +24,11 @@ export default function SettingsLayout({ children }: SettingsLayoutProps) {
             icon: Users,
             roles: [RoleTypeEnum.SUPER_ADMIN, RoleTypeEnum.ADMIN]
         },
-        {
-            label: t('languages'),
-            href: "/settings/languages",
-            icon: Languages,
-        },
+        // {
+        //     label: t('languages'),
+        //     href: "/settings/languages",
+        //     icon: Languages,
+        // },
         {
             label: t('about'),
             href: "/settings/about",

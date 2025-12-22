@@ -578,9 +578,11 @@ model Trade {
   cellId String? @map("cell_id")
   cell   Cell?   @relation(fields: [cellId], references: [id])
 
-  amountKg Float    @map("amount_kg")
-  tradedAt DateTime @map("traded_at")
-  notes    String?
+  amountKg  Float    @map("amount_kg")
+  tradedAt  DateTime @map("traded_at")
+  notes     String?
+  direction String?  @default("IN") // IN or OUT
+  buyer     String?  // Buyer/recipient for OUT trades
 
   createdBy String? @map("created_by")
   updatedBy String? @map("updated_by")
