@@ -382,10 +382,10 @@ export default function SitesPage() {
       // Find the most recent trade before or at this time
       for (let i = sortedTrades.length - 1; i >= 0; i--) {
         if (new Date(sortedTrades[i].tradedAt).getTime() <= time) {
-          return sortedTrades[i].commodity.commodityType?.name || sortedTrades[i].commodity.name || 'Unknown';
+          return sortedTrades[i].commodity.commodityType?.name || sortedTrades[i].commodity.name || t('unknownCommodity');
         }
       }
-      return 'No commodity';
+      return t('noCommodity');
     };
 
     // Group and average data by formatted date to avoid duplicates

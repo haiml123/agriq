@@ -3,7 +3,19 @@
     "loading": "กำลังโหลด...",
     "noData": "ไม่มีข้อมูล",
     "error": "เกิดข้อผิดพลาด",
-    "cancel": "ยกเลิก"
+    "save": "บันทึก",
+    "cancel": "ยกเลิก",
+    "delete": "ลบ",
+    "edit": "แก้ไข",
+    "create": "สร้าง",
+    "none": "ไม่มี",
+    "unknownLocation": "สถานที่ไม่ทราบ",
+    "unknownCommodity": "สินค้าไม่ทราบ",
+    "unknownOrigin": "แหล่งกำเนิดไม่ทราบ",
+    "noDescription": "ไม่มีคำอธิบาย",
+    "saving": "กำลังบันทึก...",
+    "creating": "กำลังสร้าง...",
+    "deleting": "กำลังลบ..."
   },
   "dashboard": {
     "title": "แดชบอร์ด",
@@ -54,6 +66,24 @@
     "settings": "การตั้งค่า",
     "admin": "ผู้ดูแลระบบ"
   },
+  "admin": {
+    "menu": "เมนู",
+    "organizations": "องค์กร",
+    "triggers": "ทริกเกอร์",
+    "commodities": "สินค้า",
+    "lookupTables": "ตารางค้นหา"
+  },
+  "roles": {
+    "SUPER_ADMIN": "ผู้ดูแลระบบสูงสุด",
+    "ADMIN": "ผู้ดูแลระบบ",
+    "OPERATOR": "ผู้ปฏิบัติงาน"
+  },
+  "sites": {
+    "noCommodity": "ไม่มีสินค้า",
+    "unknownCommodity": "ไม่ทราบ",
+    "commodityTimeline": "ไทม์ไลน์สินค้า",
+    "commodityMarker": "เครื่องหมายสินค้า"
+  },
   "settings": {
     "title": "การตั้งค่า",
     "sites": "ไซต์",
@@ -62,6 +92,58 @@
     "about": "เกี่ยวกับ"
   },
   "pages": {
+    "alerts": {
+      "title": "การแจ้งเตือน",
+      "subtitle": "จัดการและติดตามการแจ้งเตือนระบบ",
+      "timeRange": "ช่วงเวลา",
+      "allTime": "ทั้งหมด",
+      "last24Hours": "24 ชั่วโมงที่แล้ว",
+      "last7Days": "7 วันที่แล้ว",
+      "last30Days": "30 วันที่แล้ว",
+      "last90Days": "90 วันที่แล้ว",
+      "organization": "องค์กร",
+      "allOrganizations": "ทุกองค์กร",
+      "user": "ผู้ใช้",
+      "allUsers": "ผู้ใช้ทั้งหมด",
+      "site": "ไซต์",
+      "allSites": "ไซต์ทั้งหมด",
+      "severity": "ความรุนแรง",
+      "allSeverities": "ทุกระดับความรุนแรง",
+      "status": "สถานะ",
+      "allStatuses": "ทุกสถานะ",
+      "allAlerts": "การแจ้งเตือนทั้งหมด",
+      "cell": "เซลล์",
+      "description": "รายละเอียด",
+      "trigger": "ทริกเกอร์",
+      "created": "สร้างเมื่อ",
+      "actions": "การดำเนินการ",
+      "acknowledge": "รับทราบ",
+      "startInvestigating": "เริ่มตรวจสอบ",
+      "dismiss": "ยกเลิก",
+      "resolve": "แก้ไขแล้ว",
+      "reopenAlert": "เปิดใหม่",
+      "noAlerts": "ไม่พบการแจ้งเตือน"
+    },
+    "users": {
+      "title": "ผู้ใช้",
+      "description": "จัดการผู้ใช้และบทบาท",
+      "createUser": "สร้างผู้ใช้",
+      "usersCount": "{count} ผู้ใช้ที่ลงทะเบียน",
+      "noOrganization": "ไม่มีองค์กร",
+      "noUsersYet": "ยังไม่มีผู้ใช้",
+      "getStarted": "เริ่มต้นด้วยการสร้างผู้ใช้แรกของคุณ",
+      "noPermission": "คุณไม่มีสิทธิ์ดูผู้ใช้"
+    },
+    "settingsUsers": {
+      "title": "ผู้ใช้",
+      "description": "จัดการผู้ใช้และบทบาท",
+      "createUser": "สร้างผู้ใช้",
+      "usersCount": "{count} ผู้ใช้ที่ลงทะเบียน",
+      "noOrganization": "ไม่มีองค์กร",
+      "noUsersYet": "ยังไม่มีผู้ใช้",
+      "getStarted": "เริ่มต้นด้วยการสร้างผู้ใช้แรกของคุณ",
+      "noPermission": "คุณไม่มีสิทธิ์ดูผู้ใช้"
+    },
     "settingsSites": {
       "allSites": "ไซต์ทั้งหมด",
       "mySites": "ไซต์ของฉัน",
@@ -109,6 +191,47 @@
       "capacityPlaceholder": "เช่น 5000",
       "createButton": "สร้างเซลล์",
       "saveButton": "บันทึกการเปลี่ยนแปลง"
+    },
+    "user": {
+      "createTitle": "สร้างผู้ใช้ใหม่",
+      "editTitle": "แก้ไขผู้ใช้",
+      "createDescription": "เพิ่มผู้ใช้ใหม่ให้กับแพลตฟอร์ม",
+      "editDescription": "อัปเดตข้อมูลผู้ใช้และบทบาท",
+      "name": "ชื่อ",
+      "nameRequired": "ชื่อ *",
+      "namePlaceholder": "กรอกชื่อเต็ม",
+      "email": "อีเมล",
+      "emailRequired": "อีเมล *",
+      "emailPlaceholder": "user@example.com",
+      "password": "รหัสผ่าน",
+      "passwordRequired": "รหัสผ่าน *",
+      "newPassword": "รหัสผ่านใหม่",
+      "passwordPlaceholder": "กรอกรหัสผ่าน",
+      "passwordPlaceholderEdit": "เว้นว่างเพื่อใช้รหัสผ่านเดิม",
+      "phone": "โทรศัพท์",
+      "phonePlaceholder": "+66-81-234-5678",
+      "organization": "องค์กร",
+      "organizationRequired": "องค์กร *",
+      "selectOrganization": "เลือกองค์กร",
+      "role": "บทบาท",
+      "roleRequired": "บทบาท *",
+      "siteAccess": "การเข้าถึงไซต์",
+      "siteAccessRequired": "การเข้าถึงไซต์ *",
+      "sitesSelected": "เลือก {count} ไซต์",
+      "loadingSites": "กำลังโหลดไซต์...",
+      "noSitesFound": "ไม่พบไซต์สำหรับองค์กรนี้",
+      "createSitesFirst": "สร้างไซต์ก่อนเพื่อกำหนดการเข้าถึงแบบเฉพาะ",
+      "selectAtLeastOneSite": "กรุณาเลือกอย่างน้อยหนึ่งไซต์",
+      "createButton": "สร้างผู้ใช้",
+      "saveButton": "บันทึกการเปลี่ยนแปลง"
+    },
+    "organization": {
+      "createTitle": "สร้างองค์กรใหม่",
+      "createDescription": "เพิ่มองค์กรใหม่ให้กับแพลตฟอร์ม คุณสามารถเพิ่มไซต์และผู้ใช้หลังจากสร้างแล้ว",
+      "organizationName": "ชื่อองค์กร",
+      "organizationNamePlaceholder": "กรอกชื่อองค์กร",
+      "createButton": "สร้างองค์กร",
+      "creating": "กำลังสร้าง..."
     }
   }
 }

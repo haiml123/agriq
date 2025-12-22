@@ -12,12 +12,7 @@ import { Badge } from '@/components/ui/badge'
 import { useCurrentUser } from '@/hooks';
 import { OrganizationSelect } from '@/components/select/organization-select';
 import { RoleTypeEnum } from '@/schemas/common.schema';
-
-const roleLabels: Record<string, string> = {
-    SUPER_ADMIN: 'Super Admin',
-    ADMIN: 'Admin',
-    OPERATOR: 'Operator',
-}
+import { useTranslations } from 'next-intl';
 
 const roleStyles: Record<string, string> = {
     [RoleTypeEnum.SUPER_ADMIN]: 'bg-purple-500/10 text-purple-500 border-purple-500/30',
@@ -26,12 +21,20 @@ const roleStyles: Record<string, string> = {
 }
 
 export default function UsersPage() {
+    const t = useTranslations('pages.settingsUsers');
+    const tRoles = useTranslations('roles');
     const modal = useModal();
     const { user, isSuperAdmin, isAdmin, isLoading: isCurrentUserLoading } = useCurrentUser();
     const { getList, isCreating } = useUserApi();
     const [users, setUsers] = useState<UserType[]>([]);
     const [selectedOrganizationId, setSelectedOrganizationId] = useState<string>('all')
     const canManageUsers = isSuperAdmin || isAdmin
+
+    const roleLabels: Record<string, string> = {
+        SUPER_ADMIN: tRoles('SUPER_ADMIN'),
+        ADMIN: tRoles('ADMIN'),
+        OPERATOR: tRoles('OPERATOR'),
+    }
 
     const fetchUsers = useCallback(async () => {
         console.log('fetchUsers');
@@ -79,9 +82,9 @@ export default function UsersPage() {
                 <div className="flex items-center gap-3">
                     <SidebarTrigger />
                     <div>
-                        <h1 className="text-2xl font-semibold text-foreground">Users</h1>
+                        <h1 className="text-2xl font-semibold text-foreground">{t('title')}</h1>
                         <p className="text-sm text-muted-foreground mt-1">
-                            You do not have permission to view users.
+                            {t('noPermission')}
                         </p>
                     </div>
                 </div>
@@ -95,14 +98,14 @@ export default function UsersPage() {
                 <div className="flex items-center gap-3">
                     <SidebarTrigger />
                     <div>
-                        <h1 className="text-2xl font-semibold text-foreground">Users</h1>
-                        <p className="text-sm text-muted-foreground mt-1">Manage users and their roles</p>
+                        <h1 className="text-2xl font-semibold text-foreground">{t('title')}</h1>
+                        <p className="text-sm text-muted-foreground mt-1">{t('description')}</p>
                     </div>
                 </div>
                 {canManageUsers && (
                     <Button isLoading={isCreating} onClick={() => openUserModal()} className="bg-emerald-500 hover:bg-emerald-600">
                         <Plus className="w-4 h-4 mr-2" />
-                        Create User
+                        {t('createUser')}
                     </Button>
                 )}
             </div>
@@ -111,7 +114,7 @@ export default function UsersPage() {
                 <div className="flex items-center justify-between gap-4 p-4 border-b border-border">
                     <div>
                         <p className="text-sm text-muted-foreground">
-                            {users.length} user{users.length !== 1 ? 's' : ''} registered
+                            {t('usersCount', { count: users.length })}
                         </p>
                     </div>
                     {isSuperAdmin && (
@@ -149,7 +152,7 @@ export default function UsersPage() {
 
                                     <div className="flex items-center gap-6 shrink-0">
                                         <div className="hidden md:block text-sm text-muted-foreground">
-                                            {user.organization?.name || 'No organization'}
+                                            {user.organization?.name || t('noOrganization')}
                                         </div>
 
                                         <div className="flex items-center gap-2">
@@ -175,12 +178,12 @@ export default function UsersPage() {
                 {users.length === 0 && (
                     <div className="p-8 text-center">
                         <Users className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-                        <h3 className="font-medium text-foreground mb-1">No users yet</h3>
-                        <p className="text-sm text-muted-foreground mb-4">Get started by creating your first user</p>
+                        <h3 className="font-medium text-foreground mb-1">{t('noUsersYet')}</h3>
+                        <p className="text-sm text-muted-foreground mb-4">{t('getStarted')}</p>
                         {canManageUsers && (
                             <Button onClick={() => openUserModal()} className="bg-emerald-500 hover:bg-emerald-600">
                                 <Plus className="w-4 h-4 mr-2" />
-                                Create User
+                                {t('createUser')}
                             </Button>
                         )}
                     </div>

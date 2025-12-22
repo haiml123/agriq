@@ -36,10 +36,13 @@ export function AppHeader({ title, subtitle, tabs }: AppHeaderProps) {
     const navTabs = tabs || defaultTabs
 
     const isActiveTab = (href: string) => {
+        // Remove locale prefix from pathname (e.g., /en/alerts -> /alerts)
+        const pathWithoutLocale = pathname.replace(/^\/[a-z]{2}(\/|$)/, '/')
+
         if (href === "/dashboard") {
-            return pathname === "/dashboard" || pathname === "/"
+            return pathWithoutLocale === "/dashboard" || pathWithoutLocale === "/" || pathname === "/"
         }
-        return pathname.startsWith(href)
+        return pathWithoutLocale.startsWith(href)
     }
 
     return (
@@ -85,11 +88,11 @@ export function AppHeader({ title, subtitle, tabs }: AppHeaderProps) {
                                 href={tab.href}
                                 className={`
                   px-4 py-3 text-sm font-medium transition-colors relative
-                  ${isActive ? "text-primary" : "text-muted-foreground hover:text-foreground"}
+                  ${isActive ? "text-emerald-500" : "text-muted-foreground hover:text-foreground"}
                 `}
                             >
                                 {tab.label}
-                                {isActive && <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary" />}
+                                {isActive && <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-emerald-500" />}
                             </Link>
                         )
                     })}

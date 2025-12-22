@@ -2,12 +2,15 @@ import { DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/co
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 
 interface CreateOrganizationModalProps {
     onClose: (result?: string) => void;
 }
 
 export function CreateOrganizationModal({ onClose }: CreateOrganizationModalProps) {
+    const t = useTranslations('modals.organization');
+    const tCommon = useTranslations('common');
     const [name, setName] = useState('');
     const [isLoading, setIsLoading] = useState(false);
 
@@ -24,19 +27,19 @@ export function CreateOrganizationModal({ onClose }: CreateOrganizationModalProp
     return (
         <>
             <DialogHeader>
-                <DialogTitle>Create New Organization</DialogTitle>
+                <DialogTitle>{t('createTitle')}</DialogTitle>
                 <DialogDescription>
-                    Add a new organization to the platform. You can add sites and users after creation.
+                    {t('createDescription')}
                 </DialogDescription>
             </DialogHeader>
             <div className="space-y-4 py-4">
                 <div className="space-y-2">
                     <label htmlFor="orgName" className="text-sm font-medium text-foreground">
-                        Organization Name
+                        {t('organizationName')}
                     </label>
                     <Input
                         id="orgName"
-                        placeholder="Enter organization name"
+                        placeholder={t('organizationNamePlaceholder')}
                         value={name}
                         onChange={(e) => setName(e.target.value)}
                     />
@@ -44,14 +47,14 @@ export function CreateOrganizationModal({ onClose }: CreateOrganizationModalProp
             </div>
             <DialogFooter>
                 <Button variant="outline" onClick={() => onClose()}>
-                    Cancel
+                    {tCommon('cancel')}
                 </Button>
                 <Button
                     onClick={handleCreate}
                     disabled={!name.trim() || isLoading}
                     className="bg-emerald-500 hover:bg-emerald-600"
                 >
-                    {isLoading ? "Creating..." : "Create Organization"}
+                    {isLoading ? t('creating') : t('createButton')}
                 </Button>
             </DialogFooter>
         </>

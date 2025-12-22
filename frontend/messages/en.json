@@ -66,6 +66,13 @@
     "settings": "Settings",
     "admin": "Admin"
   },
+  "admin": {
+    "menu": "Menu",
+    "organizations": "Organizations",
+    "triggers": "Triggers",
+    "commodities": "Commodities",
+    "lookupTables": "Lookup tables"
+  },
   "settings": {
     "title": "Settings",
     "sites": "Sites",
@@ -124,7 +131,11 @@
     "custom": "Custom",
     "startDate": "Start Date",
     "endDate": "End Date",
-    "apply": "Apply"
+    "apply": "Apply",
+    "noCommodity": "No commodity",
+    "unknownCommodity": "Unknown",
+    "commodityTimeline": "Commodity Timeline",
+    "commodityMarker": "Commodity marker"
   },
   "roles": {
     "SUPER_ADMIN": "Super Admin",
@@ -132,7 +143,49 @@
     "OPERATOR": "Operator"
   },
   "pages": {
+    "alerts": {
+      "title": "Alerts",
+      "subtitle": "Manage and monitor system alerts",
+      "timeRange": "Time Range",
+      "allTime": "All Time",
+      "last24Hours": "Last 24 Hours",
+      "last7Days": "Last 7 Days",
+      "last30Days": "Last 30 Days",
+      "last90Days": "Last 90 Days",
+      "organization": "Organization",
+      "allOrganizations": "All Organizations",
+      "user": "User",
+      "allUsers": "All Users",
+      "site": "Site",
+      "allSites": "All Sites",
+      "severity": "Severity",
+      "allSeverities": "All Severities",
+      "status": "Status",
+      "allStatuses": "All Statuses",
+      "allAlerts": "All Alerts",
+      "cell": "Cell",
+      "description": "Description",
+      "trigger": "Trigger",
+      "created": "Created",
+      "actions": "Actions",
+      "acknowledge": "Acknowledge",
+      "startInvestigating": "Start Investigating",
+      "dismiss": "Dismiss",
+      "resolve": "Resolve",
+      "reopenAlert": "Reopen",
+      "noAlerts": "No alerts found"
+    },
     "users": {
+      "title": "Users",
+      "description": "Manage users and their roles",
+      "createUser": "Create User",
+      "usersCount": "{count} user{count, plural, =1 {} other {s}} registered",
+      "noOrganization": "No organization",
+      "noUsersYet": "No users yet",
+      "getStarted": "Get started by creating your first user",
+      "noPermission": "You do not have permission to view users."
+    },
+    "settingsUsers": {
       "title": "Users",
       "description": "Manage users and their roles",
       "createUser": "Create User",
@@ -288,6 +341,47 @@
       "capacityPlaceholder": "e.g. 5000",
       "createButton": "Create Cell",
       "saveButton": "Save Changes"
+    },
+    "user": {
+      "createTitle": "Create New User",
+      "editTitle": "Edit User",
+      "createDescription": "Add a new user to the platform.",
+      "editDescription": "Update user information and role.",
+      "name": "Name",
+      "nameRequired": "Name *",
+      "namePlaceholder": "Enter full name",
+      "email": "Email",
+      "emailRequired": "Email *",
+      "emailPlaceholder": "user@example.com",
+      "password": "Password",
+      "passwordRequired": "Password *",
+      "newPassword": "New Password",
+      "passwordPlaceholder": "Enter password",
+      "passwordPlaceholderEdit": "Leave empty to keep current password",
+      "phone": "Phone",
+      "phonePlaceholder": "+1-555-1234",
+      "organization": "Organization",
+      "organizationRequired": "Organization *",
+      "selectOrganization": "Select organization",
+      "role": "Role",
+      "roleRequired": "Role *",
+      "siteAccess": "Site Access",
+      "siteAccessRequired": "Site Access *",
+      "sitesSelected": "{count} site{count, plural, =1 {} other {s}} selected",
+      "loadingSites": "Loading sites...",
+      "noSitesFound": "No sites found for this organization",
+      "createSitesFirst": "Create sites first to assign specific access",
+      "selectAtLeastOneSite": "Please select at least one site",
+      "createButton": "Create User",
+      "saveButton": "Save Changes"
+    },
+    "organization": {
+      "createTitle": "Create New Organization",
+      "createDescription": "Add a new organization to the platform. You can add sites and users after creation.",
+      "organizationName": "Organization Name",
+      "organizationNamePlaceholder": "Enter organization name",
+      "createButton": "Create Organization",
+      "creating": "Creating..."
     }
   }
 }

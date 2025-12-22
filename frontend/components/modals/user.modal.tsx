@@ -13,6 +13,7 @@ import { Site } from '@/schemas/sites.schema'
 import { useCurrentUser } from '@/hooks'
 import { Loader2 } from 'lucide-react'
 import { RoleType, RoleTypeEnum } from '@/schemas/common.schema';
+import { useTranslations } from 'next-intl';
 
 interface UserModalProps {
     user?: User
@@ -20,6 +21,9 @@ interface UserModalProps {
 }
 
 export function UserModal({ user, onClose }: UserModalProps) {
+    const t = useTranslations('modals.user');
+    const tCommon = useTranslations('common');
+    const tRoles = useTranslations('roles');
     const { user: appUser, isSuperAdmin, isAdmin } = useCurrentUser()
     const { create, update, isCreating } = useUserApi()
     const { getList: getOrganizations } = useOrganizationApi()
@@ -186,29 +190,29 @@ export function UserModal({ user, onClose }: UserModalProps) {
     return (
         <>
             <DialogHeader>
-                <DialogTitle>{isEditing ? 'Edit User' : 'Create New User'}</DialogTitle>
+                <DialogTitle>{isEditing ? t('editTitle') : t('createTitle')}</DialogTitle>
                 <DialogDescription>
                     {isEditing
-                        ? 'Update user information and role.'
-                        : 'Add a new user to the platform.'}
+                        ? t('editDescription')
+                        : t('createDescription')}
                 </DialogDescription>
             </DialogHeader>
 
             <div className="space-y-4 py-4 max-h-[60vh] overflow-y-auto">
                 <div className="space-y-2">
-                    <label className="text-sm font-medium text-foreground">Name *</label>
+                    <label className="text-sm font-medium text-foreground">{t('nameRequired')}</label>
                     <Input
-                        placeholder="Enter full name"
+                        placeholder={t('namePlaceholder')}
                         value={formData.name}
                         onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                     />
                 </div>
 
                 <div className="space-y-2">
-                    <label className="text-sm font-medium text-foreground">Email *</label>
+                    <label className="text-sm font-medium text-foreground">{t('emailRequired')}</label>
                     <Input
                         type="email"
-                        placeholder="user@example.com"
+                        placeholder={t('emailPlaceholder')}
                         value={formData.email}
                         onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                         disabled={isEditing}
@@ -217,20 +221,20 @@ export function UserModal({ user, onClose }: UserModalProps) {
 
                 <div className="space-y-2">
                     <label className="text-sm font-medium text-foreground">
-                        {isEditing ? 'New Password' : 'Password *'}
+                        {isEditing ? t('newPassword') : t('passwordRequired')}
                     </label>
                     <Input
                         type="password"
-                        placeholder={isEditing ? 'Leave empty to keep current password' : 'Enter password'}
+                        placeholder={isEditing ? t('passwordPlaceholderEdit') : t('passwordPlaceholder')}
                         value={formData.password}
                         onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                     />
                 </div>
 
                 <div className="space-y-2">
-                    <label className="text-sm font-medium text-foreground">Phone</label>
+                    <label className="text-sm font-medium text-foreground">{t('phone')}</label>
                     <Input
-                        placeholder="+1-555-1234"
+                        placeholder={t('phonePlaceholder')}
                         value={formData.phone}
                         onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                     />
@@ -239,7 +243,7 @@ export function UserModal({ user, onClose }: UserModalProps) {
                 {/* Organization select - only for super admin */}
                 {isSuperAdmin && (
                     <div className="space-y-2">
-                        <label className="text-sm font-medium text-foreground">Organization *</label>
+                        <label className="text-sm font-medium text-foreground">{t('organizationRequired')}</label>
                         <Select
                             value={formData.organizationId}
                             onValueChange={(value) => setFormData({
@@ -250,7 +254,7 @@ export function UserModal({ user, onClose }: UserModalProps) {
                             disabled={isEditing}
                         >
                             <SelectTrigger className="w-full">
-                                <SelectValue placeholder="Select organization" />
+                                <SelectValue placeholder={t('selectOrganization')} />
                             </SelectTrigger>
                             <SelectContent>
                                 {organizations.map((org) => (
@@ -264,7 +268,7 @@ export function UserModal({ user, onClose }: UserModalProps) {
                 )}
 
                 <div className="space-y-2">
-                    <label className="text-sm font-medium text-foreground">Role *</label>
+                    <label className="text-sm font-medium text-foreground">{t('roleRequired')}</label>
                     <Select
                         value={formData.role}
                         onValueChange={(value) => handleRoleChange(value as RoleType)}
@@ -274,10 +278,10 @@ export function UserModal({ user, onClose }: UserModalProps) {
                         </SelectTrigger>
                         <SelectContent>
                             {availableRoles.includes(RoleTypeEnum.SUPER_ADMIN) && (
-                                <SelectItem value={RoleTypeEnum.SUPER_ADMIN}>Super Admin</SelectItem>
+                                <SelectItem value={RoleTypeEnum.SUPER_ADMIN}>{tRoles('SUPER_ADMIN')}</SelectItem>
                             )}
-                            <SelectItem value={RoleTypeEnum.ADMIN}>Admin</SelectItem>
-                            <SelectItem value={RoleTypeEnum.OPERATOR}>Operator</SelectItem>
+                            <SelectItem value={RoleTypeEnum.ADMIN}>{tRoles('ADMIN')}</SelectItem>
+                            <SelectItem value={RoleTypeEnum.OPERATOR}>{tRoles('OPERATOR')}</SelectItem>
                         </SelectContent>
                     </Select>
                 </div>
@@ -286,17 +290,17 @@ export function UserModal({ user, onClose }: UserModalProps) {
                     <div className="space-y-3">
                         <div className="flex items-center justify-between">
                             <label className="text-sm font-medium text-foreground">
-                                Site Access *
+                                {t('siteAccessRequired')}
                             </label>
                             <span className="text-xs text-muted-foreground">
-                                {formData.siteIds.length} site{formData.siteIds.length !== 1 ? 's' : ''} selected
+                                {t('sitesSelected', { count: formData.siteIds.length })}
                             </span>
                         </div>
 
                         {isLoadingSites ? (
                             <div className="flex items-center justify-center py-8 border rounded-lg bg-muted/30">
                                 <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
-                                <span className="ml-2 text-sm text-muted-foreground">Loading sites...</span>
+                                <span className="ml-2 text-sm text-muted-foreground">{t('loadingSites')}</span>
                             </div>
                         ) : (
                             <div className="border rounded-lg overflow-hidden bg-muted/30">
@@ -322,10 +326,10 @@ export function UserModal({ user, onClose }: UserModalProps) {
                                 ) : (
                                     <div className="py-6 text-center">
                                         <p className="text-sm text-muted-foreground">
-                                            No sites found for this organization
+                                            {t('noSitesFound')}
                                         </p>
                                         <p className="text-xs text-muted-foreground mt-1">
-                                            Create sites first to assign specific access
+                                            {t('createSitesFirst')}
                                         </p>
                                     </div>
                                 )}
@@ -334,7 +338,7 @@ export function UserModal({ user, onClose }: UserModalProps) {
 
                         {!hasValidSiteSelection && (
                             <p className="text-xs text-destructive">
-                                Please select at least one site
+                                {t('selectAtLeastOneSite')}
                             </p>
                         )}
                     </div>
@@ -343,14 +347,14 @@ export function UserModal({ user, onClose }: UserModalProps) {
 
             <DialogFooter>
                 <Button variant="outline" onClick={() => onClose()}>
-                    Cancel
+                    {tCommon('cancel')}
                 </Button>
                 <Button
                     onClick={handleSubmit}
                     disabled={!isValid || isCreating}
                     className="bg-emerald-500 hover:bg-emerald-600"
                 >
-                    {isCreating ? 'Saving...' : isEditing ? 'Save Changes' : 'Create User'}
+                    {isCreating ? tCommon('saving') : isEditing ? t('saveButton') : t('createButton')}
                 </Button>
             </DialogFooter>
         </>

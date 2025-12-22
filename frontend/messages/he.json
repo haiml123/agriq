@@ -3,7 +3,19 @@
     "loading": "טוען...",
     "noData": "אין מידע זמין",
     "error": "אירעה שגיאה",
-    "cancel": "ביטול"
+    "save": "שמור",
+    "cancel": "ביטול",
+    "delete": "מחק",
+    "edit": "ערוך",
+    "create": "צור",
+    "none": "ללא",
+    "unknownLocation": "מיקום לא ידוע",
+    "unknownCommodity": "סחורה לא ידועה",
+    "unknownOrigin": "מקור לא ידוע",
+    "noDescription": "אין תיאור",
+    "saving": "שומר...",
+    "creating": "יוצר...",
+    "deleting": "מוחק..."
   },
   "dashboard": {
     "title": "לוח בקרה",
@@ -54,6 +66,18 @@
     "settings": "הגדרות",
     "admin": "ניהול"
   },
+  "admin": {
+    "menu": "תפריט",
+    "organizations": "ארגונים",
+    "triggers": "טריגרים",
+    "commodities": "סחורות",
+    "lookupTables": "טבלאות חיפוש"
+  },
+  "roles": {
+    "SUPER_ADMIN": "מנהל על",
+    "ADMIN": "מנהל",
+    "OPERATOR": "מפעיל"
+  },
   "settings": {
     "title": "הגדרות",
     "sites": "אתרים",
@@ -91,9 +115,65 @@
     "custom": "מותאם אישית",
     "startDate": "תאריך התחלה",
     "endDate": "תאריך סיום",
-    "apply": "החל"
+    "apply": "החל",
+    "noCommodity": "אין סחורה",
+    "unknownCommodity": "לא ידוע",
+    "commodityTimeline": "ציר זמן סחורות",
+    "commodityMarker": "סמן סחורה"
   },
   "pages": {
+    "alerts": {
+      "title": "התראות",
+      "subtitle": "ניהול ומעקב אחר התראות מערכת",
+      "timeRange": "טווח זמן",
+      "allTime": "כל הזמן",
+      "last24Hours": "24 שעות אחרונות",
+      "last7Days": "7 ימים אחרונים",
+      "last30Days": "30 ימים אחרונים",
+      "last90Days": "90 ימים אחרונים",
+      "organization": "ארגון",
+      "allOrganizations": "כל הארגונים",
+      "user": "משתמש",
+      "allUsers": "כל המשתמשים",
+      "site": "אתר",
+      "allSites": "כל האתרים",
+      "severity": "חומרה",
+      "allSeverities": "כל החומרות",
+      "status": "סטטוס",
+      "allStatuses": "כל הסטטוסים",
+      "allAlerts": "כל ההתראות",
+      "cell": "תא",
+      "description": "פרטים",
+      "trigger": "טריגר",
+      "created": "נוצר",
+      "actions": "פעולות",
+      "acknowledge": "אישור",
+      "startInvestigating": "התחל חקירה",
+      "dismiss": "התעלם",
+      "resolve": "פתור",
+      "reopenAlert": "פתח מחדש",
+      "noAlerts": "לא נמצאו התראות"
+    },
+    "users": {
+      "title": "משתמשים",
+      "description": "ניהול משתמשים ותפקידיהם",
+      "createUser": "צור משתמש",
+      "usersCount": "{count} משתמש{count, plural, =1 {} other {ים}} רשום{count, plural, =1 {} other {ים}}",
+      "noOrganization": "אין ארגון",
+      "noUsersYet": "אין משתמשים עדיין",
+      "getStarted": "התחל על ידי יצירת המשתמש הראשון שלך",
+      "noPermission": "אין לך הרשאה לצפות במשתמשים."
+    },
+    "settingsUsers": {
+      "title": "משתמשים",
+      "description": "ניהול משתמשים ותפקידיהם",
+      "createUser": "צור משתמש",
+      "usersCount": "{count} משתמש{count, plural, =1 {} other {ים}} רשום{count, plural, =1 {} other {ים}}",
+      "noOrganization": "אין ארגון",
+      "noUsersYet": "אין משתמשים עדיין",
+      "getStarted": "התחל על ידי יצירת המשתמש הראשון שלך",
+      "noPermission": "אין לך הרשאה לצפות במשתמשים."
+    },
     "settingsSites": {
       "allSites": "כל האתרים",
       "mySites": "האתרים שלי",
@@ -141,6 +221,47 @@
       "capacityPlaceholder": "לדוגמה: 5000",
       "createButton": "צור תא",
       "saveButton": "שמור שינויים"
+    },
+    "user": {
+      "createTitle": "צור משתמש חדש",
+      "editTitle": "ערוך משתמש",
+      "createDescription": "הוסף משתמש חדש לפלטפורמה.",
+      "editDescription": "עדכן את פרטי המשתמש והתפקיד.",
+      "name": "שם",
+      "nameRequired": "שם *",
+      "namePlaceholder": "הזן שם מלא",
+      "email": "אימייל",
+      "emailRequired": "אימייל *",
+      "emailPlaceholder": "user@example.com",
+      "password": "סיסמה",
+      "passwordRequired": "סיסמה *",
+      "newPassword": "סיסמה חדשה",
+      "passwordPlaceholder": "הזן סיסמה",
+      "passwordPlaceholderEdit": "השאר ריק לשמירת הסיסמה הנוכחית",
+      "phone": "טלפון",
+      "phonePlaceholder": "+972-50-1234567",
+      "organization": "ארגון",
+      "organizationRequired": "ארגון *",
+      "selectOrganization": "בחר ארגון",
+      "role": "תפקיד",
+      "roleRequired": "תפקיד *",
+      "siteAccess": "גישה לאתרים",
+      "siteAccessRequired": "גישה לאתרים *",
+      "sitesSelected": "{count} אתר{count, plural, =1 {} other {ים}} נבחר{count, plural, =1 {} other {ו}}",
+      "loadingSites": "טוען אתרים...",
+      "noSitesFound": "לא נמצאו אתרים לארגון זה",
+      "createSitesFirst": "צור אתרים תחילה כדי להקצות גישה ספציפית",
+      "selectAtLeastOneSite": "אנא בחר לפחות אתר אחד",
+      "createButton": "צור משתמש",
+      "saveButton": "שמור שינויים"
+    },
+    "organization": {
+      "createTitle": "צור ארגון חדש",
+      "createDescription": "הוסף ארגון חדש לפלטפורמה. תוכל להוסיף אתרים ומשתמשים לאחר היצירה.",
+      "organizationName": "שם הארגון",
+      "organizationNamePlaceholder": "הזן שם ארגון",
+      "createButton": "צור ארגון",
+      "creating": "יוצר..."
     }
   }
 }

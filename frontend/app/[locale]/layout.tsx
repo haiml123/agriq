@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from 'next/font/google';
 import { ThemeProvider } from '@/theme/ThemeProvider';
 import { ModalProvider } from '@/components/providers/modal-provider';
 import { SessionProvider } from '@/components/providers/session-provider';
+import { AppProvider } from '@/providers/app-provider';
 import { NextIntlClientProvider } from 'next-intl';
 import { getMessages } from 'next-intl/server';
 import { notFound } from 'next/navigation';
@@ -44,11 +45,13 @@ export default async function LocaleLayout({
             <body className={`${geistSans.variable} ${geistMono.variable} bg-background antialiased`}>
                 <NextIntlClientProvider messages={messages}>
                     <SessionProvider>
-                        <ThemeProvider>
-                            <ModalProvider>
-                                {children}
-                            </ModalProvider>
-                        </ThemeProvider>
+                        <AppProvider>
+                            <ThemeProvider>
+                                <ModalProvider>
+                                    {children}
+                                </ModalProvider>
+                            </ThemeProvider>
+                        </AppProvider>
                     </SessionProvider>
                 </NextIntlClientProvider>
             </body>

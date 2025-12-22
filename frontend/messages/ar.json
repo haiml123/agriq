@@ -3,7 +3,19 @@
     "loading": "جارٍ التحميل...",
     "noData": "لا توجد بيانات متاحة",
     "error": "حدث خطأ",
-    "cancel": "إلغاء"
+    "save": "حفظ",
+    "cancel": "إلغاء",
+    "delete": "حذف",
+    "edit": "تحرير",
+    "create": "إنشاء",
+    "none": "لا شيء",
+    "unknownLocation": "موقع غير معروف",
+    "unknownCommodity": "سلعة غير معروفة",
+    "unknownOrigin": "مصدر غير معروف",
+    "noDescription": "لا يوجد وصف",
+    "saving": "جارٍ الحفظ...",
+    "creating": "جارٍ الإنشاء...",
+    "deleting": "جارٍ الحذف..."
   },
   "dashboard": {
     "title": "لوحة التحكم",
@@ -54,6 +66,24 @@
     "settings": "الإعدادات",
     "admin": "الإدارة"
   },
+  "admin": {
+    "menu": "القائمة",
+    "organizations": "المؤسسات",
+    "triggers": "المحفزات",
+    "commodities": "السلع",
+    "lookupTables": "جداول البحث"
+  },
+  "roles": {
+    "SUPER_ADMIN": "مشرف أعلى",
+    "ADMIN": "مشرف",
+    "OPERATOR": "مشغل"
+  },
+  "sites": {
+    "noCommodity": "لا توجد سلعة",
+    "unknownCommodity": "غير معروف",
+    "commodityTimeline": "الجدول الزمني للسلع",
+    "commodityMarker": "علامة السلعة"
+  },
   "settings": {
     "title": "الإعدادات",
     "sites": "المواقع",
@@ -62,6 +92,58 @@
     "about": "حول"
   },
   "pages": {
+    "alerts": {
+      "title": "التنبيهات",
+      "subtitle": "إدارة ومراقبة تنبيهات النظام",
+      "timeRange": "النطاق الزمني",
+      "allTime": "كل الوقت",
+      "last24Hours": "آخر 24 ساعة",
+      "last7Days": "آخر 7 أيام",
+      "last30Days": "آخر 30 يوم",
+      "last90Days": "آخر 90 يوم",
+      "organization": "المؤسسة",
+      "allOrganizations": "جميع المؤسسات",
+      "user": "المستخدم",
+      "allUsers": "جميع المستخدمين",
+      "site": "الموقع",
+      "allSites": "جميع المواقع",
+      "severity": "الخطورة",
+      "allSeverities": "جميع مستويات الخطورة",
+      "status": "الحالة",
+      "allStatuses": "جميع الحالات",
+      "allAlerts": "جميع التنبيهات",
+      "cell": "الخلية",
+      "description": "الوصف",
+      "trigger": "المحفز",
+      "created": "تم الإنشاء",
+      "actions": "الإجراءات",
+      "acknowledge": "إقرار",
+      "startInvestigating": "بدء التحقيق",
+      "dismiss": "رفض",
+      "resolve": "حل",
+      "reopenAlert": "إعادة فتح",
+      "noAlerts": "لم يتم العثور على تنبيهات"
+    },
+    "users": {
+      "title": "المستخدمون",
+      "description": "إدارة المستخدمين وأدوارهم",
+      "createUser": "إنشاء مستخدم",
+      "usersCount": "{count} مستخدم مسجل",
+      "noOrganization": "لا توجد مؤسسة",
+      "noUsersYet": "لا يوجد مستخدمون بعد",
+      "getStarted": "ابدأ بإنشاء مستخدمك الأول",
+      "noPermission": "ليس لديك إذن لعرض المستخدمين."
+    },
+    "settingsUsers": {
+      "title": "المستخدمون",
+      "description": "إدارة المستخدمين وأدوارهم",
+      "createUser": "إنشاء مستخدم",
+      "usersCount": "{count} مستخدم مسجل",
+      "noOrganization": "لا توجد مؤسسة",
+      "noUsersYet": "لا يوجد مستخدمون بعد",
+      "getStarted": "ابدأ بإنشاء مستخدمك الأول",
+      "noPermission": "ليس لديك إذن لعرض المستخدمين."
+    },
     "settingsSites": {
       "allSites": "جميع المواقع",
       "mySites": "مواقعي",
@@ -109,6 +191,47 @@
       "capacityPlaceholder": "على سبيل المثال: 5000",
       "createButton": "إنشاء خلية",
       "saveButton": "حفظ التغييرات"
+    },
+    "user": {
+      "createTitle": "إنشاء مستخدم جديد",
+      "editTitle": "تحرير مستخدم",
+      "createDescription": "أضف مستخدمًا جديدًا إلى المنصة.",
+      "editDescription": "قم بتحديث معلومات المستخدم والدور.",
+      "name": "الاسم",
+      "nameRequired": "الاسم *",
+      "namePlaceholder": "أدخل الاسم الكامل",
+      "email": "البريد الإلكتروني",
+      "emailRequired": "البريد الإلكتروني *",
+      "emailPlaceholder": "user@example.com",
+      "password": "كلمة المرور",
+      "passwordRequired": "كلمة المرور *",
+      "newPassword": "كلمة مرور جديدة",
+      "passwordPlaceholder": "أدخل كلمة المرور",
+      "passwordPlaceholderEdit": "اتركها فارغة للاحتفاظ بكلمة المرور الحالية",
+      "phone": "الهاتف",
+      "phonePlaceholder": "+966-50-1234567",
+      "organization": "المؤسسة",
+      "organizationRequired": "المؤسسة *",
+      "selectOrganization": "اختر مؤسسة",
+      "role": "الدور",
+      "roleRequired": "الدور *",
+      "siteAccess": "الوصول إلى المواقع",
+      "siteAccessRequired": "الوصول إلى المواقع *",
+      "sitesSelected": "{count} موقع محدد",
+      "loadingSites": "جارٍ تحميل المواقع...",
+      "noSitesFound": "لم يتم العثور على مواقع لهذه المؤسسة",
+      "createSitesFirst": "أنشئ مواقع أولاً لتعيين وصول محدد",
+      "selectAtLeastOneSite": "الرجاء تحديد موقع واحد على الأقل",
+      "createButton": "إنشاء مستخدم",
+      "saveButton": "حفظ التغييرات"
+    },
+    "organization": {
+      "createTitle": "إنشاء مؤسسة جديدة",
+      "createDescription": "أضف مؤسسة جديدة إلى المنصة. يمكنك إضافة مواقع ومستخدمين بعد الإنشاء.",
+      "organizationName": "اسم المؤسسة",
+      "organizationNamePlaceholder": "أدخل اسم المؤسسة",
+      "createButton": "إنشاء مؤسسة",
+      "creating": "جارٍ الإنشاء..."
     }
   }
 }
