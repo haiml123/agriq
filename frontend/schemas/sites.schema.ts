@@ -1,5 +1,6 @@
 import { z } from 'zod';
-import { entityStatusSchema } from '@/schemas/common.schema';
+import { entityStatusSchema, metricSchema, severitySchema, alertStatusSchema } from '@/schemas/common.schema';
+import { tradeCommoditySchema } from '@/schemas/trade.schema';
 
 // ============ CELL SCHEMAS ============
 
@@ -109,4 +110,114 @@ export type Site = z.infer<typeof siteSchema>;
 export type CreateSiteDto = z.infer<typeof createSiteSchema>;
 export type UpdateSiteDto = z.infer<typeof updateSiteSchema>;
 export type SiteListParams = z.infer<typeof siteListParamsSchema>;
+
+// ============ SENSOR READING SCHEMAS ============
+
+export const sensorReadingSchema = z.object({
+  id: z.string(),
+  cellId: z.string(),
+  metric: metricSchema,
+  value: z.number(),
+  recordedAt: z.string(),
+});
+
+// ============ TRADE FOR CELL DETAILS ============
+
+export const cellTradeSchema = z.object({
+  id: z.string(),
+  cellId: z.string(),
+  amountKg: z.number(),
+  tradedAt: z.string(),
+  commodity: tradeCommoditySchema,
+});
+
+// ============ ALERT FOR CELL DETAILS ============
+
+export const cellAlertSchema = z.object({
+  id: z.string(),
+  cellId: z.string(),
+  title: z.string().nullable(),
+  description: z.string(),
+  severity: severitySchema,
+  status: alertStatusSchema,
+  thresholdValue: z.number().nullable(),
+  unit: z.string().nullable(),
+  startedAt: z.string(),
+});
+
+// ============ CELL DETAILS SCHEMAS ============
+
+export const cellWithDetailsSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  compound: z.object({
+    id: z.string(),
+    name: z.string(),
+    site: z.object({
+      id: z.string(),
+      name: z.string(),
+    }),
+  }),
+});
+
+export const cellDetailsSchema = z.object({
+  cell: cellWithDetailsSchema,
+  sensorReadings: z.array(sensorReadingSchema),
+  trades: z.array(cellTradeSchema),
+  alerts: z.array(cellAlertSchema),
+});
+
+export const multipleCellsDetailsSchema = z.object({
+  cells: z.array(cellWithDetailsSchema),
+  sensorReadings: z.array(sensorReadingSchema),
+  trades: z.array(cellTradeSchema),
+  alerts: z.array(cellAlertSchema),
+});
+
+// ============ DATE RANGE ============
+
+export const dateRangeSchema = z.enum(['7days', 'month', 'year', 'custom']);
+export const DateRangeEnum = dateRangeSchema.enum;
+
+// ============ CHART DATA SCHEMAS ============
+
+export const chartDataPointSchema = z.object({
+  date: z.string(),
+  fullDate: z.string(),
+  temperature: z.number().optional(),
+  humidity: z.number().optional(),
+  commodity: z.string(),
+});
+
+export const commodityMarkerSchema = z.object({
+  date: z.string(),
+  fullDate: z.string(),
+  commodity: z.string(),
+  color: z.string(),
+});
+
+export const cellChartDataSchema = z.object({
+  temperatureData: z.array(chartDataPointSchema),
+  humidityData: z.array(chartDataPointSchema),
+  tempMin: z.number(),
+  tempMax: z.number(),
+  humidityMin: z.number(),
+  humidityMax: z.number(),
+  trades: z.array(cellTradeSchema),
+  alerts: z.array(cellAlertSchema),
+  commodityMarkers: z.array(commodityMarkerSchema),
+});
+
+// ============ ADDITIONAL TYPES ============
+
+export type SensorReading = z.infer<typeof sensorReadingSchema>;
+export type CellTrade = z.infer<typeof cellTradeSchema>;
+export type CellAlert = z.infer<typeof cellAlertSchema>;
+export type CellWithDetails = z.infer<typeof cellWithDetailsSchema>;
+export type CellDetails = z.infer<typeof cellDetailsSchema>;
+export type MultipleCellsDetails = z.infer<typeof multipleCellsDetailsSchema>;
+export type DateRange = z.infer<typeof dateRangeSchema>;
+export type ChartDataPoint = z.infer<typeof chartDataPointSchema>;
+export type CommodityMarker = z.infer<typeof commodityMarkerSchema>;
+export type CellChartData = z.infer<typeof cellChartDataSchema>;
 
