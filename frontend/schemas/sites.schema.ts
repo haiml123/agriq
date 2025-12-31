@@ -193,6 +193,7 @@ export type CreateSensorReadingsBatchDto = z.infer<typeof createSensorReadingsBa
 export const sensorReadingSchema = z.object({
   id: z.string(),
   cellId: z.string(),
+  gatewayId: z.string(),
   sensorId: z.string(),
   temperature: z.number(),
   humidity: z.number(),

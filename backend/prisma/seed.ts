@@ -104,6 +104,7 @@ async function seedDemoData() {
   await prisma.gateway.deleteMany({ where: { cellId: { in: ['cell-1', 'cell-2', 'cell-3', 'cell-4', 'cell-5'] } } });
   await prisma.cell.deleteMany({ where: { compoundId: { in: ['compound-1', 'compound-2', 'compound-3', 'compound-4'] } } });
   await prisma.compound.deleteMany({ where: { siteId: { in: ['site-1', 'site-2', 'site-3'] } } });
+  await prisma.siteUser.deleteMany({ where: { siteId: { in: ['site-1', 'site-2', 'site-3'] } } });
   await prisma.site.deleteMany({ where: { organizationId: 'demo-org-1' } });
   await prisma.commodity.deleteMany({ where: { organizationId: 'demo-org-1' } });
   console.log('[seed] Cleanup completed');
@@ -478,6 +479,7 @@ async function seedDemoData() {
             create: {
               id: `reading-${sensorIdx}-${day}`,
               sensorId: sensor.id,
+              gatewayId: sensor.gatewayId,
               cellId: cell.id,
               temperature: parseFloat((baseTemp + tempVariation).toFixed(2)),
               humidity: parseFloat((baseHumidity + humidityVariation).toFixed(2)),

@@ -191,6 +191,7 @@ export class SensorService {
       where: { id: sensorId },
       select: {
         id: true,
+        gatewayId: true,
         gateway: {
           select: {
             cellId: true,
@@ -199,12 +200,13 @@ export class SensorService {
       },
     });
 
-    if (!sensor || !sensor.gateway?.cellId) {
+    if (!sensor || !sensor.gateway?.cellId || !sensor.gatewayId) {
       throw new NotFoundException(`Sensor with ID "${sensorId}" not found`);
     }
 
     const data = dto.readings.map((reading) => ({
       sensorId: sensor.id,
+      gatewayId: sensor.gatewayId,
       cellId: sensor.gateway.cellId,
       temperature: reading.temperature,
       humidity: reading.humidity,

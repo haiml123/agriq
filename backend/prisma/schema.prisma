@@ -280,12 +280,12 @@ model Cell {
   compound   Compound @relation(fields: [compoundId], references: [id])
 
   // Relations
-  gateways      Gateway[]
-  alerts        Alert[]
-  readings      SensorReading[]
+  gateways        Gateway[]
+  alerts          Alert[]
+  readings        SensorReading[]
   gatewayReadings GatewayReading[]
-  trades        Trade[]
-  eventTriggers EventTrigger[]
+  trades          Trade[]
+  eventTriggers   EventTrigger[]
 
   // Audit
   createdBy String?  @map("created_by")
@@ -328,12 +328,14 @@ model Gateway {
   cellId String @unique @map("cell_id")
   cell   Cell   @relation(fields: [cellId], references: [id])
 
-  sensors Sensor[]
-  readings GatewayReading[]
+  sensors        Sensor[]
+  sensorReadings SensorReading[]
+  readings       GatewayReading[]
 
-  createdBy String?  @map("created_by")
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
+  createdBy     String?         @map("created_by")
+  createdAt     DateTime        @default(now()) @map("created_at")
+  updatedAt     DateTime        @updatedAt @map("updated_at")
+  SensorReading SensorReading[]
 
   @@map("gateway")
 }
@@ -349,7 +351,7 @@ model GatewayReading {
 
   temperature    Float
   humidity       Float
-  batteryPercent Float   @map("battery_percent")
+  batteryPercent Float    @map("battery_percent")
   recordedAt     DateTime @map("recorded_at")
   createdAt      DateTime @default(now()) @map("created_at")
 
@@ -364,16 +366,20 @@ model SensorReading {
   sensorId String @map("sensor_id")
   sensor   Sensor @relation(fields: [sensorId], references: [id])
 
+  gatewayId String  @map("gateway_id")
+  gateway   Gateway @relation(fields: [gatewayId], references: [id])
+
   cellId String @map("cell_id")
   cell   Cell   @relation(fields: [cellId], references: [id])
 
   temperature    Float
   humidity       Float
-  batteryPercent Float @map("battery_percent")
-  recordedAt DateTime    @map("recorded_at")
-  createdAt  DateTime    @default(now()) @map("created_at")
+  batteryPercent Float    @map("battery_percent")
+  recordedAt     DateTime @map("recorded_at")
+  createdAt      DateTime @default(now()) @map("created_at")
 
   @@index([sensorId, recordedAt])
+  @@index([gatewayId, recordedAt])
   @@index([cellId, recordedAt])
   @@map("sensor_reading")
 }
@@ -623,7 +629,7 @@ model Trade {
   tradedAt  DateTime @map("traded_at")
   notes     String?
   direction String?  @default("IN") // IN or OUT
-  buyer     String?  // Buyer/recipient for OUT trades
+  buyer     String? // Buyer/recipient for OUT trades
 
   createdBy String? @map("created_by")
   updatedBy String? @map("updated_by")
