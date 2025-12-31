@@ -99,7 +99,9 @@ async function seedDemoData() {
   await prisma.alert.deleteMany({ where: { organizationId: 'demo-org-1' } });
   await prisma.trade.deleteMany({ where: { siteId: { in: ['site-1', 'site-2', 'site-3'] } } });
   await prisma.sensorReading.deleteMany({});
-  await prisma.sensor.deleteMany({ where: { cellId: { in: ['cell-1', 'cell-2', 'cell-3', 'cell-4', 'cell-5'] } } });
+  await prisma.gatewayReading.deleteMany({});
+  await prisma.sensor.deleteMany({ where: { gatewayId: { in: ['gateway-1', 'gateway-2', 'gateway-3', 'gateway-4', 'gateway-5'] } } });
+  await prisma.gateway.deleteMany({ where: { cellId: { in: ['cell-1', 'cell-2', 'cell-3', 'cell-4', 'cell-5'] } } });
   await prisma.cell.deleteMany({ where: { compoundId: { in: ['compound-1', 'compound-2', 'compound-3', 'compound-4'] } } });
   await prisma.compound.deleteMany({ where: { siteId: { in: ['site-1', 'site-2', 'site-3'] } } });
   await prisma.site.deleteMany({ where: { organizationId: 'demo-org-1' } });
@@ -288,7 +290,72 @@ async function seedDemoData() {
   ]);
   console.log('[seed] Created demo cells');
 
-  // 5. Create Sensors (one per cell)
+  // 5. Create Gateways (one per cell)
+  const gateways = await Promise.all([
+    prisma.gateway.upsert({
+      where: { id: 'gateway-1' },
+      update: {},
+      create: {
+        id: 'gateway-1',
+        externalId: 'GATEWAY-CELL14-01',
+        name: 'Gateway - Cell 14',
+        status: entity_status.ACTIVE,
+        cellId: cells[0].id,
+        createdBy: superAdmin.id,
+      },
+    }),
+    prisma.gateway.upsert({
+      where: { id: 'gateway-2' },
+      update: {},
+      create: {
+        id: 'gateway-2',
+        externalId: 'GATEWAY-CELL13-01',
+        name: 'Gateway - Cell 13',
+        status: entity_status.ACTIVE,
+        cellId: cells[1].id,
+        createdBy: superAdmin.id,
+      },
+    }),
+    prisma.gateway.upsert({
+      where: { id: 'gateway-3' },
+      update: {},
+      create: {
+        id: 'gateway-3',
+        externalId: 'GATEWAY-CELL8-01',
+        name: 'Gateway - Cell 8',
+        status: entity_status.ACTIVE,
+        cellId: cells[2].id,
+        createdBy: superAdmin.id,
+      },
+    }),
+    prisma.gateway.upsert({
+      where: { id: 'gateway-4' },
+      update: {},
+      create: {
+        id: 'gateway-4',
+        externalId: 'GATEWAY-CELL3-01',
+        name: 'Gateway - Cell 3',
+        status: entity_status.ACTIVE,
+        cellId: cells[3].id,
+        createdBy: superAdmin.id,
+      },
+    }),
+    prisma.gateway.upsert({
+      where: { id: 'gateway-5' },
+      update: {},
+      create: {
+        id: 'gateway-5',
+        externalId: 'GATEWAY-CELL1-01',
+        name: 'Gateway - Cell 1',
+        status: entity_status.ACTIVE,
+        cellId: cells[4].id,
+        createdBy: superAdmin.id,
+      },
+    }),
+  ]);
+  console.log('[seed] Created demo gateways');
+
+  // 6. Create Sensors (one per gateway)
   const sensors = await Promise.all([
     prisma.sensor.upsert({
       where: { id: 'sensor-1' },
@@ -298,7 +365,7 @@ async function seedDemoData() {
         externalId: 'SENSOR-CELL14-01',
         name: 'Temperature & Humidity Sensor - Cell 14',
         status: entity_status.ACTIVE,
-        cellId: cells[0].id,
+        gatewayId: gateways[0].id,
         createdBy: superAdmin.id,
       },
     }),
@@ -310,7 +377,7 @@ async function seedDemoData() {
         externalId: 'SENSOR-CELL13-01',
         name: 'Temperature & Humidity Sensor - Cell 13',
         status: entity_status.ACTIVE,
-        cellId: cells[1].id,
+        gatewayId: gateways[1].id,
         createdBy: superAdmin.id,
       },
     }),
@@ -322,7 +389,7 @@ async function seedDemoData() {
         externalId: 'SENSOR-CELL8-01',
         name: 'Temperature & Humidity Sensor - Cell 8',
         status: entity_status.ACTIVE,
-        cellId: cells[2].id,
+        gatewayId: gateways[2].id,
         createdBy: superAdmin.id,
       },
     }),
@@ -334,7 +401,7 @@ async function seedDemoData() {
         externalId: 'SENSOR-CELL3-01',
         name: 'Temperature & Humidity Sensor - Cell 3',
         status: entity_status.ACTIVE,
-        cellId: cells[3].id,
+        gatewayId: gateways[3].id,
         createdBy: superAdmin.id,
       },
     }),
@@ -346,14 +413,36 @@ async function seedDemoData() {
         externalId: 'SENSOR-CELL1-01',
         name: 'Temperature & Humidity Sensor - Cell 1',
         status: entity_status.ACTIVE,
-        cellId: cells[4].id,
+        gatewayId: gateways[4].id,
         createdBy: superAdmin.id,
       },
     }),
   ]);
   console.log('[seed] Created demo sensors');
 
-  // 6. Create Sensor Readings (temperature and humidity data for the last year)
+  // 7. Create Gateway Readings (recent temperature, humidity, battery data)
+  const gatewayReadingsData = gateways.flatMap((gateway, idx) => {
+    const baseTemp = 18 + idx;
+    const baseHumidity = 10 + idx;
+    const baseBattery = 95 - idx;
+    return Array.from({ length: 7 }, (_, dayIdx) => {
+      const recordedAt = new Date(now);
+      recordedAt.setDate(recordedAt.getDate() - dayIdx);
+      return {
+        gatewayId: gateway.id,
+        cellId: gateway.cellId,
+        temperature: baseTemp + (dayIdx % 2 === 0 ? 1 : -1),
+        humidity: baseHumidity + (dayIdx % 2 === 0 ? 0.5 : -0.5),
+        batteryPercent: baseBattery - dayIdx,
+        recordedAt,
+      };
+    });
+  });
+
+  await prisma.gatewayReading.createMany({ data: gatewayReadingsData });
+  console.log('[seed] Created demo gateway readings (last 7 days)');
+
+  // 8. Create Sensor Readings (temperature, humidity, battery data for the last year)
   const daysToGenerate = 365; // Generate data for 1 year
   const batchSize = 50; // Process readings in batches
 
@@ -379,34 +468,23 @@ async function seedDemoData() {
         const seasonalTemp = Math.sin((day / 365) * Math.PI * 2) * 5;
         const tempVariation = seasonalTemp + (Math.random() - 0.5) * 2;
         const humidityVariation = Math.sin((day / 365) * Math.PI * 2) * 2 + (Math.random() - 0.5) * 1;
+        const batteryVariation = (Math.random() - 0.5) * 0.6;
 
-        // Temperature reading
+        // Daily reading with temperature, humidity, and battery
         batch.push(
           prisma.sensorReading.upsert({
-            where: { id: `reading-${sensorIdx}-${day}-temp` },
+            where: { id: `reading-${sensorIdx}-${day}` },
             update: {},
             create: {
-              id: `reading-${sensorIdx}-${day}-temp`,
+              id: `reading-${sensorIdx}-${day}`,
               sensorId: sensor.id,
               cellId: cell.id,
-              metric: 'TEMPERATURE',
-              value: parseFloat((baseTemp + tempVariation).toFixed(2)),
-              recordedAt: date,
-            },
-          })
-        );
-
-        // Humidity reading
-        batch.push(
-          prisma.sensorReading.upsert({
-            where: { id: `reading-${sensorIdx}-${day}-humidity` },
-            update: {},
-            create: {
-              id: `reading-${sensorIdx}-${day}-humidity`,
-              sensorId: sensor.id,
-              cellId: cell.id,
-              metric: 'HUMIDITY',
-              value: parseFloat((baseHumidity + humidityVariation).toFixed(2)),
+              temperature: parseFloat((baseTemp + tempVariation).toFixed(2)),
+              humidity: parseFloat((baseHumidity + humidityVariation).toFixed(2)),
+              batteryPercent: Math.min(
+                100,
+                Math.max(60, parseFloat((95 - day * 0.05 + batteryVariation).toFixed(2))),
+              ),
               recordedAt: date,
             },
           })
@@ -418,7 +496,7 @@ async function seedDemoData() {
     }
   }
 
-  console.log('[seed] Created demo sensor readings (temperature and humidity for 1 year)');
+  console.log('[seed] Created demo sensor readings (temperature, humidity, battery for 1 year)');
 
   // 7. Get or create commodity types
   const soyType = await prisma.commodityType.findFirst({

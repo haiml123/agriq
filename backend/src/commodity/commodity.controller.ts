@@ -29,10 +29,7 @@ export class CommodityController {
 
   @Post()
   @Roles(user_role.SUPER_ADMIN, user_role.ADMIN, user_role.OPERATOR)
-  create(
-    @Body() dto: CreateCommodityDto,
-    @CurrentUser('id') userId: string,
-  ) {
+  create(@Body() dto: CreateCommodityDto, @CurrentUser('id') userId: string) {
     return this.commodityService.create(dto, userId);
   }
 

@@ -1,4 +1,12 @@
-import { Controller, Get, Post, Body, Query, UseGuards, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Query,
+  UseGuards,
+  Delete,
+} from '@nestjs/common';
 import { TradeService } from './trade.service';
 import { JwtAuthGuard } from '../auth/guards';
 import { CurrentUser, Public } from '../auth/decorators';
@@ -18,10 +26,7 @@ export class TradeController {
    */
   @Post()
   @Roles(user_role.SUPER_ADMIN, user_role.ADMIN, user_role.OPERATOR)
-  create(
-    @Body() dto: CreateTradeDto,
-    @CurrentUser('id') userId: string,
-  ) {
+  create(@Body() dto: CreateTradeDto, @CurrentUser('id') userId: string) {
     return this.tradeService.create(dto, userId);
   }
 

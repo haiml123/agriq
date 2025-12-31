@@ -145,7 +145,13 @@ export class AlertService {
     }
 
     // Validate status
-    const validStatuses = ['OPEN', 'ACKNOWLEDGED', 'IN_PROGRESS', 'RESOLVED', 'DISMISSED'];
+    const validStatuses = [
+      'OPEN',
+      'ACKNOWLEDGED',
+      'IN_PROGRESS',
+      'RESOLVED',
+      'DISMISSED',
+    ];
     if (!validStatuses.includes(status)) {
       throw new Error(`Invalid status: ${status}`);
     }

@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { entityStatusSchema, metricSchema, severitySchema, alertStatusSchema } from '@/schemas/common.schema';
+import { entityStatusSchema, severitySchema, alertStatusSchema } from '@/schemas/common.schema';
 import { tradeCommoditySchema } from '@/schemas/trade.schema';
 
 // ============ CELL SCHEMAS ============
@@ -97,6 +97,75 @@ export const siteListParamsSchema = z.object({
   organizationId: z.string().optional(),
 });
 
+// ============ SENSOR SCHEMAS ============
+
+export const gatewaySchema = z.object({
+  id: z.string(),
+  externalId: z.string(),
+  name: z.string().nullable().optional(),
+  status: entityStatusSchema,
+  cellId: z.string(),
+  createdAt: z.string().optional(),
+  updatedAt: z.string().optional(),
+  cell: z.object({
+    id: z.string(),
+    name: z.string(),
+    compound: z.object({
+      id: z.string(),
+      name: z.string(),
+      site: z.object({
+        id: z.string(),
+        name: z.string(),
+      }),
+    }),
+  }).optional(),
+});
+
+export const createGatewaySchema = z.object({
+  cellId: z.string(),
+  name: z.string().optional(),
+  externalId: z.string().optional(),
+  status: entityStatusSchema.optional(),
+});
+
+export const updateGatewaySchema = z.object({
+  name: z.string().optional(),
+  status: entityStatusSchema.optional(),
+});
+
+export const sensorSchema = z.object({
+  id: z.string(),
+  externalId: z.string(),
+  name: z.string().nullable().optional(),
+  status: entityStatusSchema,
+  gatewayId: z.string(),
+  createdAt: z.string().optional(),
+  updatedAt: z.string().optional(),
+  gateway: gatewaySchema.optional(),
+});
+
+export const createSensorSchema = z.object({
+  gatewayId: z.string(),
+  name: z.string().optional(),
+  externalId: z.string().optional(),
+  status: entityStatusSchema.optional(),
+});
+
+export const transferSensorSchema = z.object({
+  gatewayId: z.string(),
+});
+
+export const createSensorReadingSchema = z.object({
+  temperature: z.number(),
+  humidity: z.number(),
+  batteryPercent: z.number().min(0).max(100),
+  recordedAt: z.string(),
+});
+
+export const createSensorReadingsBatchSchema = z.object({
+  readings: z.array(createSensorReadingSchema).min(1),
+});
+
 // ============ TYPES ============
 export type Cell = z.infer<typeof cellSchema>;
 export type CreateCellDto = z.infer<typeof createCellSchema>;
@@ -110,14 +179,24 @@ export type Site = z.infer<typeof siteSchema>;
 export type CreateSiteDto = z.infer<typeof createSiteSchema>;
 export type UpdateSiteDto = z.infer<typeof updateSiteSchema>;
 export type SiteListParams = z.infer<typeof siteListParamsSchema>;
+export type Gateway = z.infer<typeof gatewaySchema>;
+export type CreateGatewayDto = z.infer<typeof createGatewaySchema>;
+export type UpdateGatewayDto = z.infer<typeof updateGatewaySchema>;
+export type Sensor = z.infer<typeof sensorSchema>;
+export type CreateSensorDto = z.infer<typeof createSensorSchema>;
+export type TransferSensorDto = z.infer<typeof transferSensorSchema>;
+export type CreateSensorReadingDto = z.infer<typeof createSensorReadingSchema>;
+export type CreateSensorReadingsBatchDto = z.infer<typeof createSensorReadingsBatchSchema>;
 
 // ============ SENSOR READING SCHEMAS ============
 
 export const sensorReadingSchema = z.object({
   id: z.string(),
   cellId: z.string(),
-  metric: metricSchema,
-  value: z.number(),
+  sensorId: z.string(),
+  temperature: z.number(),
+  humidity: z.number(),
+  batteryPercent: z.number(),
   recordedAt: z.string(),
 });
 
@@ -220,4 +299,3 @@ export type DateRange = z.infer<typeof dateRangeSchema>;
 export type ChartDataPoint = z.infer<typeof chartDataPointSchema>;
 export type CommodityMarker = z.infer<typeof commodityMarkerSchema>;
 export type CellChartData = z.infer<typeof cellChartDataSchema>;
-

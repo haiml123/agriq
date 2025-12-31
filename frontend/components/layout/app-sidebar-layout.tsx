@@ -1,13 +1,14 @@
 'use client'
 
 import type React from 'react'
-import { createContext, useContext, useState } from 'react'
+import { createContext, useContext, useMemo, useState } from 'react'
 import { usePathname } from 'next/navigation'
 import { Menu } from 'lucide-react'
 import { Sheet, SheetContent } from '@/components/ui/sheet'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link';
 import { RoleType } from '@/schemas/common.schema';
+import { useCurrentUser } from '@/hooks';
 
 export interface NavItem {
     label: string
@@ -81,6 +82,15 @@ function SidebarContent({ menuItems, pathname, setOpen }: SidebarContentProps) {
 export function AppSidebarLayout({ children, menuItems, title = "Menu" }: AppSidebarLayoutProps) {
     const pathname = usePathname()
     const [open, setOpen] = useState(false)
+    const { user } = useCurrentUser()
+
+    const filteredMenuItems = useMemo(() => {
+        return menuItems.filter((item) => {
+            if (!item.roles) return true
+            if (!user) return false
+            return item.roles.includes(user.userRole)
+        })
+    }, [menuItems, user])
 
     return (
         <SidebarContext.Provider value={{ open, setOpen }}>
@@ -89,14 +99,14 @@ export function AppSidebarLayout({ children, menuItems, title = "Menu" }: AppSid
                 <aside className="hidden md:block w-64 shrink-0">
                     <div className="sticky top-6">
                         <h2 className="mb-4 px-3 text-lg font-semibold">{title}</h2>
-                        <SidebarContent menuItems={menuItems} pathname={pathname} setOpen={setOpen} />
+                        <SidebarContent menuItems={filteredMenuItems} pathname={pathname} setOpen={setOpen} />
                     </div>
                 </aside>
 
                 <Sheet open={open} onOpenChange={setOpen}>
                     <SheetContent side="left" className="w-64">
                         <h2 className="mb-4 text-lg font-semibold">{title}</h2>
-                        <SidebarContent menuItems={menuItems} pathname={pathname} setOpen={setOpen} />
+                        <SidebarContent menuItems={filteredMenuItems} pathname={pathname} setOpen={setOpen} />
                     </SheetContent>
                 </Sheet>
 

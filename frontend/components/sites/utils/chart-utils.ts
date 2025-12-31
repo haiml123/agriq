@@ -54,8 +54,8 @@ export function getCommodityAtTime(
 export function aggregateReadingsByDate(
   readings: SensorReading[],
   dateFormat: string,
-  trades: Trade[],
-  getCommodity: (timestamp: string) => string
+  getCommodity: (timestamp: string) => string,
+  getValue: (reading: SensorReading) => number
 ) {
   const byDate = new Map<string, { sum: number; count: number; fullDate: string }>();
 
@@ -65,7 +65,7 @@ export function aggregateReadingsByDate(
       byDate.set(dateKey, { sum: 0, count: 0, fullDate: r.recordedAt });
     }
     const entry = byDate.get(dateKey)!;
-    entry.sum += r.value;
+    entry.sum += getValue(r);
     entry.count += 1;
   });
 

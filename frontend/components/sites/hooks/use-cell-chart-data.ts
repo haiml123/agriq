@@ -40,21 +40,19 @@ export function useCellChartData(
     getCommodityAtTime(trades, timestamp, t('noCommodity'), t('unknownCommodity'));
 
   // Temperature data
-  const tempReadings = sensorReadings.filter((r) => r.metric === 'TEMPERATURE');
   const temperatureData = aggregateReadingsByDate(
-    tempReadings,
+    sensorReadings,
     dateFormat,
-    trades,
-    getCommodity
+    getCommodity,
+    (reading) => reading.temperature
   ).map((d) => ({ ...d, temperature: d.value }));
 
   // Humidity data
-  const humidityReadings = sensorReadings.filter((r) => r.metric === 'HUMIDITY');
   const humidityData = aggregateReadingsByDate(
-    humidityReadings,
+    sensorReadings,
     dateFormat,
-    trades,
-    getCommodity
+    getCommodity,
+    (reading) => reading.humidity
   ).map((d) => ({ ...d, humidity: d.value }));
 
   // Calculate chart domains

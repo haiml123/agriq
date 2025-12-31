@@ -1,4 +1,10 @@
-import { IsDefined, IsOptional, IsString, MaxLength, MinLength } from 'class-validator';
+import {
+  IsDefined,
+  IsOptional,
+  IsString,
+  MaxLength,
+  MinLength,
+} from 'class-validator';
 
 export class CreateLookupTableDto {
   @IsString()

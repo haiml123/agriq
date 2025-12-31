@@ -16,6 +16,7 @@ import { SiteModule } from './site';
 import { EventsModule } from './events';
 import { AlertModule } from './alert';
 import { TradeModule } from './trade';
+import { GatewayModule } from './gateway';
 
 @Module({
   imports: [
@@ -31,6 +32,7 @@ import { TradeModule } from './trade';
     OrganizationModule,
     UserModule,
     SiteModule,
+    GatewayModule,
     TriggerModule,
     CommodityTypeModule,
     CommodityModule,

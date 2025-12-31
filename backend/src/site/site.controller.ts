@@ -143,7 +143,12 @@ export class SiteController {
   ) {
     const parsedStartDate = startDate ? new Date(startDate) : undefined;
     const parsedEndDate = endDate ? new Date(endDate) : undefined;
-    return this.siteService.getCellDetails(user, id, parsedStartDate, parsedEndDate);
+    return this.siteService.getCellDetails(
+      user,
+      id,
+      parsedStartDate,
+      parsedEndDate,
+    );
   }
 
   @Post('cells/details')
@@ -151,7 +156,9 @@ export class SiteController {
     @Body() body: { cellIds: string[]; startDate?: string; endDate?: string },
     @CurrentUser() user: userType.AppUser,
   ) {
-    const parsedStartDate = body.startDate ? new Date(body.startDate) : undefined;
+    const parsedStartDate = body.startDate
+      ? new Date(body.startDate)
+      : undefined;
     const parsedEndDate = body.endDate ? new Date(body.endDate) : undefined;
     return this.siteService.getMultipleCellsDetails(
       user,

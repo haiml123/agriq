@@ -1,11 +1,4 @@
-import {
-  IsOptional,
-  IsString,
-  IsInt,
-  Min,
-  Max,
-  IsEnum,
-} from 'class-validator';
+import { IsOptional, IsString, IsInt, Min, Max, IsEnum } from 'class-validator';
 import { Type, Transform } from 'class-transformer';
 import { entity_status } from '@prisma/client';
 

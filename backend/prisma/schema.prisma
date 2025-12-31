@@ -280,9 +280,10 @@ model Cell {
   compound   Compound @relation(fields: [compoundId], references: [id])
 
   // Relations
-  sensors       Sensor[]
+  gateways      Gateway[]
   alerts        Alert[]
   readings      SensorReading[]
+  gatewayReadings GatewayReading[]
   trades        Trade[]
   eventTriggers EventTrigger[]
 
@@ -304,8 +305,8 @@ model Sensor {
   name       String?
   status     entity_status
 
-  cellId String @map("cell_id")
-  cell   Cell   @relation(fields: [cellId], references: [id])
+  gatewayId String  @map("gateway_id")
+  gateway   Gateway @relation(fields: [gatewayId], references: [id])
 
   readings SensorReading[]
   alerts   Alert[]
@@ -318,6 +319,45 @@ model Sensor {
   @@map("sensor")
 }
 
+model Gateway {
+  id         String        @id @default(cuid())
+  externalId String        @unique @map("external_id")
+  name       String?
+  status     entity_status
+
+  cellId String @unique @map("cell_id")
+  cell   Cell   @relation(fields: [cellId], references: [id])
+
+  sensors Sensor[]
+  readings GatewayReading[]
+
+  createdBy String?  @map("created_by")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("gateway")
+}
+
+model GatewayReading {
+  id String @id @default(cuid())
+
+  gatewayId String  @map("gateway_id")
+  gateway   Gateway @relation(fields: [gatewayId], references: [id])
+
+  cellId String @map("cell_id")
+  cell   Cell   @relation(fields: [cellId], references: [id])
+
+  temperature    Float
+  humidity       Float
+  batteryPercent Float   @map("battery_percent")
+  recordedAt     DateTime @map("recorded_at")
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  @@index([gatewayId, recordedAt])
+  @@index([cellId, recordedAt])
+  @@map("gateway_reading")
+}
+
 model SensorReading {
   id String @id @default(cuid())
 
@@ -327,13 +367,14 @@ model SensorReading {
   cellId String @map("cell_id")
   cell   Cell   @relation(fields: [cellId], references: [id])
 
-  metric     metric_type
-  value      Float
+  temperature    Float
+  humidity       Float
+  batteryPercent Float @map("battery_percent")
   recordedAt DateTime    @map("recorded_at")
   createdAt  DateTime    @default(now()) @map("created_at")
 
-  @@index([sensorId, metric, recordedAt])
-  @@index([cellId, metric, recordedAt])
+  @@index([sensorId, recordedAt])
+  @@index([cellId, recordedAt])
   @@map("sensor_reading")
 }
 
