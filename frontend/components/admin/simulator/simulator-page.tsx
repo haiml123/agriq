@@ -10,7 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useCurrentUser } from '@/hooks';
-import { useSiteApi } from '@/hooks/use-site-api';
+import { useGatewayApi } from '@/hooks/use-gateway-api';
 import type { CreateSensorReadingDto, Gateway, Sensor, SensorReading } from '@/schemas/sites.schema';
 import { toast } from 'sonner';
 import { useTranslations } from 'next-intl';
@@ -69,7 +69,7 @@ export function SimulatorPage() {
     isLoading,
     isCreating,
     isUpdating,
-  } = useSiteApi();
+  } = useGatewayApi();
 
   const [gateways, setGateways] = useState<Gateway[]>([]);
   const [sensors, setSensors] = useState<Sensor[]>([]);

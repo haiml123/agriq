@@ -5,6 +5,7 @@ import { AppSidebarLayout, NavItem } from '@/components/layout/app-sidebar-layou
 import { ReactNode } from 'react';
 import { useTranslations } from 'next-intl';
 import { RoleTypeEnum } from '@/schemas/common.schema';
+import { useCurrentUser } from '@/hooks';
 
 interface AlertsLayoutProps {
     children: ReactNode;
@@ -12,27 +13,36 @@ interface AlertsLayoutProps {
 
 export default function AlertsLayout({ children }: AlertsLayoutProps) {
     const t = useTranslations('admin');
+    const { user } = useCurrentUser();
+
+    if (!user || user.userRole !== RoleTypeEnum.SUPER_ADMIN) {
+        return null;
+    }
 
     const alertsMenuItems: NavItem[] = [
         {
             label: t('organizations'),
             href: "/admin/organizations",
             icon: Building2,
+            roles: [RoleTypeEnum.SUPER_ADMIN],
         },
         {
             label: t('triggers'),
             href: "/admin/triggers",
             icon: Zap,
+            roles: [RoleTypeEnum.SUPER_ADMIN],
         },
         {
             label: t('commodities'),
             href: "/admin/commodities",
             icon: Wheat,
+            roles: [RoleTypeEnum.SUPER_ADMIN],
         },
         {
             label: t('lookupTables'),
             href: "/admin/lookup-tables",
             icon: Table2,
+            roles: [RoleTypeEnum.SUPER_ADMIN],
         },
         {
             label: t('simulator'),

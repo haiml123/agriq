@@ -58,6 +58,10 @@
       "deleteSuccess": "Cell deleted successfully",
       "deleteError": "Failed to delete cell"
     },
+    "gateway": {
+      "registerSuccess": "Gateway registered successfully",
+      "registerError": "Failed to register gateway"
+    },
     "user": {
       "createSuccess": "User created successfully",
       "createError": "Failed to create user",
@@ -245,6 +249,7 @@
     "title": "Settings",
     "sites": "Sites",
     "usersAndRoles": "Users and Roles",
+    "gateways": "Gateways",
     "languages": "Languages",
     "about": "About"
   },
@@ -259,6 +264,8 @@
     "cellsDesc": "Cells monitored per compound",
     "sensors": "Sensors",
     "sensorsDesc": "Active sensors across all cells",
+    "gatewayPaired": "Gateway paired",
+    "gatewayUnpaired": "No gateway",
     "organization": "Organization",
     "trades": "Trades",
     "openAlerts": "Alerts",
@@ -313,6 +320,21 @@
     "OPERATOR": "Operator"
   },
   "pages": {
+    "settingsGateways": {
+      "title": "Gateways",
+      "subtitle": "Register gateways and track pairing status.",
+      "selectOrganization": "Select an organization to register gateways.",
+      "registerLabel": "Register gateway",
+      "registerPlaceholder": "Enter gateway external ID",
+      "registerButton": "Register",
+      "tableExternalId": "External ID",
+      "tableStatus": "Status",
+      "tableOrganization": "Organization",
+      "tableCell": "Cell",
+      "unregisteredOrg": "Unregistered",
+      "unpaired": "Unpaired",
+      "empty": "No gateways registered yet."
+    },
     "alerts": {
       "title": "Alerts",
       "subtitle": "Manage and monitor system alerts",
@@ -509,6 +531,14 @@
       "cellNamePlaceholder": "e.g. Cell A-101",
       "capacity": "Capacity (tons)",
       "capacityPlaceholder": "e.g. 5000",
+      "gatewaySelectLabel": "Gateway",
+      "gatewaySelectPlaceholder": "Select gateway",
+      "gatewaySelectNone": "No gateway",
+      "gatewaySelectHelp": "Only registered, unpaired gateways appear here.",
+      "unpairButton": "Unpair gateway",
+      "unpairTitle": "Unpair gateway",
+      "unpairDescription": "This will disconnect the gateway from this cell. You can pair a different gateway after unpairing.",
+      "unpairConfirm": "Unpair",
       "createButton": "Create Cell",
       "saveButton": "Save Changes"
     },

@@ -58,6 +58,10 @@
       "deleteSuccess": "تم حذف الخلية بنجاح",
       "deleteError": "فشل حذف الخلية"
     },
+    "gateway": {
+      "registerSuccess": "تم تسجيل البوابة بنجاح",
+      "registerError": "فشل تسجيل البوابة"
+    },
     "user": {
       "createSuccess": "تم إنشاء المستخدم بنجاح",
       "createError": "فشل إنشاء المستخدم",
@@ -252,16 +256,34 @@
     "commodityTimeline": "الجدول الزمني للسلع",
     "commodityMarker": "علامة السلعة",
     "addCommodityButton": "إضافة سلعة",
-    "transferOutButton": "نقل للخارج"
+    "transferOutButton": "نقل للخارج",
+    "gatewayPaired": "Gateway paired",
+    "gatewayUnpaired": "No gateway"
   },
   "settings": {
     "title": "الإعدادات",
     "sites": "المواقع",
     "usersAndRoles": "المستخدمون والأدوار",
+    "gateways": "البوابات",
     "languages": "اللغات",
     "about": "حول"
   },
   "pages": {
+    "settingsGateways": {
+      "title": "البوابات",
+      "subtitle": "سجّل البوابات وتابع حالة الإقران.",
+      "selectOrganization": "اختر مؤسسة لتسجيل البوابات.",
+      "registerLabel": "تسجيل بوابة",
+      "registerPlaceholder": "أدخل المعرّف الخارجي للبوابة",
+      "registerButton": "تسجيل",
+      "tableExternalId": "المعرّف الخارجي",
+      "tableStatus": "الحالة",
+      "tableOrganization": "المؤسسة",
+      "tableCell": "الخلية",
+      "unregisteredOrg": "غير مسجلة",
+      "unpaired": "غير مقترنة",
+      "empty": "لا توجد بوابات مسجلة بعد."
+    },
     "alerts": {
       "title": "التنبيهات",
       "subtitle": "إدارة ومراقبة تنبيهات النظام",
@@ -359,6 +381,14 @@
       "cellNamePlaceholder": "على سبيل المثال: الخلية أ-101",
       "capacity": "السعة (طن)",
       "capacityPlaceholder": "على سبيل المثال: 5000",
+      "gatewaySelectLabel": "Gateway",
+      "gatewaySelectPlaceholder": "Select gateway",
+      "gatewaySelectNone": "No gateway",
+      "gatewaySelectHelp": "Only registered, unpaired gateways appear here.",
+      "unpairButton": "إلغاء ربط البوابة",
+      "unpairTitle": "إلغاء ربط البوابة",
+      "unpairDescription": "سيؤدي هذا إلى فصل البوابة عن هذه الخلية. يمكنك ربط بوابة أخرى بعد الإلغاء.",
+      "unpairConfirm": "إلغاء الربط",
       "createButton": "إنشاء خلية",
       "saveButton": "حفظ التغييرات"
     },

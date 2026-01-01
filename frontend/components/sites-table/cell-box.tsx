@@ -3,6 +3,7 @@ import { Box, Droplets, Package, Thermometer, Trash2 } from 'lucide-react';
 import { Cell } from '@/schemas/sites.schema';
 import { StatusDot } from '@/components/ui/status-indicator';
 import { Button } from '@/components/ui/button';
+import { useTranslations } from 'next-intl';
 
 interface CellBoxProps {
   cell: Cell;
@@ -11,6 +12,8 @@ interface CellBoxProps {
 }
 
 export const CellBox: React.FC<CellBoxProps> = ({ cell, onEdit, onDelete }) => {
+  const t = useTranslations('sites');
+  const hasGateway = Boolean(cell.gateways && cell.gateways.length > 0);
   cell.temp = 30;
   cell.humidity = 50;
   return (
@@ -52,6 +55,9 @@ export const CellBox: React.FC<CellBoxProps> = ({ cell, onEdit, onDelete }) => {
                   <span>{cell.capacity}</span>
                 </div>
             )}
+            <span className={hasGateway ? 'text-emerald-500' : 'text-muted-foreground'}>
+              {hasGateway ? t('gatewayPaired') : t('gatewayUnpaired')}
+            </span>
           </div>
           <Button
               variant="ghost"

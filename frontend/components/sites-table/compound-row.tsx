@@ -1,9 +1,7 @@
 import React from 'react';
 import { ChevronDown, ChevronRight, Pencil, Plus, Trash2, Warehouse } from 'lucide-react';
 import { Cell, Compound } from '@/schemas/sites.schema';
-import { StatusIndicator } from '@/components/ui/status-indicator';
 import { CellBox } from '@/components/sites-table/cell-box';
-import { SeverityEnum } from '@/schemas/common.schema';
 import { Button } from '@/components/ui/button';
 
 interface CompoundRowProps {
@@ -29,8 +27,6 @@ export const CompoundRow: React.FC<CompoundRowProps> = ({
   onEditCell,
   onDeleteCell,
 }) => {
-  const status = SeverityEnum.CRITICAL;
-
   return (
     <div className={`${!isLast ? 'border-b border-border' : ''}`}>
       <div
@@ -54,7 +50,6 @@ export const CompoundRow: React.FC<CompoundRowProps> = ({
           </span>
         </div>
         <div className="flex items-center gap-2">
-          <StatusIndicator status={status} />
           <Button
             variant="ghost"
             size="icon"

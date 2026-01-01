@@ -291,6 +291,8 @@ async function seedDemoData() {
   ]);
   console.log('[seed] Created demo cells');
 
+  const compoundSiteMap = new Map(compounds.map((compound) => [compound.id, compound.siteId]));
+
   // 5. Create Gateways (one per cell)
   const gateways = await Promise.all([
     prisma.gateway.upsert({
@@ -302,6 +304,8 @@ async function seedDemoData() {
         name: 'Gateway - Cell 14',
         status: entity_status.ACTIVE,
         cellId: cells[0].id,
+        organizationId: demoOrg.id,
+        siteId: compoundSiteMap.get(cells[0].compoundId) || null,
         createdBy: superAdmin.id,
       },
     }),
@@ -314,6 +318,8 @@ async function seedDemoData() {
         name: 'Gateway - Cell 13',
         status: entity_status.ACTIVE,
         cellId: cells[1].id,
+        organizationId: demoOrg.id,
+        siteId: compoundSiteMap.get(cells[1].compoundId) || null,
         createdBy: superAdmin.id,
       },
     }),
@@ -326,6 +332,8 @@ async function seedDemoData() {
         name: 'Gateway - Cell 8',
         status: entity_status.ACTIVE,
         cellId: cells[2].id,
+        organizationId: demoOrg.id,
+        siteId: compoundSiteMap.get(cells[2].compoundId) || null,
         createdBy: superAdmin.id,
       },
     }),
@@ -338,6 +346,8 @@ async function seedDemoData() {
         name: 'Gateway - Cell 3',
         status: entity_status.ACTIVE,
         cellId: cells[3].id,
+        organizationId: demoOrg.id,
+        siteId: compoundSiteMap.get(cells[3].compoundId) || null,
         createdBy: superAdmin.id,
       },
     }),
@@ -350,6 +360,8 @@ async function seedDemoData() {
         name: 'Gateway - Cell 1',
         status: entity_status.ACTIVE,
         cellId: cells[4].id,
+        organizationId: demoOrg.id,
+        siteId: compoundSiteMap.get(cells[4].compoundId) || null,
         createdBy: superAdmin.id,
       },
     }),
@@ -423,6 +435,10 @@ async function seedDemoData() {
 
   // 7. Create Gateway Readings (recent temperature, humidity, battery data)
   const gatewayReadingsData = gateways.flatMap((gateway, idx) => {
+    const cellId = gateway.cellId;
+    if (!cellId) {
+      return [];
+    }
     const baseTemp = 18 + idx;
     const baseHumidity = 10 + idx;
     const baseBattery = 95 - idx;
@@ -431,7 +447,7 @@ async function seedDemoData() {
       recordedAt.setDate(recordedAt.getDate() - dayIdx);
       return {
         gatewayId: gateway.id,
-        cellId: gateway.cellId,
+        cellId,
         temperature: baseTemp + (dayIdx % 2 === 0 ? 1 : -1),
         humidity: baseHumidity + (dayIdx % 2 === 0 ? 0.5 : -0.5),
         batteryPercent: baseBattery - dayIdx,

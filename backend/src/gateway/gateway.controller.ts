@@ -13,7 +13,12 @@ import { GatewayService } from './gateway.service';
 import { JwtAuthGuard } from '../auth/guards';
 import { CurrentUser } from '../auth/decorators';
 import * as userType from '../types/user.type';
-import { CreateGatewayDto, UpdateGatewayDto } from './dto';
+import {
+  AssignGatewayDto,
+  CreateGatewayDto,
+  RegisterGatewayDto,
+  UpdateGatewayDto,
+} from './dto';
 
 @Controller('gateways')
 @UseGuards(JwtAuthGuard)
@@ -24,8 +29,14 @@ export class GatewayController {
   listGateways(
     @CurrentUser() user: userType.AppUser,
     @Query('cellId') cellId?: string,
+    @Query('organizationId') organizationId?: string,
+    @Query('unpaired') unpaired?: string,
   ) {
-    return this.gatewayService.listGateways(user, cellId);
+    return this.gatewayService.listGateways(user, {
+      cellId,
+      organizationId,
+      unpaired: unpaired === 'true',
+    });
   }
 
   @Get(':id')
@@ -59,5 +70,30 @@ export class GatewayController {
     @CurrentUser() user: userType.AppUser,
   ) {
     return this.gatewayService.deleteGateway(user, id);
+  }
+
+  @Post('register')
+  registerGateway(
+    @Body() dto: RegisterGatewayDto,
+    @CurrentUser() user: userType.AppUser,
+  ) {
+    return this.gatewayService.registerGateway(user, dto);
+  }
+
+  @Post(':id/assign')
+  assignGateway(
+    @Param('id') id: string,
+    @Body() dto: AssignGatewayDto,
+    @CurrentUser() user: userType.AppUser,
+  ) {
+    return this.gatewayService.assignGatewayToCell(user, id, dto);
+  }
+
+  @Post(':id/unpair')
+  unpairGateway(
+    @Param('id') id: string,
+    @CurrentUser() user: userType.AppUser,
+  ) {
+    return this.gatewayService.unpairGateway(user, id);
   }
 }

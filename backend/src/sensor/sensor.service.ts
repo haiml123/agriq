@@ -31,6 +31,10 @@ export class SensorService {
       throw new NotFoundException(`Gateway with ID "${gatewayId}" not found`);
     }
 
+    if (!gateway.cellId) {
+      throw new BadRequestException('Gateway is not paired to a cell');
+    }
+
     await this.siteAccess.validateCellAccess(user, gateway.cellId);
     return gateway;
   }
@@ -204,10 +208,11 @@ export class SensorService {
       throw new NotFoundException(`Sensor with ID "${sensorId}" not found`);
     }
 
+    const cellId = sensor.gateway.cellId;
     const data = dto.readings.map((reading) => ({
       sensorId: sensor.id,
       gatewayId: sensor.gatewayId,
-      cellId: sensor.gateway.cellId,
+      cellId,
       temperature: reading.temperature,
       humidity: reading.humidity,
       batteryPercent: reading.batteryPercent,

@@ -7,19 +7,11 @@ import {
     Compound,
     CreateCellDto,
     CreateCompoundDto,
-    CreateGatewayDto,
     CreateSiteDto,
-    CreateSensorDto,
-    CreateSensorReadingsBatchDto,
-    Gateway,
-    SensorReading,
-    Sensor,
     Site,
     SiteListParams,
-    TransferSensorDto,
     UpdateCellDto,
     UpdateCompoundDto,
-    UpdateGatewayDto,
     UpdateSiteDto,
 } from '@/schemas/sites.schema';
 
@@ -167,118 +159,6 @@ export function useSiteApi() {
         [del]
     );
 
-    // ============ SENSORS ============
-
-    const getSensors = useCallback(
-        async (params?: { gatewayId?: string; cellId?: string }) => {
-            setIsLoading(true);
-            try {
-                return await get<Sensor[]>('/gateways/simulator/sensors', params);
-            } finally {
-                setIsLoading(false);
-            }
-        },
-        [get]
-    );
-
-    const createSensor = useCallback(
-        async (data: CreateSensorDto) => {
-            setIsCreating(true);
-            try {
-                return await post<Sensor>('/gateways/simulator/sensors', data);
-            } finally {
-                setIsCreating(false);
-            }
-        },
-        [post]
-    );
-
-    const transferSensor = useCallback(
-        async (id: string, data: TransferSensorDto) => {
-            setIsUpdating(true);
-            try {
-                return await patch<Sensor>(`/gateways/simulator/sensors/${id}/transfer`, data);
-            } finally {
-                setIsUpdating(false);
-            }
-        },
-        [patch]
-    );
-
-    const createSensorReadingsBatch = useCallback(
-        async (id: string, data: CreateSensorReadingsBatchDto) => {
-            setIsCreating(true);
-            try {
-                return await post<{ count: number }>(`/gateways/simulator/sensors/${id}/readings/batch`, data);
-            } finally {
-                setIsCreating(false);
-            }
-        },
-        [post]
-    );
-
-    const getSensorReadings = useCallback(
-        async (id: string, params?: { limit?: number }) => {
-            setIsLoading(true);
-            try {
-                return await get<SensorReading[]>(`/gateways/simulator/sensors/${id}/readings`, params);
-            } finally {
-                setIsLoading(false);
-            }
-        },
-        [get]
-    );
-
-    // ============ GATEWAYS ============
-
-    const getGateways = useCallback(
-        async (params?: { cellId?: string }) => {
-            setIsLoading(true);
-            try {
-                return await get<Gateway[]>('/gateways', params);
-            } finally {
-                setIsLoading(false);
-            }
-        },
-        [get]
-    );
-
-    const createGateway = useCallback(
-        async (data: CreateGatewayDto) => {
-            setIsCreating(true);
-            try {
-                return await post<Gateway>('/gateways', data);
-            } finally {
-                setIsCreating(false);
-            }
-        },
-        [post]
-    );
-
-    const updateGateway = useCallback(
-        async (id: string, data: UpdateGatewayDto) => {
-            setIsUpdating(true);
-            try {
-                return await patch<Gateway>(`/gateways/${id}`, data);
-            } finally {
-                setIsUpdating(false);
-            }
-        },
-        [patch]
-    );
-
-    const deleteGateway = useCallback(
-        async (id: string) => {
-            setIsDeleting(true);
-            try {
-                return await del(`/gateways/${id}`);
-            } finally {
-                setIsDeleting(false);
-            }
-        },
-        [del]
-    );
-
     return {
         // Sites
         getSites,
@@ -296,19 +176,6 @@ export function useSiteApi() {
         createCell,
         updateCell,
         deleteCell,
-
-        // Sensors
-        getSensors,
-        createSensor,
-        transferSensor,
-        createSensorReadingsBatch,
-        getSensorReadings,
-
-        // Gateways
-        getGateways,
-        createGateway,
-        updateGateway,
-        deleteGateway,
 
         // Loading states
         isLoading,

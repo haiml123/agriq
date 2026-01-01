@@ -1,6 +1,5 @@
 import {
   IsEnum,
-  IsNotEmpty,
   IsOptional,
   IsString,
   MaxLength,
@@ -10,8 +9,8 @@ import { entity_status } from '@prisma/client';
 
 export class CreateGatewayDto {
   @IsString()
-  @IsNotEmpty()
-  cellId: string;
+  @IsOptional()
+  cellId?: string;
 
   @IsString()
   @IsOptional()

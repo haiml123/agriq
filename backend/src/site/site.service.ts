@@ -50,7 +50,7 @@ export class SiteService {
         organizationId,
         createdBy: user.id,
       },
-      include: { compounds: { include: { cells: true } } },
+      include: { compounds: { include: { cells: { include: { gateways: true } } } } },
     });
   }
 
@@ -60,7 +60,7 @@ export class SiteService {
         where: organizationId ? { organizationId } : undefined,
         include: {
           compounds: {
-            include: { cells: true },
+            include: { cells: { include: { gateways: true } } },
           },
         },
         orderBy: {
@@ -88,7 +88,7 @@ export class SiteService {
         where: { organizationId: userOrgId },
         include: {
           compounds: {
-            include: { cells: true },
+            include: { cells: { include: { gateways: true } } },
           },
         },
         orderBy: {
@@ -121,7 +121,7 @@ export class SiteService {
       },
       include: {
         compounds: {
-          include: { cells: true },
+          include: { cells: { include: { gateways: true } } },
         },
       },
       orderBy: {
@@ -135,7 +135,7 @@ export class SiteService {
 
     return this.prisma.site.findUnique({
       where: { id },
-      include: { compounds: { include: { cells: true } } },
+      include: { compounds: { include: { cells: { include: { gateways: true } } } } },
     });
   }
 
@@ -148,7 +148,7 @@ export class SiteService {
         ...(dto.name && { name: dto.name }),
         ...(dto.address !== undefined && { address: dto.address }),
       },
-      include: { compounds: { include: { cells: true } } },
+      include: { compounds: { include: { cells: { include: { gateways: true } } } } },
     });
   }
 

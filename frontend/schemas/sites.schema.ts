@@ -30,6 +30,7 @@ export const cellSchema = z.object({
   createdAt: z.date(),
   updatedAt: z.date(),
   // Relations
+  gateways: z.array(z.lazy(() => gatewaySchema)).optional(),
   // sensors: z.array(z.lazy(() => sensorSchema)).optional(),
   // alerts: z.array(z.lazy(() => alertSchema)).optional(),
   // readings: z.array(z.lazy(() => sensorReadingSchema)).optional(),
@@ -104,9 +105,15 @@ export const gatewaySchema = z.object({
   externalId: z.string(),
   name: z.string().nullable().optional(),
   status: entityStatusSchema,
-  cellId: z.string(),
+  cellId: z.string().nullable().optional(),
+  organizationId: z.string().nullable().optional(),
+  siteId: z.string().nullable().optional(),
   createdAt: z.string().optional(),
   updatedAt: z.string().optional(),
+  organization: z.object({
+    id: z.string(),
+    name: z.string(),
+  }).optional(),
   cell: z.object({
     id: z.string(),
     name: z.string(),
@@ -122,7 +129,7 @@ export const gatewaySchema = z.object({
 });
 
 export const createGatewaySchema = z.object({
-  cellId: z.string(),
+  cellId: z.string().optional(),
   name: z.string().optional(),
   externalId: z.string().optional(),
   status: entityStatusSchema.optional(),

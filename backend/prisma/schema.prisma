@@ -95,6 +95,7 @@ model Organization {
   invites       Invite[]
   commodities   Commodity[]
   alerts        Alert[]
+  gateways      Gateway[]
 
   // Audit
   createdBy String?  @map("created_by")
@@ -223,6 +224,7 @@ model Site {
   trades    Trade[]
   triggers  EventTrigger[]
   invites   Invite[]
+  gateways  Gateway[]
 
   // site_users: many-to-many Site <-> User
   siteUsers SiteUser[]
@@ -325,8 +327,14 @@ model Gateway {
   name       String?
   status     entity_status
 
-  cellId String @unique @map("cell_id")
-  cell   Cell   @relation(fields: [cellId], references: [id])
+  cellId String? @unique @map("cell_id")
+  cell   Cell?   @relation(fields: [cellId], references: [id])
+
+  organizationId String?       @map("organization_id")
+  organization   Organization? @relation(fields: [organizationId], references: [id])
+
+  siteId String? @map("site_id")
+  site   Site?   @relation(fields: [siteId], references: [id])
 
   sensors        Sensor[]
   sensorReadings SensorReading[]
@@ -335,7 +343,6 @@ model Gateway {
   createdBy     String?         @map("created_by")
   createdAt     DateTime        @default(now()) @map("created_at")
   updatedAt     DateTime        @updatedAt @map("updated_at")
-  SensorReading SensorReading[]
 
   @@map("gateway")
 }

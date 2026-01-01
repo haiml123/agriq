@@ -4,21 +4,51 @@ import { DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/co
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useForm } from 'react-hook-form';
-import { Cell, CreateCellDto, UpdateCellDto, updateCellSchema } from '@/schemas/sites.schema';
+import { Cell, CreateCellDto, Gateway, UpdateCellDto, updateCellSchema } from '@/schemas/sites.schema';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useTranslations } from 'next-intl';
+import { useMemo, useState } from 'react';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
+import { useModal } from '@/components/providers/modal-provider';
+import { ConfirmActionModal } from '@/components/modals';
 
 
 interface CellModalProps {
     compoundName: string;
     cell?: Cell | null;
-    onClose: (result?: CreateCellDto | UpdateCellDto | null) => void;
+    availableGateways?: Gateway[];
+    onClose: (result?: CellModalResult | null) => void;
 }
 
-export function CellModal({ compoundName, cell, onClose }: CellModalProps) {
+export type CellModalResult = (CreateCellDto | UpdateCellDto) & {
+    gatewayId?: string | null;
+};
+
+export function CellModal({ compoundName, cell, availableGateways, onClose }: CellModalProps) {
     const t = useTranslations('modals.cell');
     const tCommon = useTranslations('common');
     const isEdit = !!cell?.id;
+    const modal = useModal();
+    const pairedGateway = useMemo(() => cell?.gateways?.[0], [cell?.gateways]);
+    const noGatewayValue = '__no_gateway__';
+    const [selectedGatewayId, setSelectedGatewayId] = useState(
+        pairedGateway?.id ?? noGatewayValue
+    );
+    const [hasUnpaired, setHasUnpaired] = useState(false);
+    const [gatewayError, setGatewayError] = useState('');
+    const gatewayOptions = useMemo(() => {
+        const base = availableGateways ?? [];
+        if (pairedGateway && !base.some((gateway) => gateway.id === pairedGateway.id)) {
+            return [pairedGateway, ...base];
+        }
+        return base;
+    }, [availableGateways, pairedGateway]);
 
     const {
         register,
@@ -35,8 +65,36 @@ export function CellModal({ compoundName, cell, onClose }: CellModalProps) {
 
 
     const onSubmit = (data: UpdateCellDto) => {
-        onClose(data);
+        onClose({
+            ...data,
+            gatewayId: selectedGatewayId === noGatewayValue ? null : selectedGatewayId,
+        });
     };
+
+    const handleGatewayChange = (value: string) => {
+        setSelectedGatewayId(value);
+        setGatewayError('');
+    };
+
+    const handleUnpair = async () => {
+        const confirmed = await modal.open<boolean>((onClose) => (
+            <ConfirmActionModal
+                title={t('unpairTitle')}
+                description={t('unpairDescription')}
+                confirmLabel={t('unpairConfirm')}
+                cancelLabel={tCommon('cancel')}
+                onClose={onClose}
+            />
+        ));
+
+        if (confirmed) {
+            setSelectedGatewayId(noGatewayValue);
+            setHasUnpaired(true);
+            setGatewayError('');
+        }
+    };
+
+    const isGatewaySelectDisabled = isEdit && !!pairedGateway && !hasUnpaired;
 
     return (
         <>
@@ -75,6 +133,42 @@ export function CellModal({ compoundName, cell, onClose }: CellModalProps) {
                     />
                     {errors.capacity && (
                         <p className="text-sm text-destructive">{errors.capacity.message}</p>
+                    )}
+                </div>
+                <div className="space-y-2">
+                    <label htmlFor="gatewayId" className="text-sm font-medium text-foreground">
+                        {t('gatewaySelectLabel')}
+                    </label>
+                    <Select
+                        value={selectedGatewayId}
+                        onValueChange={handleGatewayChange}
+                        disabled={isGatewaySelectDisabled}
+                    >
+                        <SelectTrigger id="gatewayId" className="w-full">
+                            <SelectValue placeholder={t('gatewaySelectPlaceholder')} />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value={noGatewayValue}>{t('gatewaySelectNone')}</SelectItem>
+                            {gatewayOptions.map((gateway) => (
+                                <SelectItem key={gateway.id} value={gateway.id}>
+                                    {gateway.externalId}
+                                </SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+                    {gatewayError && (
+                        <p className="text-sm text-destructive">{gatewayError}</p>
+                    )}
+                    <p className="text-xs text-muted-foreground">{t('gatewaySelectHelp')}</p>
+                    {isEdit && pairedGateway && !hasUnpaired && (
+                        <Button
+                            type="button"
+                            variant="outline"
+                            className="w-full text-destructive"
+                            onClick={handleUnpair}
+                        >
+                            {t('unpairButton')}
+                        </Button>
                     )}
                 </div>
                 <DialogFooter>

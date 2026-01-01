@@ -8,6 +8,7 @@ import {
     Cell,
     CreateCellDto,
     CreateCompoundDto,
+    Gateway,
     CreateSiteDto,
     Site,
     UpdateCellDto,
@@ -16,10 +17,12 @@ import {
 } from '@/schemas/sites.schema'
 import { useCurrentUser } from '@/hooks'
 import { useSiteApi } from '@/hooks/use-site-api'
+import { useGatewayApi } from '@/hooks/use-gateway-api'
 import { OrganizationSelect } from '@/components/select/organization-select'
 import { SitesList } from '@/components/sites-table/sites-list'
 import { Button } from '@/components/ui/button'
 import { SiteModal } from '@/components/modals/site.modal'
+import type { CellModalResult } from '@/components/modals/cell.modal'
 import { useTranslations } from 'next-intl'
 import { toast } from 'sonner'
 
@@ -46,8 +49,14 @@ export default function SitesPage() {
         isUpdating,
         isDeleting,
     } = useSiteApi()
+    const {
+        getGateways,
+        assignGatewayToCell,
+        unpairGateway,
+    } = useGatewayApi()
 
     const [sites, setSites] = useState<Site[]>([])
+    const [availableGateways, setAvailableGateways] = useState<Gateway[]>([])
     const [selectedOrganizationId, setSelectedOrganizationId] = useState<string>('all')
     const canCreateSite = isSuperAdmin || isAdmin
     const headingTitle = canCreateSite ? t('allSites') : t('mySites')
@@ -71,6 +80,29 @@ export default function SitesPage() {
     useEffect(() => {
         fetchSites()
     }, [fetchSites])
+
+    const fetchAvailableGateways = useCallback(async () => {
+        if (isCurrentUserLoading || !user) return
+
+        const organizationId =
+            isSuperAdmin && selectedOrganizationId !== 'all'
+                ? selectedOrganizationId
+                : user.organizationId
+
+        if (!organizationId) {
+            setAvailableGateways([])
+            return
+        }
+
+        const response = await getGateways({ organizationId, unpaired: true })
+        if (response?.data) {
+            setAvailableGateways(response.data as Gateway[])
+        }
+    }, [getGateways, isCurrentUserLoading, isSuperAdmin, selectedOrganizationId, user])
+
+    useEffect(() => {
+        fetchAvailableGateways()
+    }, [fetchAvailableGateways])
 
     const openCreateSiteModal = async () => {
         if (!canCreateSite) return
@@ -215,7 +247,7 @@ export default function SitesPage() {
     }
 
     // Cell handlers
-    const handleCreateCell = async (compoundId: string, data: Pick<Cell, 'name' | 'capacity'>) => {
+    const handleCreateCell = async (compoundId: string, data: CellModalResult) => {
         try {
             const dto: CreateCellDto = {
                 name: data.name,
@@ -232,6 +264,16 @@ export default function SitesPage() {
                             : compound
                     )
                 })))
+                if (data.gatewayId) {
+                    const assignResult = await assignGatewayToCell(data.gatewayId, {
+                        cellId: (newCell.data as Cell).id,
+                    })
+                    if (assignResult?.error) {
+                        toast.error(assignResult.error)
+                    }
+                    await fetchSites()
+                    await fetchAvailableGateways()
+                }
                 toast.success(tToastCell('createSuccess'))
             } else {
                 toast.error(newCell?.error || tToastCell('createError'))
@@ -242,7 +284,7 @@ export default function SitesPage() {
         }
     }
 
-    const handleEditCell = async (cellId: string, data: UpdateCellDto) => {
+    const handleEditCell = async (cellId: string, data: CellModalResult) => {
         try {
             const dto: UpdateCellDto = {
                 name: data.name,
@@ -250,6 +292,12 @@ export default function SitesPage() {
             }
             const updated = await updateCell(cellId, dto)
             if (updated?.data) {
+                const currentCell = sites
+                    .flatMap(site => site.compounds || [])
+                    .flatMap(compound => compound.cells || [])
+                    .find(cell => cell.id === cellId)
+                const currentGatewayId = currentCell?.gateways?.[0]?.id
+
                 setSites(prev => prev.map(site => ({
                     ...site,
                     compounds: site.compounds?.map(compound => ({
@@ -259,6 +307,22 @@ export default function SitesPage() {
                         )
                     }))
                 })))
+                if (data.gatewayId && data.gatewayId !== currentGatewayId) {
+                    const assignResult = await assignGatewayToCell(data.gatewayId, { cellId })
+                    if (assignResult?.error) {
+                        toast.error(assignResult.error)
+                    }
+                    await fetchSites()
+                    await fetchAvailableGateways()
+                }
+                if (!data.gatewayId && currentGatewayId) {
+                    const unpairResult = await unpairGateway(currentGatewayId)
+                    if (unpairResult?.error) {
+                        toast.error(unpairResult.error)
+                    }
+                    await fetchSites()
+                    await fetchAvailableGateways()
+                }
                 toast.success(tToastCell('updateSuccess'))
             } else {
                 toast.error(updated?.error || tToastCell('updateError'))
@@ -349,6 +413,7 @@ export default function SitesPage() {
                 ) : sites?.length > 0 ? (
                     <SitesList
                         sites={sites}
+                        availableGateways={availableGateways}
                         onEditSite={handleEditSite}
                         onDeleteSite={handleDeleteSite}
                         onCreateCompound={handleCreateCompound}

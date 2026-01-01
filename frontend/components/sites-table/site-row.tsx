@@ -1,8 +1,6 @@
 import React from 'react';
 import { Building2, ChevronDown, ChevronRight, MapPin, Pencil, Plus, Trash2 } from 'lucide-react';
 import { Cell, Compound, Site } from '@/schemas/sites.schema';
-import { SeverityEnum } from '@/schemas/common.schema';
-import { StatusIndicator } from '../ui/status-indicator';
 import { CompoundRow } from '@/components/sites-table/compound-row';
 import { Button } from '@/components/ui/button';
 
@@ -40,7 +38,6 @@ export const SiteRow: React.FC<SiteRowProps> = ({
   onDeleteCell,
 }) => {
   const allCells = site.compounds?.flatMap((c) => c.cells) ?? [];
-  const status = SeverityEnum.MEDIUM;
   const totalCells = allCells.length;
 
   return (
@@ -79,7 +76,6 @@ export const SiteRow: React.FC<SiteRowProps> = ({
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <StatusIndicator status={status} />
           <Button
             variant="ghost"
             size="icon"

@@ -58,6 +58,10 @@
       "deleteSuccess": "התא נמחק בהצלחה",
       "deleteError": "מחיקת התא נכשלה"
     },
+    "gateway": {
+      "registerSuccess": "Gateway registered successfully",
+      "registerError": "Failed to register gateway"
+    },
     "user": {
       "createSuccess": "המשתמש נוצר בהצלחה",
       "createError": "יצירת המשתמש נכשלה",
@@ -250,6 +254,7 @@
     "title": "הגדרות",
     "sites": "אתרים",
     "usersAndRoles": "משתמשים ותפקידים",
+    "gateways": "שערים",
     "languages": "שפות",
     "about": "אודות"
   },
@@ -276,6 +281,8 @@
     "noDataAvailable": "אין מידע זמין",
     "quantity": "כמות",
     "location": "מיקום",
+    "gatewayPaired": "Gateway paired",
+    "gatewayUnpaired": "No gateway",
     "arrivalDate": "תאריך הגעה",
     "severity": "חומרה",
     "dateRange": "טווח תאריכים",
@@ -292,6 +299,21 @@
     "commodityMarker": "סמן סחורה"
   },
   "pages": {
+    "settingsGateways": {
+      "title": "שערים",
+      "subtitle": "רישום שערים ומעקב אחר מצב השיוך.",
+      "selectOrganization": "בחר ארגון כדי לרשום שערים.",
+      "registerLabel": "רישום שער",
+      "registerPlaceholder": "הזן מזהה חיצוני של השער",
+      "registerButton": "רשום",
+      "tableExternalId": "מזהה חיצוני",
+      "tableStatus": "סטטוס",
+      "tableOrganization": "ארגון",
+      "tableCell": "תא",
+      "unregisteredOrg": "לא רשום",
+      "unpaired": "לא משויך",
+      "empty": "אין שערים רשומים עדיין."
+    },
     "alerts": {
       "title": "התראות",
       "subtitle": "ניהול ומעקב אחר התראות מערכת",
@@ -389,6 +411,14 @@
       "cellNamePlaceholder": "לדוגמה: תא א-101",
       "capacity": "קיבולת (טון)",
       "capacityPlaceholder": "לדוגמה: 5000",
+      "gatewaySelectLabel": "Gateway",
+      "gatewaySelectPlaceholder": "Select gateway",
+      "gatewaySelectNone": "No gateway",
+      "gatewaySelectHelp": "Only registered, unpaired gateways appear here.",
+      "unpairButton": "נתק שער",
+      "unpairTitle": "נתק שער",
+      "unpairDescription": "הפעולה תנתק את השער מהתא. ניתן לשייך שער אחר לאחר הניתוק.",
+      "unpairConfirm": "נתק",
       "createButton": "צור תא",
       "saveButton": "שמור שינויים"
     },

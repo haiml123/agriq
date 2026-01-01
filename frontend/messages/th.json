@@ -58,6 +58,10 @@
       "deleteSuccess": "ลบเซลล์สำเร็จ",
       "deleteError": "ลบเซลล์ล้มเหลว"
     },
+    "gateway": {
+      "registerSuccess": "ลงทะเบียนเกตเวย์สำเร็จ",
+      "registerError": "ลงทะเบียนเกตเวย์ล้มเหลว"
+    },
     "user": {
       "createSuccess": "สร้างผู้ใช้สำเร็จ",
       "createError": "สร้างผู้ใช้ล้มเหลว",
@@ -252,16 +256,34 @@
     "commodityTimeline": "ไทม์ไลน์สินค้า",
     "commodityMarker": "เครื่องหมายสินค้า",
     "addCommodityButton": "เพิ่มสินค้า",
-    "transferOutButton": "โอนออก"
+    "transferOutButton": "โอนออก",
+    "gatewayPaired": "เชื่อมต่อเกตเวย์แล้ว",
+    "gatewayUnpaired": "ไม่มีเกตเวย์"
   },
   "settings": {
     "title": "การตั้งค่า",
     "sites": "ไซต์",
     "usersAndRoles": "ผู้ใช้และบทบาท",
+    "gateways": "เกตเวย์",
     "languages": "ภาษา",
     "about": "เกี่ยวกับ"
   },
   "pages": {
+    "settingsGateways": {
+      "title": "เกตเวย์",
+      "subtitle": "ลงทะเบียนเกตเวย์และติดตามสถานะการจับคู่",
+      "selectOrganization": "เลือกองค์กรเพื่อทำการลงทะเบียนเกตเวย์",
+      "registerLabel": "ลงทะเบียนเกตเวย์",
+      "registerPlaceholder": "กรอกรหัสภายนอกของเกตเวย์",
+      "registerButton": "ลงทะเบียน",
+      "tableExternalId": "รหัสภายนอก",
+      "tableStatus": "สถานะ",
+      "tableOrganization": "องค์กร",
+      "tableCell": "เซลล์",
+      "unregisteredOrg": "ยังไม่ลงทะเบียน",
+      "unpaired": "ยังไม่จับคู่",
+      "empty": "ยังไม่มีเกตเวย์ที่ลงทะเบียน"
+    },
     "alerts": {
       "title": "การแจ้งเตือน",
       "subtitle": "จัดการและติดตามการแจ้งเตือนระบบ",
@@ -359,6 +381,14 @@
       "cellNamePlaceholder": "เช่น เซลล์ A-101",
       "capacity": "ความจุ (ตัน)",
       "capacityPlaceholder": "เช่น 5000",
+      "gatewaySelectLabel": "เกตเวย์ที่จับคู่แล้ว",
+      "gatewaySelectPlaceholder": "เลือกเกตเวย์ที่ลงทะเบียน",
+      "gatewaySelectNone": "ไม่มีเกตเวย์",
+      "gatewaySelectHelp": "แสดงเฉพาะเกตเวย์ที่ลงทะเบียนและยังไม่ถูกจับคู่",
+      "unpairButton": "ยกเลิกการจับคู่เกตเวย์",
+      "unpairTitle": "ยกเลิกการจับคู่เกตเวย์",
+      "unpairDescription": "การดำเนินการนี้จะยกเลิกการเชื่อมต่อเกตเวย์จากเซลล์นี้ คุณสามารถจับคู่เกตเวย์อื่นได้หลังจากยกเลิก",
+      "unpairConfirm": "ยกเลิกการจับคู่",
       "createButton": "สร้างเซลล์",
       "saveButton": "บันทึกการเปลี่ยนแปลง"
     },

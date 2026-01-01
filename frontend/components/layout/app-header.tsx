@@ -10,6 +10,8 @@ import { Button } from '@/components/ui/button'
 import { Menu, X, LogOut } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { signOut } from 'next-auth/react'
+import { useCurrentUser } from '@/hooks'
+import { RoleTypeEnum } from '@/schemas/common.schema'
 
 interface Tab {
     label: string
@@ -27,6 +29,7 @@ export function AppHeader({ title, subtitle, tabs }: AppHeaderProps) {
     const pathname = usePathname()
     const { theme } = useTheme()
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+    const { user } = useCurrentUser()
 
     const defaultTabs: Tab[] = [
         { label: t('dashboard'), href: "/dashboard" },
@@ -36,7 +39,10 @@ export function AppHeader({ title, subtitle, tabs }: AppHeaderProps) {
         { label: t('admin'), href: "/admin" },
     ]
 
-    const navTabs = tabs || defaultTabs
+    const navTabs = (tabs || defaultTabs).filter((tab) => {
+        if (tab.href !== "/admin") return true
+        return user?.userRole === RoleTypeEnum.SUPER_ADMIN
+    })
 
     const isActiveTab = (href: string) => {
         // Remove locale prefix from pathname (e.g., /en/alerts -> /alerts)

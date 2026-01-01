@@ -4,6 +4,7 @@ import {
   Compound,
   CreateCellDto,
   CreateCompoundDto,
+  Gateway,
   Site,
   UpdateCellDto,
   UpdateCompoundDto,
@@ -11,25 +12,27 @@ import {
 } from '@/schemas/sites.schema';
 import { SiteRow } from './site-row';
 import { useModal } from '@/components/providers/modal-provider';
-import { CellModal } from '@/components/modals/cell.modal';
+import { CellModal, type CellModalResult } from '@/components/modals/cell.modal';
 import { CompoundModal } from '@/components/modals/compound.modal';
 import { SiteModal } from '@/components/modals/site.modal';
 import { DeleteConfirmModal } from '@/components/modals/delete-confirm.modal';
 
 interface SitesListProps {
   sites: Site[];
+  availableGateways?: Gateway[];
   onEditSite?: (siteId: string, data: UpdateSiteDto) => void;
   onDeleteSite?: (siteId: string) => void;
   onCreateCompound?: (siteId: string, data: CreateCompoundDto) => void;
   onEditCompound?: (compoundId: string, data: UpdateCompoundDto) => void;
   onDeleteCompound?: (compoundId: string) => void;
-  onCreateCell?: (compoundId: string, data: CreateCellDto) => void;
-  onEditCell?: (cellId: string, data: UpdateCellDto) => void;
+  onCreateCell?: (compoundId: string, data: CellModalResult) => void;
+  onEditCell?: (cellId: string, data: CellModalResult) => void;
   onDeleteCell?: (cellId: string) => void;
 }
 
 export const SitesList: React.FC<SitesListProps> = ({
   sites,
+  availableGateways,
   onEditSite,
   onDeleteSite,
   onCreateCompound,
@@ -115,17 +118,17 @@ export const SitesList: React.FC<SitesListProps> = ({
 
   // Cell handlers
   const handleCreateCell = async (compound: Compound) => {
-    const result = await modal.open<CreateCellDto | UpdateCellDto | null>((onClose) => (
-        <CellModal compoundName={compound.name} onClose={onClose} />
+    const result = await modal.open<CellModalResult | null>((onClose) => (
+        <CellModal compoundName={compound.name} availableGateways={availableGateways} onClose={onClose} />
     ));
     if (result) {
-      onCreateCell?.(compound.id, result as CreateCellDto);
+      onCreateCell?.(compound.id, result);
     }
   };
 
   const handleEditCell = async (cell: Cell) => {
-    const result = await modal.open<UpdateCellDto | null>((onClose) => (
-        <CellModal compoundName="" cell={cell} onClose={onClose} />
+    const result = await modal.open<CellModalResult | null>((onClose) => (
+        <CellModal compoundName="" cell={cell} availableGateways={availableGateways} onClose={onClose} />
     ));
     if (result) {
       onEditCell?.(cell.id, result);
