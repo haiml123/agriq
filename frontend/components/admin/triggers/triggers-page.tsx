@@ -7,22 +7,20 @@ import { SidebarTrigger } from '@/components/layout/app-sidebar-layout';
 import { useModal } from '@/components/providers/modal-provider';
 import { TriggerModal } from '@/components/modals/trigger.modal';
 import { useTriggerApi } from '@/hooks/use-trigger-api';
-import { formatDate } from '@/lib/utils';
 import { toast } from 'sonner';
 import { useTranslations } from 'next-intl';
 import type { Trigger } from './types';
-import { EntityStatusEnum } from './types';
 
 export function TriggersPage() {
     const modal = useModal();
     const t = useTranslations('toast.trigger');
-    const { getList, setStatus, remove, isLoading, isUpdating, isDeleting } = useTriggerApi();
+    const { getList, create, update, toggleActive, remove, isLoading, isUpdating, isDeleting } = useTriggerApi();
     const [triggers, setTriggers] = useState<Trigger[]>([]);
 
     const refreshList = async () => {
         const response = await getList();
         if (response?.data?.items) {
-            setTriggers(response.data.items);
+            setTriggers(response.data.items as Trigger[]);
         }
     };
 
@@ -32,8 +30,7 @@ export function TriggersPage() {
 
     const handleToggleStatus = async (trigger: Trigger) => {
         try {
-            const nextStatus = trigger.status === EntityStatusEnum.ACTIVE ? EntityStatusEnum.BLOCKED : EntityStatusEnum.ACTIVE;
-            const result = await setStatus(trigger.id, nextStatus);
+            const result = await toggleActive(trigger.id, !trigger.isActive);
             if (result?.data) {
                 toast.success(t('statusChangeSuccess'));
                 await refreshList();
@@ -60,8 +57,29 @@ export function TriggersPage() {
     };
 
     const createOrEditTrigger = async (editTrigger?: Trigger) => {
-        const result = await modal.open((onClose) => (
-            <TriggerModal onClose={onClose} editData={editTrigger} />
+        const result = await modal.open<Trigger | null>((onClose) => (
+            <TriggerModal
+                trigger={editTrigger ?? null}
+                onClose={onClose}
+                onSubmit={async (data) => {
+                    if (editTrigger?.id) {
+                        const response = await update(editTrigger.id, data);
+                        if (response?.data) {
+                            toast.success(t('updateSuccess'));
+                            return response.data as Trigger;
+                        }
+                        toast.error(response?.error || t('updateError'));
+                        return null;
+                    }
+                    const response = await create(data);
+                    if (response?.data) {
+                        toast.success(t('createSuccess'));
+                        return response.data as Trigger;
+                    }
+                    toast.error(response?.error || t('createError'));
+                    return null;
+                }}
+            />
         ));
         if (result) {
             await refreshList();
@@ -102,19 +120,10 @@ export function TriggersPage() {
                                     </div>
                                     <div className="min-w-0">
                                         <h3 className="font-medium text-foreground truncate">{trigger.name}</h3>
-                                        <p className="text-sm text-muted-foreground">Created {formatDate(trigger.createdAt)}</p>
                                     </div>
                                 </div>
 
                                 <div className="flex items-center gap-6 shrink-0">
-                                    <div className="hidden md:block">
-                                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                                            trigger.status === EntityStatusEnum.ACTIVE ? 'bg-emerald-500/10 text-emerald-500' : 'bg-red-500/10 text-red-500'
-                                        }`}>
-                                            {trigger.status}
-                                        </span>
-                                    </div>
-
                                     <div className="flex items-center gap-2">
                                         <Button
                                             variant="ghost"
@@ -122,7 +131,7 @@ export function TriggersPage() {
                                             onClick={() => handleToggleStatus(trigger)}
                                             disabled={isUpdating}
                                         >
-                                            {trigger.status === EntityStatusEnum.ACTIVE ? (
+                                            {trigger.isActive ? (
                                                 <PowerOff className="w-4 h-4" />
                                             ) : (
                                                 <Power className="w-4 h-4" />

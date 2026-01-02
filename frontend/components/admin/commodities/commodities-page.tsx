@@ -61,7 +61,7 @@ export function CommoditiesPage() {
 
     const createOrEditCommodityType = async (editType?: CommodityType) => {
         const result = await modal.open((onClose) => (
-            <CommodityTypeModal onClose={onClose} editData={editType} />
+            <CommodityTypeModal onClose={onClose} commodityType={editType} />
         ));
         if (result) {
             await refreshList();

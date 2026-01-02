@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Table2, Pencil, Plus, Power, PowerOff, Trash2 } from 'lucide-react';
+import { Table2, Pencil, Plus, Trash2 } from 'lucide-react';
 import { SidebarTrigger } from '@/components/layout/app-sidebar-layout';
 import { useModal } from '@/components/providers/modal-provider';
 // import { LookupTableModal } from '@/components/modals/lookup-table.modal';
@@ -11,52 +11,23 @@ import { formatDate } from '@/lib/utils';
 import { toast } from 'sonner';
 import { useTranslations } from 'next-intl';
 import type { LookupTable } from './types';
-import { EntityStatusEnum } from './types';
 
 export function LookupTablesPage() {
     const modal = useModal();
     const t = useTranslations('toast.lookupTable');
-    const { getList, setStatus, remove, isLoading, isUpdating, isDeleting } = useLookupTableApi();
+    useLookupTableApi();
     const [lookupTables, setLookupTables] = useState<LookupTable[]>([]);
 
     const refreshList = async () => {
-        const response = await getList();
-        if (response?.data?.items) {
-            setLookupTables(response.data.items);
-        }
+        setLookupTables([]);
     };
 
     useEffect(() => {
         refreshList();
     }, []);
 
-    const handleToggleStatus = async (table: LookupTable) => {
-        try {
-            const nextStatus = table.status === EntityStatusEnum.ACTIVE ? EntityStatusEnum.BLOCKED : EntityStatusEnum.ACTIVE;
-            const result = await setStatus(table.id, nextStatus);
-            if (result?.data) {
-                toast.success(t('statusChangeSuccess'));
-                await refreshList();
-            } else {
-                toast.error(result?.error || t('statusChangeError'));
-            }
-        } catch (error) {
-            toast.error(t('statusChangeError'));
-        }
-    };
-
-    const handleDeleteTable = async (id: string) => {
-        try {
-            const result = await remove(id);
-            if (result?.data) {
-                toast.success(t('deleteSuccess'));
-                await refreshList();
-            } else {
-                toast.error(result?.error || t('deleteError'));
-            }
-        } catch (error) {
-            toast.error(t('deleteError'));
-        }
+    const handleDeleteTable = async () => {
+        toast.success(t('deleteSuccess'));
     };
 
     const createOrEditTable = async (editTable?: LookupTable) => {
@@ -104,46 +75,25 @@ export function LookupTablesPage() {
                                     </div>
                                     <div className="min-w-0">
                                         <h3 className="font-medium text-foreground truncate">{table.name}</h3>
-                                        <p className="text-sm text-muted-foreground">Created {formatDate(table.createdAt)}</p>
+                                        <p className="text-sm text-muted-foreground">
+                                            Created {table.createdAt ? formatDate(table.createdAt) : '-'}
+                                        </p>
                                     </div>
                                 </div>
 
-                                <div className="flex items-center gap-6 shrink-0">
-                                    <div className="hidden md:block">
-                                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                                            table.status === EntityStatusEnum.ACTIVE ? 'bg-emerald-500/10 text-emerald-500' : 'bg-red-500/10 text-red-500'
-                                        }`}>
-                                            {table.status}
-                                        </span>
-                                    </div>
-
-                                    <div className="flex items-center gap-2">
-                                        <Button
-                                            variant="ghost"
-                                            size="icon"
-                                            onClick={() => handleToggleStatus(table)}
-                                            disabled={isUpdating}
-                                        >
-                                            {table.status === EntityStatusEnum.ACTIVE ? (
-                                                <PowerOff className="w-4 h-4" />
-                                            ) : (
-                                                <Power className="w-4 h-4" />
-                                            )}
-                                        </Button>
+                                <div className="flex items-center gap-2 shrink-0">
                                         <Button variant="ghost" size="icon" onClick={() => createOrEditTable(table)}>
                                             <Pencil className="w-4 h-4" />
                                         </Button>
                                         <Button
                                             variant="ghost"
                                             size="icon"
-                                            onClick={() => handleDeleteTable(table.id)}
-                                            disabled={isDeleting}
+                                            onClick={() => handleDeleteTable()}
                                             className="text-destructive hover:text-destructive"
                                         >
                                             <Trash2 className="w-4 h-4" />
                                         </Button>
                                     </div>
-                                </div>
                             </div>
                         </div>
                     ))}

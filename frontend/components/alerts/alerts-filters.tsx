@@ -66,11 +66,12 @@ export function AlertsFilters({
     }
 
     const next = isAllStatuses ? [] : [...selectedStatuses];
-    const existingIndex = next.indexOf(value as AlertStatusEnum);
+    const statusValue = value as 'OPEN' | 'ACKNOWLEDGED';
+    const existingIndex = next.indexOf(statusValue);
     if (existingIndex >= 0) {
       next.splice(existingIndex, 1);
     } else {
-      next.push(value as AlertStatusEnum);
+      next.push(statusValue);
     }
 
     if (next.length === 0) {

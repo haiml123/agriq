@@ -249,6 +249,10 @@ export default function SitesPage() {
     // Cell handlers
     const handleCreateCell = async (compoundId: string, data: CellModalResult) => {
         try {
+            if (!data.name) {
+                toast.error(tToastCell('createError'))
+                return
+            }
             const dto: CreateCellDto = {
                 name: data.name,
                 height: data.height ?? 0,

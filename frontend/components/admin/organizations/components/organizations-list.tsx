@@ -51,7 +51,9 @@ export function OrganizationsList({
                 </div>
                 <div className="min-w-0">
                   <h3 className="font-medium text-foreground truncate">{org.name}</h3>
-                  <p className="text-sm text-muted-foreground">{t('created', { date: org.createdAt })}</p>
+                  <p className="text-sm text-muted-foreground">
+                    {t('created', { date: org.createdAt ?? new Date() })}
+                  </p>
                 </div>
               </div>
 
