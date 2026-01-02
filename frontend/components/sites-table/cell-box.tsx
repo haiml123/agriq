@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, Droplets, Package, Thermometer, Trash2 } from 'lucide-react';
+import { Box, Droplets, Thermometer, Trash2 } from 'lucide-react';
 import { Cell } from '@/schemas/sites.schema';
 import { StatusDot } from '@/components/ui/status-indicator';
 import { Button } from '@/components/ui/button';
@@ -49,12 +49,6 @@ export const CellBox: React.FC<CellBoxProps> = ({ cell, onEdit, onDelete }) => {
 
         <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-3 text-xs text-muted-foreground">
-            {cell.capacity && (
-                <div className="flex items-center gap-1">
-                  <Package size={11} />
-                  <span>{cell.capacity}</span>
-                </div>
-            )}
             <span className={hasGateway ? 'text-emerald-500' : 'text-muted-foreground'}>
               {hasGateway ? t('gatewayPaired') : t('gatewayUnpaired')}
             </span>

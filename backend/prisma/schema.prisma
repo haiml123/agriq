@@ -276,7 +276,9 @@ model Cell {
   id       String        @id @default(cuid())
   name     String
   status   entity_status
-  capacity Float
+  height   Float
+  length   Float
+  width    Float
 
   compoundId String   @map("compound_id")
   compound   Compound @relation(fields: [compoundId], references: [id])

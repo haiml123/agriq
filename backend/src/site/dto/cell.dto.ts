@@ -23,7 +23,15 @@ export class CreateCellDto {
 
   @IsNumber()
   @Min(0)
-  capacity: number;
+  height: number;
+
+  @IsNumber()
+  @Min(0)
+  length: number;
+
+  @IsNumber()
+  @Min(0)
+  width: number;
 
   @IsEnum(entity_status)
   @IsOptional()
@@ -40,7 +48,17 @@ export class UpdateCellDto {
   @IsNumber()
   @IsOptional()
   @Min(0)
-  capacity?: number;
+  height?: number;
+
+  @IsNumber()
+  @IsOptional()
+  @Min(0)
+  length?: number;
+
+  @IsNumber()
+  @IsOptional()
+  @Min(0)
+  width?: number;
 
   @IsEnum(entity_status)
   @IsOptional()

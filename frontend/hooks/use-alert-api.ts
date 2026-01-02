@@ -8,6 +8,7 @@ export interface AlertListParams extends Record<string, string | number | boolea
     organizationId?: string;
     userId?: string;
     siteId?: string;
+    compoundId?: string;
     status?: string;
     severity?: string;
     limit?: number;

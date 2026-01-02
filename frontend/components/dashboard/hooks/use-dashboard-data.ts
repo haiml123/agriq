@@ -1,10 +1,15 @@
-import { useState, useEffect } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useAlertApi } from '@/hooks/use-alert-api';
 import { useTradeApi } from '@/hooks/use-trade-api';
 import type { DashboardAlert } from '@/schemas/alert.schema';
 import type { DashboardTrade } from '@/schemas/trade.schema';
 
-export function useDashboardData() {
+interface DashboardFilters {
+  siteId?: string;
+  compoundId?: string;
+}
+
+export function useDashboardData(filters?: DashboardFilters) {
   const { getList: getAlerts } = useAlertApi();
   const { getRecent: getRecentTrades, isLoading: isLoadingTrades } = useTradeApi();
   const [activeAlerts, setActiveAlerts] = useState<DashboardAlert[]>([]);
@@ -14,11 +19,15 @@ export function useDashboardData() {
   useEffect(() => {
     fetchAlerts();
     fetchTrades();
-  }, []);
+  }, [filters?.siteId, filters?.compoundId]);
 
-  const fetchAlerts = async () => {
+  const fetchAlerts = useCallback(async () => {
     setIsLoadingAlerts(true);
-    const response = await getAlerts({ limit: 10 });
+    const response = await getAlerts({
+      limit: 10,
+      ...(filters?.siteId && { siteId: filters.siteId }),
+      ...(filters?.compoundId && { compoundId: filters.compoundId }),
+    });
     setIsLoadingAlerts(false);
     if (response.data) {
       const formattedAlerts = response.data.map((alert) => {
@@ -43,10 +52,14 @@ export function useDashboardData() {
       });
       setActiveAlerts(formattedAlerts);
     }
-  };
+  }, [filters?.compoundId, filters?.siteId, getAlerts]);
 
-  const fetchTrades = async () => {
-    const response = await getRecentTrades({ limit: 10 });
+  const fetchTrades = useCallback(async () => {
+    const response = await getRecentTrades({
+      limit: 10,
+      ...(filters?.siteId && { siteId: filters.siteId }),
+      ...(filters?.compoundId && { compoundId: filters.compoundId }),
+    });
     if (response.data) {
       const formattedTrades = response.data.map((trade) => {
         const locationParts = [];
@@ -74,7 +87,7 @@ export function useDashboardData() {
       });
       setRecentCommodities(formattedTrades);
     }
-  };
+  }, [filters?.compoundId, filters?.siteId, getRecentTrades]);
 
   return {
     activeAlerts,

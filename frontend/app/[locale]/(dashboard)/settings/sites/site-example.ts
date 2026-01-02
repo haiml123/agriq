@@ -24,7 +24,11 @@ export const testSites: Site[] = [
                         id: 'cell-001',
                         name: 'Cell A-101',
                         status: 'ACTIVE',
-                        capacity: 500,
+                        height: 10,
+
+                        length: 20,
+
+                        width: 15,
                         temp: 18,
                         humidity: 45,
                         compoundId: 'comp-001',
@@ -36,7 +40,11 @@ export const testSites: Site[] = [
                         id: 'cell-002',
                         name: 'Cell A-102',
                         status: 'ACTIVE',
-                        capacity: 750,
+                        height: 10,
+
+                        length: 20,
+
+                        width: 15,
                         temp: 24,
                         humidity: 62,
                         compoundId: 'comp-001',
@@ -48,7 +56,11 @@ export const testSites: Site[] = [
                         id: 'cell-003',
                         name: 'Cell A-103',
                         status: 'ACTIVE',
-                        capacity: 600,
+                        height: 10,
+
+                        length: 20,
+
+                        width: 15,
                         temp: 32,
                         humidity: 78,
                         compoundId: 'comp-001',
@@ -70,7 +82,11 @@ export const testSites: Site[] = [
                         id: 'cell-004',
                         name: 'Cell B-101',
                         status: 'ACTIVE',
-                        capacity: 800,
+                        height: 10,
+
+                        length: 20,
+
+                        width: 15,
                         temp: 19,
                         humidity: 48,
                         compoundId: 'comp-002',
@@ -82,7 +98,11 @@ export const testSites: Site[] = [
                         id: 'cell-005',
                         name: 'Cell B-102',
                         status: 'ACTIVE',
-                        capacity: 650,
+                        height: 10,
+
+                        length: 20,
+
+                        width: 15,
                         temp: 21,
                         humidity: 55,
                         compoundId: 'comp-002',
@@ -117,7 +137,11 @@ export const testSites: Site[] = [
                         id: 'cell-006',
                         name: 'Silo 1-A',
                         status: 'ACTIVE',
-                        capacity: 1200,
+                        height: 10,
+
+                        length: 20,
+
+                        width: 15,
                         temp: 22,
                         humidity: 50,
                         compoundId: 'comp-003',
@@ -129,7 +153,11 @@ export const testSites: Site[] = [
                         id: 'cell-007',
                         name: 'Silo 1-B',
                         status: 'ACTIVE',
-                        capacity: 1200,
+                        height: 10,
+
+                        length: 20,
+
+                        width: 15,
                         temp: 28,
                         humidity: 68,
                         compoundId: 'comp-003',
@@ -141,7 +169,11 @@ export const testSites: Site[] = [
                         id: 'cell-008',
                         name: 'Silo 1-C',
                         status: 'BLOCKED',
-                        capacity: 1000,
+                        height: 10,
+
+                        length: 20,
+
+                        width: 15,
                         temp: 35,
                         humidity: 82,
                         compoundId: 'comp-003',
@@ -153,7 +185,11 @@ export const testSites: Site[] = [
                         id: 'cell-009',
                         name: 'Silo 1-D',
                         status: 'ACTIVE',
-                        capacity: 900,
+                        height: 10,
+
+                        length: 20,
+
+                        width: 15,
                         temp: 20,
                         humidity: 44,
                         compoundId: 'comp-003',
@@ -175,7 +211,11 @@ export const testSites: Site[] = [
                         id: 'cell-010',
                         name: 'Silo 2-A',
                         status: 'ACTIVE',
-                        capacity: 1500,
+                        height: 10,
+
+                        length: 20,
+
+                        width: 15,
                         temp: 17,
                         humidity: 42,
                         compoundId: 'comp-004',
@@ -187,7 +227,11 @@ export const testSites: Site[] = [
                         id: 'cell-011',
                         name: 'Silo 2-B',
                         status: 'ACTIVE',
-                        capacity: 1500,
+                        height: 10,
+
+                        length: 20,
+
+                        width: 15,
                         temp: 19,
                         humidity: 46,
                         compoundId: 'comp-004',
@@ -209,7 +253,11 @@ export const testSites: Site[] = [
                         id: 'cell-012',
                         name: 'Reserve Unit 1',
                         status: 'ACTIVE',
-                        capacity: 2000,
+                        height: 10,
+
+                        length: 20,
+
+                        width: 15,
                         temp: 16,
                         humidity: 40,
                         compoundId: 'comp-005',

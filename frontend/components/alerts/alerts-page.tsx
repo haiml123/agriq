@@ -21,7 +21,7 @@ export function AlertsPage() {
   const { users } = useUsers(filters.organizationFilter, isSuperAdmin, isAdmin, user);
   const { sites } = useSites(filters.organizationFilter, isSuperAdmin, isAdmin, isOperator, user);
 
-  const { alerts, loading, handleAcknowledge, handleStatusChange } = useAlertsData({
+  const { alerts, loading, handleAcknowledge } = useAlertsData({
     statusFilter: filters.statusFilter,
     severityFilter: filters.severityFilter,
     timeFilter: filters.timeFilter,
@@ -44,7 +44,7 @@ export function AlertsPage() {
 
   return (
     <div className="min-h-screen bg-background p-6">
-      <AlertsHeader />
+      {/*<AlertsHeader />*/}
 
       <AlertsFilters
         isSuperAdmin={isSuperAdmin}
@@ -71,7 +71,6 @@ export function AlertsPage() {
             <AlertsTable
               alerts={alerts}
               onAcknowledge={handleAcknowledge}
-              onStatusChange={handleStatusChange}
             />
           )}
         </CardContent>

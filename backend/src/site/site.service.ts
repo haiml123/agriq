@@ -212,7 +212,9 @@ export class SiteService {
     return this.prisma.cell.create({
       data: {
         name: dto.name,
-        capacity: dto.capacity,
+        height: dto.height,
+        length: dto.length,
+        width: dto.width,
         status: dto.status || entity_status.ACTIVE,
         compoundId: dto.compoundId,
         createdBy: user.id,
@@ -236,7 +238,9 @@ export class SiteService {
       where: { id },
       data: {
         ...(dto.name && { name: dto.name }),
-        ...(dto.capacity !== undefined && { capacity: dto.capacity }),
+        ...(dto.height !== undefined && { height: dto.height }),
+        ...(dto.length !== undefined && { length: dto.length }),
+        ...(dto.width !== undefined && { width: dto.width }),
         ...(dto.status && { status: dto.status }),
       },
     });

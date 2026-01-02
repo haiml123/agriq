@@ -2,6 +2,12 @@ import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuCheckboxItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import type { StatusFilter, SeverityFilter, TimeFilter } from './types';
 import { AlertStatusEnum, SeverityEnum } from './types';
 
@@ -47,6 +53,32 @@ export function AlertsFilters({
   const t = useTranslations('pages.alerts');
   const tSeverity = useTranslations('severity');
   const tStatus = useTranslations('alertStatus');
+  const isAllStatuses = statusFilter === 'all';
+  const selectedStatuses = isAllStatuses ? [] : statusFilter;
+  const statusLabel = isAllStatuses
+    ? t('allAlerts')
+    : selectedStatuses.map((status) => tStatus(status)).join(', ');
+
+  const toggleStatus = (value: string) => {
+    if (value === 'all') {
+      setStatusFilter('all');
+      return;
+    }
+
+    const next = isAllStatuses ? [] : [...selectedStatuses];
+    const existingIndex = next.indexOf(value as AlertStatusEnum);
+    if (existingIndex >= 0) {
+      next.splice(existingIndex, 1);
+    } else {
+      next.push(value as AlertStatusEnum);
+    }
+
+    if (next.length === 0) {
+      setStatusFilter('all');
+    } else {
+      setStatusFilter(next);
+    }
+  };
 
   return (
     <Card className="mb-6">
@@ -123,6 +155,37 @@ export function AlertsFilters({
             </Select>
           </div>
 
+          <div className="flex flex-col w-48">
+            <label className="text-sm font-medium mb-2">{t('status')}</label>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" className="w-full h-10 justify-between">
+                  <span className="truncate">{statusLabel || t('allAlerts')}</span>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="w-56">
+                <DropdownMenuCheckboxItem
+                  checked={isAllStatuses}
+                  onCheckedChange={() => toggleStatus('all')}
+                >
+                  {t('allAlerts')}
+                </DropdownMenuCheckboxItem>
+                <DropdownMenuCheckboxItem
+                  checked={!isAllStatuses && selectedStatuses.includes(AlertStatusEnum.OPEN)}
+                  onCheckedChange={() => toggleStatus(AlertStatusEnum.OPEN)}
+                >
+                  {tStatus(AlertStatusEnum.OPEN)}
+                </DropdownMenuCheckboxItem>
+                <DropdownMenuCheckboxItem
+                  checked={!isAllStatuses && selectedStatuses.includes(AlertStatusEnum.ACKNOWLEDGED)}
+                  onCheckedChange={() => toggleStatus(AlertStatusEnum.ACKNOWLEDGED)}
+                >
+                  {tStatus(AlertStatusEnum.ACKNOWLEDGED)}
+                </DropdownMenuCheckboxItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+
           <div className="flex flex-col w-40">
             <label className="text-sm font-medium mb-2">{t('timeRange')}</label>
             <Select value={timeFilter} onValueChange={(val) => setTimeFilter(val as TimeFilter)}>
@@ -140,36 +203,6 @@ export function AlertsFilters({
           </div>
         </div>
 
-        <div className="flex gap-2">
-          <Button
-            variant={statusFilter === 'all' ? 'default' : 'outline'}
-            onClick={() => setStatusFilter('all')}
-            size="sm"
-          >
-            {t('allAlerts')}
-          </Button>
-          <Button
-            variant={statusFilter === AlertStatusEnum.OPEN ? 'default' : 'outline'}
-            onClick={() => setStatusFilter(AlertStatusEnum.OPEN as StatusFilter)}
-            size="sm"
-          >
-            {tStatus(AlertStatusEnum.OPEN)}
-          </Button>
-          <Button
-            variant={statusFilter === AlertStatusEnum.ACKNOWLEDGED ? 'default' : 'outline'}
-            onClick={() => setStatusFilter(AlertStatusEnum.ACKNOWLEDGED as StatusFilter)}
-            size="sm"
-          >
-            {tStatus(AlertStatusEnum.ACKNOWLEDGED)}
-          </Button>
-          <Button
-            variant={statusFilter === AlertStatusEnum.IN_PROGRESS ? 'default' : 'outline'}
-            onClick={() => setStatusFilter(AlertStatusEnum.IN_PROGRESS as StatusFilter)}
-            size="sm"
-          >
-            {tStatus(AlertStatusEnum.IN_PROGRESS)}
-          </Button>
-        </div>
       </CardContent>
     </Card>
   );

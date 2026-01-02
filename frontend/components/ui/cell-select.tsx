@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
@@ -33,29 +34,36 @@ export interface CellSelectCell {
 interface CellSelectProps {
   sites: CellSelectSite[];
   selectedSiteId?: string;
+  selectedCompoundId?: string;
   selectedCellIds: string[];
   onCellSelectionChange: (cellIds: string[]) => void;
   multiSelect?: boolean;
   disabled?: boolean;
   placeholder?: string;
   className?: string;
+  disableCompoundToggle?: boolean;
 }
 
 export function CellSelect({
   sites,
   selectedSiteId,
+  selectedCompoundId,
   selectedCellIds,
   onCellSelectionChange,
   multiSelect = false,
   disabled = false,
   placeholder = 'Select cell',
   className = '',
+  disableCompoundToggle = false,
 }: CellSelectProps) {
+  const t = useTranslations('sites');
   const [dropdownOpen, setDropdownOpen] = useState(false);
 
   // Get the selected site's compounds and cells
   const selectedSite = sites.find((s) => s.id === selectedSiteId);
-  const compounds = selectedSite?.compounds || [];
+  const compounds = selectedCompoundId && selectedCompoundId !== 'all'
+    ? selectedSite?.compounds?.filter((c) => c.id === selectedCompoundId) || []
+    : selectedSite?.compounds || [];
 
   // Handle cell selection/deselection
   const handleCellToggle = (cellId: string) => {
@@ -164,7 +172,7 @@ export function CellSelect({
     }
 
     if (multiSelect) {
-      return `${selectedCellIds.length} cell${selectedCellIds.length > 1 ? 's' : ''} selected`;
+      return t('cellsSelected', { count: selectedCellIds.length });
     }
 
     // Single select - show the cell name
@@ -227,17 +235,23 @@ export function CellSelect({
               {/* Compound Header (only in multi-select mode) */}
               {multiSelect && (
                 <div
-                  className="flex items-center px-2 py-1.5 hover:bg-accent cursor-pointer"
-                  onClick={() => handleCompoundToggle(compound.id)}
+                  className={`flex items-center px-2 py-1.5 ${disableCompoundToggle ? '' : 'hover:bg-accent cursor-pointer'}`}
+                  onClick={() => {
+                    if (!disableCompoundToggle) {
+                      handleCompoundToggle(compound.id);
+                    }
+                  }}
                 >
-                  <Checkbox
-                    checked={isCompoundSelected(compound.id)}
-                    onCheckedChange={() => handleCompoundToggle(compound.id)}
-                    className="mr-2"
-                    {...(isCompoundIndeterminate(compound.id) && {
-                      'data-state': 'indeterminate' as any,
-                    })}
-                  />
+                  {!disableCompoundToggle && (
+                    <Checkbox
+                      checked={isCompoundSelected(compound.id)}
+                      onCheckedChange={() => handleCompoundToggle(compound.id)}
+                      className="mr-2"
+                      {...(isCompoundIndeterminate(compound.id) && {
+                        'data-state': 'indeterminate',
+                      })}
+                    />
+                  )}
                   <span className="text-xs font-semibold text-muted-foreground uppercase">
                     {compound.name}
                   </span>
@@ -274,13 +288,6 @@ export function CellSelect({
           )}
         </DropdownMenuContent>
       </DropdownMenu>
-
-      {/* Display selected cell names (multi-select mode) */}
-      {multiSelect && selectedCellIds.length > 0 && (
-        <p className="text-xs text-muted-foreground mt-1">
-          {getSelectedCellNames()}
-        </p>
-      )}
     </div>
   );
 }

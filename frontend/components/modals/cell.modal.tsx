@@ -58,7 +58,9 @@ export function CellModal({ compoundName, cell, availableGateways, onClose }: Ce
         resolver: zodResolver(updateCellSchema),
         defaultValues: {
             name:  cell?.name,
-            capacity: cell?.capacity || 0,
+            height: cell?.height || 0,
+            length: cell?.length || 0,
+            width: cell?.width || 0,
         },
         mode: 'onChange',
     });
@@ -120,20 +122,52 @@ export function CellModal({ compoundName, cell, availableGateways, onClose }: Ce
                         <p className="text-sm text-destructive">{errors.name.message}</p>
                     )}
                 </div>
-                <div className="space-y-2">
-                    <label htmlFor="capacity" className="text-sm font-medium text-foreground">
-                        {t('capacity')}
-                    </label>
-                    <Input
-                        id="capacity"
-                        type="number"
-                        min={0}
-                        placeholder={t('capacityPlaceholder')}
-                        {...register('capacity', { valueAsNumber: true })}
-                    />
-                    {errors.capacity && (
-                        <p className="text-sm text-destructive">{errors.capacity.message}</p>
-                    )}
+                <div className="grid gap-4 md:grid-cols-3">
+                    <div className="space-y-2">
+                        <label htmlFor="height" className="text-sm font-medium text-foreground">
+                            {t('height')}
+                        </label>
+                        <Input
+                            id="height"
+                            type="number"
+                            min={0}
+                            placeholder={t('heightPlaceholder')}
+                            {...register('height', { valueAsNumber: true })}
+                        />
+                        {errors.height && (
+                            <p className="text-sm text-destructive">{errors.height.message}</p>
+                        )}
+                    </div>
+                    <div className="space-y-2">
+                        <label htmlFor="length" className="text-sm font-medium text-foreground">
+                            {t('length')}
+                        </label>
+                        <Input
+                            id="length"
+                            type="number"
+                            min={0}
+                            placeholder={t('lengthPlaceholder')}
+                            {...register('length', { valueAsNumber: true })}
+                        />
+                        {errors.length && (
+                            <p className="text-sm text-destructive">{errors.length.message}</p>
+                        )}
+                    </div>
+                    <div className="space-y-2">
+                        <label htmlFor="width" className="text-sm font-medium text-foreground">
+                            {t('width')}
+                        </label>
+                        <Input
+                            id="width"
+                            type="number"
+                            min={0}
+                            placeholder={t('widthPlaceholder')}
+                            {...register('width', { valueAsNumber: true })}
+                        />
+                        {errors.width && (
+                            <p className="text-sm text-destructive">{errors.width.message}</p>
+                        )}
+                    </div>
                 </div>
                 <div className="space-y-2">
                     <label htmlFor="gatewayId" className="text-sm font-medium text-foreground">

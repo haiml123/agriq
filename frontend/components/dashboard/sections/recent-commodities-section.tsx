@@ -35,8 +35,8 @@ export function RecentCommoditiesSection({ commodities, isLoading }: RecentCommo
               key={commodity.id}
               className="border border-border rounded-lg p-4 hover:bg-muted/30 transition-colors cursor-pointer"
             >
-              <div className="grid grid-cols-[1fr_150px_100px] gap-4 items-start">
-                <div className="text-left">
+              <div className="grid grid-cols-[1fr_150px_100px] gap-4 items-start justify-items-start">
+                <div className="text-start">
                   <p className="font-medium text-foreground mb-1">{commodity.name}</p>
                   <p className="text-sm text-muted-foreground">
                     {t('dashboard.recentCommodities.origin')}:{' '}
@@ -47,12 +47,12 @@ export function RecentCommoditiesSection({ commodities, isLoading }: RecentCommo
                   </p>
                 </div>
 
-                <div className="text-sm text-muted-foreground">
+                <div className="text-sm text-muted-foreground text-start">
                   {t('dashboard.recentCommodities.quantity')}:{' '}
                   <span className="text-foreground font-medium">{commodity.quantity}</span>
                 </div>
 
-                <div className="text-sm text-muted-foreground">{commodity.date}</div>
+                <div className="text-sm text-muted-foreground text-start">{commodity.date}</div>
               </div>
             </div>
           ))

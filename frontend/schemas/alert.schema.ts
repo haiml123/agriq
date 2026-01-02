@@ -46,13 +46,13 @@ export const apiAlertSchema = z.object({
 
 // Dashboard alert schema (formatted for display)
 export const dashboardAlertSchema = z.object({
-    id: z.string(),
-    description: z.string(),
-    severity: severitySchema,
-    status: alertStatusSchema,
-    location: z.string(),
-    daysAgo: z.number(),
-    assignee: z.string().nullable(),
+  id: z.string(),
+  description: z.string(),
+  severity: severitySchema,
+  status: alertStatusSchema,
+  location: z.string(),
+  daysAgo: z.number(),
+  assignee: z.string().nullable(),
 });
 
 export type ApiAlert = z.infer<typeof apiAlertSchema>;

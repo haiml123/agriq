@@ -23,7 +23,7 @@ export function useTradeApi() {
     );
 
     const getRecent = useCallback(
-        async (params?: { organizationId?: string; limit?: number }) => {
+        async (params?: { organizationId?: string; siteId?: string; compoundId?: string; limit?: number }) => {
             setIsLoading(true);
             try {
                 return await get<ApiTrade[]>('/trades/recent', params);

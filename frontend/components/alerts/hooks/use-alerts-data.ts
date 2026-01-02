@@ -4,11 +4,11 @@ import { useAlertApi } from '@/hooks/use-alert-api';
 import { useOrganizationApi } from '@/hooks/use-organization-api';
 import { useUserApi } from '@/hooks/use-user-api';
 import { useSiteApi } from '@/hooks/use-site-api';
-import type { ApiAlert } from '../types';
+import type { ApiAlert, StatusFilter } from '../types';
 import { getTimeFilterDate } from '../utils/alert-utils';
 
 interface UseAlertsDataParams {
-  statusFilter: string;
+  statusFilter: StatusFilter;
   severityFilter: string;
   timeFilter: string;
   organizationFilter: string;
@@ -18,7 +18,7 @@ interface UseAlertsDataParams {
 
 export function useAlertsData(filters: UseAlertsDataParams) {
   const { user, isSuperAdmin, isAdmin, isOperator } = useApp();
-  const { getList: getAlerts, acknowledge, updateStatus } = useAlertApi();
+  const { getList: getAlerts, acknowledge } = useAlertApi();
   const [alerts, setAlerts] = useState<ApiAlert[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -39,8 +39,10 @@ export function useAlertsData(filters: UseAlertsDataParams) {
       const params: any = {};
 
       // Status filter
-      if (filters.statusFilter !== 'all') {
-        params.status = filters.statusFilter;
+      if (filters.statusFilter === 'all') {
+        params.status = 'all';
+      } else if (filters.statusFilter.length > 0) {
+        params.status = filters.statusFilter.join(',');
       } else {
         params.status = 'all';
       }
@@ -107,20 +109,10 @@ export function useAlertsData(filters: UseAlertsDataParams) {
     }
   };
 
-  const handleStatusChange = async (alertId: string, newStatus: string) => {
-    try {
-      await updateStatus(alertId, newStatus);
-      await loadAlerts();
-    } catch (error) {
-      console.error('Failed to update alert status:', error);
-    }
-  };
-
   return {
     alerts,
     loading,
     handleAcknowledge,
-    handleStatusChange,
     reloadAlerts: loadAlerts,
   };
 }

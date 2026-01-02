@@ -38,10 +38,14 @@ export class TradeController {
   @Get('recent')
   findRecent(
     @Query('organizationId') organizationId?: string,
+    @Query('siteId') siteId?: string,
+    @Query('compoundId') compoundId?: string,
     @Query('limit') limit?: string,
   ) {
     return this.tradeService.findRecent(
       organizationId,
+      siteId,
+      compoundId,
       limit ? parseInt(limit) : 10,
     );
   }

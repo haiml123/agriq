@@ -1,11 +1,12 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { Prisma } from '@prisma/client';
+import { Prisma, alert_status } from '@prisma/client';
 
 interface FindAllParams {
   organizationId?: string;
   userId?: string;
   siteId?: string;
+  compoundId?: string;
   status?: string;
   severity?: string;
   startDate?: string;
@@ -21,6 +22,7 @@ export class AlertService {
       organizationId,
       userId,
       siteId,
+      compoundId,
       status,
       severity,
       startDate,
@@ -31,7 +33,11 @@ export class AlertService {
 
     // Handle status filter
     if (status && status !== 'all') {
-      where.status = status as any;
+      if (status.includes(',')) {
+        where.status = { in: status.split(',') as alert_status[] };
+      } else {
+        where.status = status as any;
+      }
     }
     // If no status is provided or status is not explicitly 'all', show active alerts only
     else if (!status) {
@@ -58,6 +64,10 @@ export class AlertService {
       } else {
         where.siteId = siteId;
       }
+    }
+
+    if (compoundId) {
+      where.compoundId = compoundId;
     }
 
     if (severity) {

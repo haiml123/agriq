@@ -82,6 +82,7 @@ export const storage = {
  */
 export const STORAGE_KEYS = {
   SITES_SELECTED_SITE: 'sites_selected_site',
+  SITES_SELECTED_COMPOUND: 'sites_selected_compound',
   SITES_SELECTED_CELLS: 'sites_selected_cells',
   SITES_DATE_RANGE: 'sites_date_range',
 } as const;

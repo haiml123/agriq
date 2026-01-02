@@ -306,14 +306,14 @@ export function CommodityModal({
           {/* Site */}
           <div className="space-y-2">
             <Label htmlFor="siteId">
-              Site <span className="text-red-500">*</span>
+              {t('site')} <span className="text-red-500">*</span>
             </Label>
             <Select
               value={formData.siteId || ''}
               onValueChange={handleSiteChange}
             >
               <SelectTrigger id="siteId" className="w-full">
-                <SelectValue placeholder="Select site" />
+                <SelectValue placeholder={t('selectSite')} />
               </SelectTrigger>
               <SelectContent>
                 {sites.map((site) => (
@@ -328,7 +328,7 @@ export function CommodityModal({
           {/* Cell Selection (Grouped by Compound) */}
           <div className="space-y-2">
             <Label htmlFor="cellId">
-              Cell <span className="text-red-500">*</span>
+              {t('cell')} <span className="text-red-500">*</span>
             </Label>
             <CellSelect
               sites={sites}
@@ -337,7 +337,7 @@ export function CommodityModal({
               onCellSelectionChange={handleCellSelection}
               multiSelect={false}
               disabled={!formData.siteId}
-              placeholder="Select cell"
+              placeholder={t('selectCell')}
               className="w-full"
             />
           </div>
@@ -349,14 +349,16 @@ export function CommodityModal({
                 <AlertTriangle className="h-5 w-5 text-amber-600 dark:text-amber-500 flex-shrink-0 mt-0.5" />
                 <div className="flex-1">
                   <h4 className="font-semibold text-amber-900 dark:text-amber-200 mb-1">
-                    Cell Already Contains Commodity
+                    {t('existingCommodityTitle')}
                   </h4>
                   <p className="text-sm text-amber-800 dark:text-amber-300 mb-3">
-                    This cell currently has <strong>{existingCommodity.availableKg.toLocaleString()} kg</strong> of{' '}
-                    <strong>{existingCommodity.commodityTypeName}</strong>.
+                    {t('existingCommodityBody', {
+                      kg: existingCommodity.availableKg.toLocaleString(),
+                      commodity: existingCommodity.commodityTypeName,
+                    })}
                   </p>
                   <p className="text-sm text-amber-800 dark:text-amber-300 mb-3">
-                    Adding a new commodity will automatically transfer out the existing commodity. Do you want to continue?
+                    {t('existingCommodityWarning')}
                   </p>
                   <div className="flex gap-2">
                     <Button
@@ -368,7 +370,7 @@ export function CommodityModal({
                         setUserConfirmed(false);
                       }}
                     >
-                      Cancel
+                      {tCommon('cancel')}
                     </Button>
                     <Button
                       type="button"
@@ -379,7 +381,7 @@ export function CommodityModal({
                         setShowWarning(false);
                       }}
                     >
-                      Yes, Replace Commodity
+                      {t('existingCommodityConfirm')}
                     </Button>
                   </div>
                 </div>
@@ -391,7 +393,10 @@ export function CommodityModal({
           {userConfirmed && existingCommodity && (
             <div className="bg-green-50 dark:bg-green-950/20 border border-green-200 dark:border-green-800 rounded-lg p-3">
               <p className="text-sm text-green-800 dark:text-green-300">
-                ✓ Confirmed: Will replace {existingCommodity.commodityTypeName} ({existingCommodity.availableKg.toLocaleString()} kg) with new commodity
+                {t('existingCommodityConfirmed', {
+                  commodity: existingCommodity.commodityTypeName,
+                  kg: existingCommodity.availableKg.toLocaleString(),
+                })}
               </p>
             </div>
           )}
@@ -438,14 +443,14 @@ export function CommodityModal({
           {/* Quantity */}
           <div className="space-y-2">
             <Label htmlFor="amountKg">
-              Quantity (kg) <span className="text-red-500">*</span>
+              {t('quantityLabel')} <span className="text-red-500">*</span>
             </Label>
             <Input
               id="amountKg"
               type="number"
               step="0.01"
               min="0"
-              placeholder="Enter quantity in kg"
+              placeholder={t('quantityPlaceholder')}
               value={formData.amountKg || ''}
               onChange={(e) =>
                 setFormData({
@@ -459,11 +464,11 @@ export function CommodityModal({
 
           {/* Notes */}
           <div className="space-y-2">
-            <Label htmlFor="notes">Notes</Label>
+            <Label htmlFor="notes">{t('notes')}</Label>
             <Input
               id="notes"
               type="text"
-              placeholder="Optional notes"
+              placeholder={t('notesPlaceholder')}
               value={formData.notes || ''}
               onChange={(e) =>
                 setFormData({ ...formData, notes: e.target.value })

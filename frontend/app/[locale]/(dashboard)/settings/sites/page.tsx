@@ -251,7 +251,9 @@ export default function SitesPage() {
         try {
             const dto: CreateCellDto = {
                 name: data.name,
-                capacity: data.capacity ?? 0,
+                height: data.height ?? 0,
+                length: data.length ?? 0,
+                width: data.width ?? 0,
                 compoundId,
             }
             const newCell = await createCell(dto)
@@ -288,7 +290,9 @@ export default function SitesPage() {
         try {
             const dto: UpdateCellDto = {
                 name: data.name,
-                capacity: data.capacity,
+                height: data.height,
+                length: data.length,
+                width: data.width,
             }
             const updated = await updateCell(cellId, dto)
             if (updated?.data) {

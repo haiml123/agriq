@@ -7,13 +7,17 @@ import { tradeCommoditySchema } from '@/schemas/trade.schema';
 export const createCellSchema = z.object({
   name: z.string().min(1).max(100),
   compoundId: z.string(),
-  capacity: z.number().min(0),
+  height: z.number().min(0),
+  length: z.number().min(0),
+  width: z.number().min(0),
   status: entityStatusSchema.optional(),
 });
 
 export const updateCellSchema = z.object({
   name: z.string().min(1).max(100).optional(),
-  capacity: z.number().min(0).optional(),
+  height: z.number().min(0).optional(),
+  length: z.number().min(0).optional(),
+  width: z.number().min(0).optional(),
   status: entityStatusSchema.optional(),
 });
 
@@ -22,7 +26,9 @@ export const cellSchema = z.object({
   id: z.string(),
   status: entityStatusSchema,
   name: z.string(),
-  capacity: z.number(),
+  height: z.number(),
+  length: z.number(),
+  width: z.number(),
   temp: z.number().nullable().optional(),
   humidity: z.number().nullable().optional(),
   compoundId: z.string(),

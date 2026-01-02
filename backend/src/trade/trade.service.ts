@@ -104,13 +104,20 @@ export class TradeService {
     return trade;
   }
 
-  async findRecent(organizationId?: string, limit: number = 10) {
+  async findRecent(
+    organizationId?: string,
+    siteId?: string,
+    compoundId?: string,
+    limit: number = 10,
+  ) {
     const where: Prisma.TradeWhereInput = {
       ...(organizationId && {
         commodity: {
           organizationId,
         },
       }),
+      ...(siteId && { siteId }),
+      ...(compoundId && { compoundId }),
     };
 
     const trades = await this.prisma.trade.findMany({

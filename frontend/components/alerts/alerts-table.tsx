@@ -10,13 +10,6 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { MoreHorizontal } from 'lucide-react';
 import { useApp } from '@/providers/app-provider';
 import type { ApiAlert } from './types';
 import { getSeverityColor, getStatusColor } from './utils/alert-utils';
@@ -25,10 +18,9 @@ import { AlertStatusEnum } from './types';
 interface AlertsTableProps {
   alerts: ApiAlert[];
   onAcknowledge: (alertId: string) => void;
-  onStatusChange: (alertId: string, newStatus: string) => void;
 }
 
-export function AlertsTable({ alerts, onAcknowledge, onStatusChange }: AlertsTableProps) {
+export function AlertsTable({ alerts, onAcknowledge }: AlertsTableProps) {
   const t = useTranslations('pages.alerts');
   const tSeverity = useTranslations('severity');
   const tStatus = useTranslations('alertStatus');
@@ -74,53 +66,19 @@ export function AlertsTable({ alerts, onAcknowledge, onStatusChange }: AlertsTab
               </Badge>
             </TableCell>
             <TableCell className="text-right">
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="sm">
-                    <MoreHorizontal className="h-4 w-4" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  {alert.status === AlertStatusEnum.OPEN && (
-                    <>
-                      <DropdownMenuItem onClick={() => onAcknowledge(alert.id)}>
-                        {t('acknowledge')}
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => onStatusChange(alert.id, AlertStatusEnum.IN_PROGRESS)}>
-                        {t('startInvestigating')}
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => onStatusChange(alert.id, AlertStatusEnum.DISMISSED)}>
-                        {t('dismiss')}
-                      </DropdownMenuItem>
-                    </>
-                  )}
-                  {alert.status === AlertStatusEnum.ACKNOWLEDGED && (
-                    <>
-                      <DropdownMenuItem onClick={() => onStatusChange(alert.id, AlertStatusEnum.IN_PROGRESS)}>
-                        {t('startInvestigating')}
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => onStatusChange(alert.id, AlertStatusEnum.DISMISSED)}>
-                        {t('dismiss')}
-                      </DropdownMenuItem>
-                    </>
-                  )}
-                  {alert.status === AlertStatusEnum.IN_PROGRESS && (
-                    <>
-                      <DropdownMenuItem onClick={() => onStatusChange(alert.id, AlertStatusEnum.RESOLVED)}>
-                        {t('resolve')}
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => onStatusChange(alert.id, AlertStatusEnum.DISMISSED)}>
-                        {t('dismiss')}
-                      </DropdownMenuItem>
-                    </>
-                  )}
-                  {(alert.status === AlertStatusEnum.RESOLVED || alert.status === AlertStatusEnum.DISMISSED) && (
-                    <DropdownMenuItem onClick={() => onStatusChange(alert.id, AlertStatusEnum.OPEN)}>
-                      {t('reopenAlert')}
-                    </DropdownMenuItem>
-                  )}
-                </DropdownMenuContent>
-              </DropdownMenu>
+              {alert.status === AlertStatusEnum.OPEN ? (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => onAcknowledge(alert.id)}
+                >
+                  {t('acknowledge')}
+                </Button>
+              ) : (
+                <span className="text-sm text-muted-foreground">
+                  {tStatus(AlertStatusEnum.ACKNOWLEDGED)}
+                </span>
+              )}
             </TableCell>
           </TableRow>
         ))}

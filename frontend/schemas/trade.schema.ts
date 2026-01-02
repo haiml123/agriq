@@ -44,12 +44,12 @@ export const apiTradeSchema = z.object({
 
 // Dashboard trade schema (formatted for display)
 export const dashboardTradeSchema = z.object({
-    id: z.string(),
-    name: z.string(),
-    origin: z.string(),
-    quantity: z.string(),
-    location: z.string(),
-    date: z.string(),
+  id: z.string(),
+  name: z.string(),
+  origin: z.string(),
+  quantity: z.string(),
+  location: z.string(),
+  date: z.string(),
 });
 
 // Create trade schema

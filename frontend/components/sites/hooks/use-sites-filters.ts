@@ -8,6 +8,10 @@ export function useSitesFilters(sites: CellSelectSite[]) {
     return storage.get<string>(STORAGE_KEYS.SITES_SELECTED_SITE) || '';
   });
 
+  const [selectedCompoundId, setSelectedCompoundId] = useState<string>(() => {
+    return storage.get<string>(STORAGE_KEYS.SITES_SELECTED_COMPOUND) || 'all';
+  });
+
   const [selectedCellIds, setSelectedCellIds] = useState<string[]>(() => {
     return storage.get<string[]>(STORAGE_KEYS.SITES_SELECTED_CELLS) || [];
   });
@@ -21,6 +25,7 @@ export function useSitesFilters(sites: CellSelectSite[]) {
     if (sites.length > 0 && !selectedSiteId) {
       const firstSite = sites[0];
       setSelectedSiteId(firstSite.id);
+      setSelectedCompoundId('all');
 
       // Auto-select all cells from the first site
       const allCellIds = firstSite.compounds?.flatMap((c: any) =>
@@ -37,6 +42,12 @@ export function useSitesFilters(sites: CellSelectSite[]) {
     }
   }, [selectedSiteId]);
 
+  useEffect(() => {
+    if (selectedCompoundId) {
+      storage.set(STORAGE_KEYS.SITES_SELECTED_COMPOUND, selectedCompoundId);
+    }
+  }, [selectedCompoundId]);
+
   // Save cell selection to local storage
   useEffect(() => {
     storage.set(STORAGE_KEYS.SITES_SELECTED_CELLS, selectedCellIds);
@@ -44,6 +55,7 @@ export function useSitesFilters(sites: CellSelectSite[]) {
 
   const handleSiteChange = (siteId: string) => {
     setSelectedSiteId(siteId);
+    setSelectedCompoundId('all');
     // Auto-select all cells when site changes
     const site = sites.find((s) => s.id === siteId);
     const allCellIds: string[] = [];
@@ -55,22 +67,47 @@ export function useSitesFilters(sites: CellSelectSite[]) {
     setSelectedCellIds(allCellIds);
   };
 
+  const handleCompoundChange = (compoundId: string) => {
+    setSelectedCompoundId(compoundId);
+
+    const site = sites.find((s) => s.id === selectedSiteId);
+    if (!site) {
+      setSelectedCellIds([]);
+      return;
+    }
+
+    if (compoundId === 'all') {
+      const allCellIds = site.compounds?.flatMap((compound) =>
+        compound.cells?.map((cell) => cell.id) || []
+      ) || [];
+      setSelectedCellIds(allCellIds);
+      return;
+    }
+
+    const compound = site.compounds?.find((c) => c.id === compoundId);
+    const compoundCellIds = compound?.cells?.map((cell) => cell.id) || [];
+    setSelectedCellIds(compoundCellIds);
+  };
+
   const handleCellSelectionChange = (cellIds: string[]) => {
     setSelectedCellIds(cellIds);
   };
 
   return {
     selectedSiteId,
+    selectedCompoundId,
     selectedCellIds,
     dateRange,
     customStartDate,
     customEndDate,
     setSelectedSiteId,
+    setSelectedCompoundId,
     setSelectedCellIds,
     setDateRange,
     setCustomStartDate,
     setCustomEndDate,
     handleSiteChange,
+    handleCompoundChange,
     handleCellSelectionChange,
   };
 }
