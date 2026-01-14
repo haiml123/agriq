@@ -1,4 +1,4 @@
-import type { DateRange, Trade, SensorReading, ChartDataPoint, CommodityMarker } from '../types';
+import type { DateRange, Trade, ChartDataPoint, CommodityMarker } from '../types';
 import { DateRangeEnum } from '../types';
 
 // Color palette for commodity markers
@@ -58,11 +58,11 @@ export function getCommodityAtTime(
   return noCommodityLabel;
 }
 
-export function aggregateReadingsByDate(
-  readings: SensorReading[],
+export function aggregateReadingsByDate<T extends { recordedAt: string }>(
+  readings: T[],
   dateFormatter: Intl.DateTimeFormat,
   getCommodity: (timestamp: string) => string,
-  getValue: (reading: SensorReading) => number
+  getValue: (reading: T) => number
 ) {
   const byDate = new Map<string, { sum: number; count: number; fullDate: string }>();
 

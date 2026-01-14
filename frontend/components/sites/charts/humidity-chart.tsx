@@ -65,9 +65,21 @@ export function HumidityChart({
                   return (
                     <div className="bg-gray-800 border border-gray-700 p-2 rounded shadow-lg">
                       <p className="text-gray-200 text-sm font-medium">{data.date}</p>
-                      <p className="text-blue-400 text-sm">
-                        {t('humidityLabel')}: {data.humidity}%
-                      </p>
+                      {data.humidity !== undefined && (
+                        <p className="text-blue-400 text-sm">
+                          {t('humidityLabel')}: {data.humidity}%
+                        </p>
+                      )}
+                      {data.ambientHumidity !== undefined && (
+                        <p className="text-orange-400 text-sm">
+                          {t('warehouseAmbient')}: {data.ambientHumidity}%
+                        </p>
+                      )}
+                      {data.outsideHumidity !== undefined && (
+                        <p className="text-sky-400 text-sm">
+                          {t('outsideWeather')}: {data.outsideHumidity}%
+                        </p>
+                      )}
                       <p className="text-amber-400 text-sm font-semibold">
                         {t('commodityLabel')}: {data.commodity}
                       </p>
@@ -105,6 +117,23 @@ export function HumidityChart({
               strokeWidth={2}
               dot={{ fill: '#3B82F6' }}
               name={t('humidityLabel')}
+            />
+            <Line
+              type="monotone"
+              dataKey="ambientHumidity"
+              stroke="#F97316"
+              strokeWidth={2}
+              dot={false}
+              name={t('warehouseAmbient')}
+            />
+            <Line
+              type="monotone"
+              dataKey="outsideHumidity"
+              stroke="#38BDF8"
+              strokeWidth={2}
+              strokeDasharray="4 4"
+              dot={false}
+              name={t('outsideWeather')}
             />
           </LineChart>
         </ResponsiveContainer>

@@ -225,6 +225,7 @@ model Site {
   triggers  EventTrigger[]
   invites   Invite[]
   gateways  Gateway[]
+  weatherObservations WeatherObservation[]
 
   // site_users: many-to-many Site <-> User
   siteUsers SiteUser[]
@@ -361,12 +362,30 @@ model GatewayReading {
   temperature    Float
   humidity       Float
   batteryPercent Float    @map("battery_percent")
+  outsideTemperature Float? @map("outside_temperature")
+  outsideHumidity    Float? @map("outside_humidity")
   recordedAt     DateTime @map("recorded_at")
   createdAt      DateTime @default(now()) @map("created_at")
 
   @@index([gatewayId, recordedAt])
   @@index([cellId, recordedAt])
   @@map("gateway_reading")
+}
+
+model WeatherObservation {
+  id String @id @default(cuid())
+
+  siteId String @map("site_id")
+  site   Site   @relation(fields: [siteId], references: [id])
+
+  temperature Float
+  humidity    Float
+  recordedAt  DateTime @map("recorded_at")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  @@unique([siteId, recordedAt])
+  @@index([siteId, recordedAt])
+  @@map("weather_observation")
 }
 
 model SensorReading {

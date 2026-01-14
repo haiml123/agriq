@@ -455,12 +455,16 @@ async function seedDemoData() {
     return Array.from({ length: 7 }, (_, dayIdx) => {
       const recordedAt = new Date(now);
       recordedAt.setDate(recordedAt.getDate() - dayIdx);
+      const outsideTemp = baseTemp + 5 + (dayIdx % 2 === 0 ? 0.5 : -0.5);
+      const outsideHumidity = baseHumidity + 3 + (dayIdx % 2 === 0 ? 0.25 : -0.25);
       return {
         gatewayId: gateway.id,
         cellId,
         temperature: baseTemp + (dayIdx % 2 === 0 ? 1 : -1),
         humidity: baseHumidity + (dayIdx % 2 === 0 ? 0.5 : -0.5),
         batteryPercent: baseBattery - dayIdx,
+        outsideTemperature: outsideTemp,
+        outsideHumidity: outsideHumidity,
         recordedAt,
       };
     });

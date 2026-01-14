@@ -11,11 +11,12 @@ import {
 } from '@nestjs/common';
 import { GatewayService } from './gateway.service';
 import { JwtAuthGuard } from '../auth/guards';
-import { CurrentUser } from '../auth/decorators';
+import { CurrentUser, Public } from '../auth/decorators';
 import * as userType from '../types/user.type';
 import {
   AssignGatewayDto,
   CreateGatewayDto,
+  CreateGatewayPayloadDto,
   RegisterGatewayDto,
   UpdateGatewayDto,
 } from './dto';
@@ -95,5 +96,14 @@ export class GatewayController {
     @CurrentUser() user: userType.AppUser,
   ) {
     return this.gatewayService.unpairGateway(user, id);
+  }
+
+  @Post(':id/readings')
+  @Public()
+  ingestGatewayPayload(
+    @Param('id') id: string,
+    @Body() dto: CreateGatewayPayloadDto,
+  ) {
+    return this.gatewayService.ingestGatewayPayloadFromDevice(id, dto);
   }
 }

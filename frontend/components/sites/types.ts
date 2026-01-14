@@ -1,6 +1,7 @@
 // Re-export types from Zod schemas (single source of truth)
 export type {
   SensorReading,
+  GatewayReading,
   CellTrade as Trade,
   CellAlert as Alert,
   CellWithDetails as Cell,

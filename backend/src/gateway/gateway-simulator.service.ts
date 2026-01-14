@@ -4,6 +4,7 @@ import { GatewayService } from './gateway.service';
 import {
   BatchGatewayReadingsDto,
   BatchSensorReadingsDto,
+  CreateGatewayPayloadDto,
   CreateSensorDto,
   TransferSensorDto,
 } from './dto';
@@ -45,7 +46,18 @@ export class GatewaySimulatorService {
     gatewayId: string,
     dto: BatchGatewayReadingsDto,
   ) {
-    return this.gatewayService.createGatewayReadingsBatch(user, gatewayId, dto);
+    const payloads: CreateGatewayPayloadDto[] = dto.readings.map((reading) => ({
+      temperature: reading.temperature,
+      humidity: reading.humidity,
+      batteryPercent: reading.batteryPercent,
+      recordedAt: reading.recordedAt,
+    }));
+
+    return Promise.all(
+      payloads.map((payload) =>
+        this.gatewayService.ingestGatewayPayloadFromDevice(gatewayId, payload),
+      ),
+    );
   }
 
   listGatewayReadings(user: AppUser, gatewayId: string, limit?: number) {

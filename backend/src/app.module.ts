@@ -17,6 +17,7 @@ import { EventsModule } from './events';
 import { AlertModule } from './alert';
 import { TradeModule } from './trade';
 import { GatewayModule } from './gateway';
+import { WeatherModule } from './weather';
 
 @Module({
   imports: [
@@ -33,6 +34,7 @@ import { GatewayModule } from './gateway';
     UserModule,
     SiteModule,
     GatewayModule,
+    WeatherModule,
     TriggerModule,
     CommodityTypeModule,
     CommodityModule,

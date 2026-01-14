@@ -303,6 +303,19 @@ export class SiteService {
       },
     });
 
+    const gatewayReadings = await this.prisma.gatewayReading.findMany({
+      where: {
+        cellId,
+        recordedAt: {
+          gte: effectiveStartDate,
+          lte: effectiveEndDate,
+        },
+      },
+      orderBy: {
+        recordedAt: 'asc',
+      },
+    });
+
     // Get trades in this cell
     const trades = await this.prisma.trade.findMany({
       where: { cellId },
@@ -334,6 +347,7 @@ export class SiteService {
     return {
       cell,
       sensorReadings,
+      gatewayReadings,
       trades,
       alerts,
     };
@@ -392,6 +406,19 @@ export class SiteService {
       },
     });
 
+    const gatewayReadings = await this.prisma.gatewayReading.findMany({
+      where: {
+        cellId: { in: cellIds },
+        recordedAt: {
+          gte: effectiveStartDate,
+          lte: effectiveEndDate,
+        },
+      },
+      orderBy: {
+        recordedAt: 'asc',
+      },
+    });
+
     // Fetch trades for all cells
     const trades = await this.prisma.trade.findMany({
       where: { cellId: { in: cellIds } },
@@ -423,6 +450,7 @@ export class SiteService {
     return {
       cells,
       sensorReadings,
+      gatewayReadings,
       trades,
       alerts,
     };

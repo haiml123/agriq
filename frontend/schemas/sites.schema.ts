@@ -214,6 +214,18 @@ export const sensorReadingSchema = z.object({
   recordedAt: z.string(),
 });
 
+export const gatewayReadingSchema = z.object({
+  id: z.string(),
+  cellId: z.string(),
+  gatewayId: z.string(),
+  temperature: z.number(),
+  humidity: z.number(),
+  batteryPercent: z.number(),
+  outsideTemperature: z.number().nullable().optional(),
+  outsideHumidity: z.number().nullable().optional(),
+  recordedAt: z.string(),
+});
+
 // ============ TRADE FOR CELL DETAILS ============
 
 export const cellTradeSchema = z.object({
@@ -256,6 +268,7 @@ export const cellWithDetailsSchema = z.object({
 export const cellDetailsSchema = z.object({
   cell: cellWithDetailsSchema,
   sensorReadings: z.array(sensorReadingSchema),
+  gatewayReadings: z.array(gatewayReadingSchema),
   trades: z.array(cellTradeSchema),
   alerts: z.array(cellAlertSchema),
 });
@@ -263,6 +276,7 @@ export const cellDetailsSchema = z.object({
 export const multipleCellsDetailsSchema = z.object({
   cells: z.array(cellWithDetailsSchema),
   sensorReadings: z.array(sensorReadingSchema),
+  gatewayReadings: z.array(gatewayReadingSchema),
   trades: z.array(cellTradeSchema),
   alerts: z.array(cellAlertSchema),
 });
@@ -279,6 +293,10 @@ export const chartDataPointSchema = z.object({
   fullDate: z.string(),
   temperature: z.number().optional(),
   humidity: z.number().optional(),
+  ambientTemperature: z.number().optional(),
+  ambientHumidity: z.number().optional(),
+  outsideTemperature: z.number().optional(),
+  outsideHumidity: z.number().optional(),
   commodity: z.string(),
 });
 
@@ -304,6 +322,7 @@ export const cellChartDataSchema = z.object({
 // ============ ADDITIONAL TYPES ============
 
 export type SensorReading = z.infer<typeof sensorReadingSchema>;
+export type GatewayReading = z.infer<typeof gatewayReadingSchema>;
 export type CellTrade = z.infer<typeof cellTradeSchema>;
 export type CellAlert = z.infer<typeof cellAlertSchema>;
 export type CellWithDetails = z.infer<typeof cellWithDetailsSchema>;

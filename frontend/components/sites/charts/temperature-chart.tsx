@@ -65,9 +65,21 @@ export function TemperatureChart({
                   return (
                     <div className="bg-gray-800 border border-gray-700 p-2 rounded shadow-lg">
                       <p className="text-gray-200 text-sm font-medium">{data.date}</p>
-                      <p className="text-emerald-400 text-sm">
-                        {t('temperatureLabel')}: {data.temperature}°C
-                      </p>
+                      {data.temperature !== undefined && (
+                        <p className="text-emerald-400 text-sm">
+                          {t('temperatureLabel')}: {data.temperature}°C
+                        </p>
+                      )}
+                      {data.ambientTemperature !== undefined && (
+                        <p className="text-orange-400 text-sm">
+                          {t('warehouseAmbient')}: {data.ambientTemperature}°C
+                        </p>
+                      )}
+                      {data.outsideTemperature !== undefined && (
+                        <p className="text-sky-400 text-sm">
+                          {t('outsideWeather')}: {data.outsideTemperature}°C
+                        </p>
+                      )}
                       <p className="text-amber-400 text-sm font-semibold">
                         {t('commodityLabel')}: {data.commodity}
                       </p>
@@ -105,6 +117,23 @@ export function TemperatureChart({
               strokeWidth={2}
               dot={{ fill: '#10B981' }}
               name={t('temperatureLabel')}
+            />
+            <Line
+              type="monotone"
+              dataKey="ambientTemperature"
+              stroke="#F97316"
+              strokeWidth={2}
+              dot={false}
+              name={t('warehouseAmbient')}
+            />
+            <Line
+              type="monotone"
+              dataKey="outsideTemperature"
+              stroke="#38BDF8"
+              strokeWidth={2}
+              strokeDasharray="4 4"
+              dot={false}
+              name={t('outsideWeather')}
             />
           </LineChart>
         </ResponsiveContainer>

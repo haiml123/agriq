@@ -112,6 +112,7 @@ export function SitesPage() {
     filters.customEndDate
   );
 
+
   const handleCommoditySuccess = () => {
     setCommodityModalOpen(false);
     reloadCellsDetails();

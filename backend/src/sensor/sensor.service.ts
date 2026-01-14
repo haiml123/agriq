@@ -344,6 +344,24 @@ export class SensorService {
     }
 
     const cellId = sensor.gateway.cell.id;
+    return this.storeSensorReadings(sensor, cellId, dto);
+  }
+
+  private async storeSensorReadings(
+    sensor: {
+      id: string;
+      gatewayId: string;
+      gateway: {
+        organizationId: string | null;
+        cell: {
+          id: string;
+          compound: { id: string; site: { id: string } };
+        } | null;
+      };
+    },
+    cellId: string,
+    dto: BatchSensorReadingsDto,
+  ) {
     const data = dto.readings.map((reading) => ({
       sensorId: sensor.id,
       gatewayId: sensor.gatewayId,
