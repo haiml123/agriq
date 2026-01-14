@@ -17,12 +17,23 @@ import {
   UpdateGatewayDto,
 } from './dto';
 import { isSuperAdmin } from '../user/user.utils';
+import {
+  formatConditionSummary,
+  getMetricUnit,
+  parseTriggerConditions,
+  TriggerCondition,
+  TriggerContextService,
+  TriggerEvaluatorService,
+} from '../trigger';
+import { MetricType } from '../trigger/dto';
 
 @Injectable()
 export class GatewayService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly siteAccess: SiteAccessService,
+    private readonly triggerContext: TriggerContextService,
+    private readonly triggerEvaluator: TriggerEvaluatorService,
   ) {}
 
   private async validateGatewayAccess(user: AppUser, gatewayId: string) {
@@ -41,6 +52,118 @@ export class GatewayService {
 
     await this.siteAccess.validateCellAccess(user, gateway.cellId);
     return gateway;
+  }
+
+  private buildMetricsFromGatewayReading(reading: {
+    temperature: number;
+    humidity: number;
+  }): Partial<Record<MetricType, number>> {
+    return {
+      [MetricType.TEMPERATURE]: reading.temperature,
+      [MetricType.HUMIDITY]: reading.humidity,
+    };
+  }
+
+  private async getCellCommodityTypeId(
+    cellId: string,
+  ): Promise<string | undefined> {
+    const latestTrade = await this.prisma.trade.findFirst({
+      where: { cellId },
+      orderBy: { tradedAt: 'desc' },
+      select: {
+        direction: true,
+        commodity: { select: { commodityTypeId: true } },
+      },
+    });
+
+    if (!latestTrade || latestTrade.direction === 'OUT') {
+      return undefined;
+    }
+
+    return latestTrade.commodity?.commodityTypeId ?? undefined;
+  }
+
+  private buildAlertDescription(
+    triggerName: string,
+    matchedConditions: TriggerCondition[],
+  ) {
+    if (matchedConditions.length === 0) {
+      return `Trigger "${triggerName}" matched.`;
+    }
+
+    const summaries = matchedConditions.map(formatConditionSummary);
+    return `Trigger "${triggerName}" matched: ${summaries.join(', ')}.`;
+  }
+
+  private getAlertThreshold(
+    matchedConditions: TriggerCondition[],
+  ): { value?: number; unit?: string } {
+    const threshold = matchedConditions.find(
+      (condition) =>
+        condition.type === 'THRESHOLD' && condition.value !== undefined,
+    );
+
+    if (!threshold) {
+      return {};
+    }
+
+    return {
+      value: threshold.value,
+      unit: getMetricUnit(threshold.metric),
+    };
+  }
+
+  private async ensureAlertForTrigger(params: {
+    trigger: { id: string; name: string; severity: string; conditions: any };
+    siteId: string;
+    compoundId?: string | null;
+    cellId?: string | null;
+    sensorId?: string | null;
+    organizationId?: string | null;
+    matchedConditionIds: string[];
+  }) {
+    const existing = await this.prisma.alert.findFirst({
+      where: {
+        triggerId: params.trigger.id,
+        cellId: params.cellId ?? null,
+        sensorId: params.sensorId ?? null,
+        status: {
+          in: ['OPEN', 'ACKNOWLEDGED', 'IN_PROGRESS'],
+        },
+      },
+      select: { id: true },
+    });
+
+    if (existing) {
+      return existing;
+    }
+
+    const conditions = parseTriggerConditions(params.trigger.conditions);
+    const matchedConditions = conditions.filter((condition) =>
+      params.matchedConditionIds.includes(condition.id),
+    );
+
+    const description = this.buildAlertDescription(
+      params.trigger.name,
+      matchedConditions,
+    );
+    const threshold = this.getAlertThreshold(matchedConditions);
+
+    return this.prisma.alert.create({
+      data: {
+        triggerId: params.trigger.id,
+        siteId: params.siteId,
+        compoundId: params.compoundId ?? undefined,
+        cellId: params.cellId ?? undefined,
+        sensorId: params.sensorId ?? undefined,
+        organizationId: params.organizationId ?? undefined,
+        title: params.trigger.name,
+        description,
+        severity: params.trigger.severity as any,
+        thresholdValue: threshold.value,
+        unit: threshold.unit,
+      },
+    });
   }
 
   async listGateways(
@@ -340,7 +463,107 @@ export class GatewayService {
       recordedAt: new Date(reading.recordedAt),
     }));
 
-    return this.prisma.gatewayReading.createMany({ data });
+    const latestReading = dto.readings.reduce((latest, reading) => {
+      return new Date(reading.recordedAt) > new Date(latest.recordedAt)
+        ? reading
+        : latest;
+    }, dto.readings[0]);
+
+    const [result] = await this.prisma.$transaction([
+      this.prisma.gatewayReading.createMany({ data }),
+      this.prisma.gateway.update({
+        where: { id: gateway.id },
+        data: {
+          lastTemperature: latestReading.temperature,
+          lastHumidity: latestReading.humidity,
+          lastBattery: latestReading.batteryPercent,
+          lastReadingAt: new Date(latestReading.recordedAt),
+        },
+      }),
+    ]);
+
+    const gatewayDetails = await this.prisma.gateway.findUnique({
+      where: { id: gateway.id },
+      select: {
+        id: true,
+        organizationId: true,
+        cell: {
+          select: {
+            id: true,
+            compound: {
+              select: {
+                id: true,
+                site: { select: { id: true } },
+              },
+            },
+          },
+        },
+      },
+    });
+
+    if (gatewayDetails?.cell?.compound?.site?.id && gatewayDetails.cell.id) {
+      const commodityTypeId = await this.getCellCommodityTypeId(
+        gatewayDetails.cell.id,
+      );
+
+      const triggers = await this.triggerContext.findMatchingTriggers(
+        {
+          organizationId: gatewayDetails.organizationId ?? undefined,
+          commodityTypeId,
+        },
+        { sensorMatch: 'generic' },
+      );
+
+      const latestMetrics = this.buildMetricsFromGatewayReading({
+        temperature: latestReading.temperature,
+        humidity: latestReading.humidity,
+      });
+
+      for (const trigger of triggers) {
+        const changeWindows = this.triggerContext.getChangeMetricWindows(trigger);
+        const previousMetrics: Partial<Record<MetricType, number>> = {};
+
+        for (const [metric, windowDays] of changeWindows.entries()) {
+          const baseline = await this.triggerContext.loadBaselineMetrics({
+            source: 'GATEWAY',
+            sourceId: gatewayDetails.id,
+            since: new Date(
+              new Date(latestReading.recordedAt).getTime() -
+                windowDays * 24 * 60 * 60 * 1000,
+            ),
+            before: new Date(latestReading.recordedAt),
+            metrics: [metric],
+          });
+
+          if (baseline[metric] !== undefined) {
+            previousMetrics[metric] = baseline[metric] as number;
+          }
+        }
+
+        const evaluation = this.triggerEvaluator.evaluateTrigger(trigger, {
+          metrics: latestMetrics,
+          previousMetrics:
+            Object.keys(previousMetrics).length > 0
+              ? previousMetrics
+              : undefined,
+        });
+
+        if (!evaluation.matches) {
+          continue;
+        }
+
+        await this.ensureAlertForTrigger({
+          trigger,
+          siteId: gatewayDetails.cell.compound.site.id,
+          compoundId: gatewayDetails.cell.compound.id,
+          cellId: gatewayDetails.cell.id,
+          organizationId: gatewayDetails.organizationId ?? undefined,
+          matchedConditionIds: evaluation.matchedConditions,
+        });
+      }
+    }
+
+    return result;
   }
 
   async listGatewayReadings(user: AppUser, gatewayId: string, limit = 100) {

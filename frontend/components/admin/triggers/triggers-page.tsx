@@ -7,15 +7,19 @@ import { SidebarTrigger } from '@/components/layout/app-sidebar-layout';
 import { useModal } from '@/components/providers/modal-provider';
 import { TriggerModal } from '@/components/modals/trigger.modal';
 import { useTriggerApi } from '@/hooks/use-trigger-api';
+import { useOrganizationApi } from '@/hooks/use-organization-api';
 import { toast } from 'sonner';
 import { useTranslations } from 'next-intl';
 import type { Trigger } from './types';
+import type { Organization } from '@/schemas/organization.schema';
 
 export function TriggersPage() {
     const modal = useModal();
     const t = useTranslations('toast.trigger');
     const { getList, create, update, toggleActive, remove, isLoading, isUpdating, isDeleting } = useTriggerApi();
+    const { getList: getOrganizations } = useOrganizationApi();
     const [triggers, setTriggers] = useState<Trigger[]>([]);
+    const [organizations, setOrganizations] = useState<Organization[]>([]);
 
     const refreshList = async () => {
         const response = await getList();
@@ -27,6 +31,17 @@ export function TriggersPage() {
     useEffect(() => {
         refreshList();
     }, []);
+
+    useEffect(() => {
+        const loadOrganizations = async () => {
+            const response = await getOrganizations({ limit: 100 });
+            if (response?.data?.items) {
+                setOrganizations(response.data.items);
+            }
+        };
+
+        loadOrganizations();
+    }, [getOrganizations]);
 
     const handleToggleStatus = async (trigger: Trigger) => {
         try {
@@ -79,6 +94,7 @@ export function TriggersPage() {
                     toast.error(response?.error || t('createError'));
                     return null;
                 }}
+                organizations={organizations}
             />
         ));
         if (result) {

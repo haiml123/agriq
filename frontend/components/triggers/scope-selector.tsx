@@ -4,6 +4,7 @@ import { ScopeType, ScopeTypeEnum } from '@/schemas/trigger.schema';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 import { Organization } from '@/schemas/organization.schema';
+import { OrganizationSelect } from '@/components/select/organization-select';
 
 interface ScopeSelectorProps {
     scopeType: ScopeType;
@@ -25,7 +26,8 @@ export function ScopeSelector({
 
     const handleScopeTypeChange = (newScopeType: ScopeType) => {
         if (newScopeType === ScopeTypeEnum.ORGANIZATION) {
-            const defaultOrgId = organizationId ?? organizations?.[0]?.id;
+            const hasOrganizations = Boolean(organizations?.length);
+            const defaultOrgId = hasOrganizations ? (organizationId ?? organizations?.[0]?.id) : undefined;
             onScopeChange({ scopeType: newScopeType, organizationId: defaultOrgId });
         } else {
             onScopeChange({ scopeType: newScopeType, organizationId: undefined });
@@ -58,26 +60,15 @@ export function ScopeSelector({
             {scopeType === ScopeTypeEnum.ORGANIZATION && (
                 <div className="space-y-2">
                     <Label>Organization</Label>
-                    <Select
+                    <OrganizationSelect
                         value={organizationId}
-                        onValueChange={handleOrganizationChange}
-                    >
-                        <SelectTrigger className="w-[200px]">
-                            <SelectValue placeholder="Select organization" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            {(!organizations || organizations.length === 0) && (
-                                <SelectItem value="" disabled>
-                                    No organizations available
-                                </SelectItem>
-                            )}
-                            {organizations?.map((org) => (
-                                <SelectItem key={org.id} value={org.id}>
-                                    {org.name}
-                                </SelectItem>
-                            ))}
-                        </SelectContent>
-                    </Select>
+                        onChange={handleOrganizationChange}
+                        className="w-[200px]"
+                        placeholder="Select organization"
+                        includeAll={false}
+                        organizations={organizations}
+                        emptyLabel="No organizations available"
+                    />
                 </div>
             )}
         </div>
