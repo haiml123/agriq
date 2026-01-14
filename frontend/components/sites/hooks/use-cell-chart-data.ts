@@ -1,7 +1,7 @@
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import type { MultipleCellsDetails, CellChartData, DateRange } from '../types';
 import {
-  getDateFormat,
+  getDateFormatter,
   getCommodityAtTime,
   aggregateReadingsByDate,
   getChartDomain,
@@ -14,6 +14,7 @@ export function useCellChartData(
   dateRange: DateRange
 ): CellChartData {
   const t = useTranslations('sites');
+  const locale = useLocale();
 
   if (!cellsDetails) {
     return {
@@ -33,7 +34,7 @@ export function useCellChartData(
   const trades = cellsDetails.trades.filter((t) => t.cellId === cellId);
   const alerts = cellsDetails.alerts.filter((a) => a.cellId === cellId);
 
-  const dateFormat = getDateFormat(dateRange);
+  const dateFormatter = getDateFormatter(dateRange, locale);
 
   // Helper to get commodity at a specific time
   const getCommodity = (timestamp: string) =>
@@ -42,7 +43,7 @@ export function useCellChartData(
   // Temperature data
   const temperatureData = aggregateReadingsByDate(
     sensorReadings,
-    dateFormat,
+    dateFormatter,
     getCommodity,
     (reading) => reading.temperature
   ).map((d) => ({ ...d, temperature: d.value }));
@@ -50,7 +51,7 @@ export function useCellChartData(
   // Humidity data
   const humidityData = aggregateReadingsByDate(
     sensorReadings,
-    dateFormat,
+    dateFormatter,
     getCommodity,
     (reading) => reading.humidity
   ).map((d) => ({ ...d, humidity: d.value }));
@@ -62,7 +63,7 @@ export function useCellChartData(
   const { min: humidityMin, max: humidityMax } = getChartDomain(humidityValues);
 
   // Generate commodity markers
-  const commodityMarkers = generateCommodityMarkers(trades, dateFormat);
+  const commodityMarkers = generateCommodityMarkers(trades, dateFormatter);
 
   return {
     temperatureData,

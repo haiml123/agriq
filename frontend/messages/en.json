@@ -320,6 +320,8 @@
     "arrivalDate": "Arrival Date",
     "severity": "Severity",
     "dateRange": "Date Range",
+    "commodityLabel": "Commodity",
+    "dateLabel": "Date",
     "last7Days": "Last 7 Days",
     "lastMonth": "Last Month",
     "lastYear": "Last Year",

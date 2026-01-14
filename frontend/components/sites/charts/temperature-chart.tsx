@@ -65,8 +65,12 @@ export function TemperatureChart({
                   return (
                     <div className="bg-gray-800 border border-gray-700 p-2 rounded shadow-lg">
                       <p className="text-gray-200 text-sm font-medium">{data.date}</p>
-                      <p className="text-emerald-400 text-sm">{`Temperature: ${data.temperature}°C`}</p>
-                      <p className="text-amber-400 text-sm font-semibold">{`Commodity: ${data.commodity}`}</p>
+                      <p className="text-emerald-400 text-sm">
+                        {t('temperatureLabel')}: {data.temperature}°C
+                      </p>
+                      <p className="text-amber-400 text-sm font-semibold">
+                        {t('commodityLabel')}: {data.commodity}
+                      </p>
                     </div>
                   );
                 }
@@ -100,7 +104,7 @@ export function TemperatureChart({
               stroke="#10B981"
               strokeWidth={2}
               dot={{ fill: '#10B981' }}
-              name="Temperature (°C)"
+              name={t('temperatureLabel')}
             />
           </LineChart>
         </ResponsiveContainer>

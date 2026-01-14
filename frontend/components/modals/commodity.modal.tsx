@@ -43,6 +43,7 @@ export function CommodityModal({
 }: CommodityModalProps) {
   const t = useTranslations('commodityModal');
   const tCommon = useTranslations('common');
+  const tSites = useTranslations('sites');
   const tToast = useTranslations('toast.commodity');
 
   const { create } = useTradeApi();
@@ -64,6 +65,7 @@ export function CommodityModal({
 
   const [sites, setSites] = useState<CellSelectSite[]>([]);
   const [commodityTypes, setCommodityTypes] = useState<CommodityType[]>([]);
+  const [compoundFilterId, setCompoundFilterId] = useState<string>('all');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string>('');
   const [existingCommodity, setExistingCommodity] = useState<{
@@ -101,6 +103,7 @@ export function CommodityModal({
       notes: '',
       direction: 'IN',
     });
+    setCompoundFilterId('all');
     setError('');
     setExistingCommodity(null);
     setShowWarning(false);
@@ -132,6 +135,22 @@ export function CommodityModal({
       compoundId: '',
       cellId: '',
     });
+    setCompoundFilterId('all');
+    setExistingCommodity(null);
+    setShowWarning(false);
+    setUserConfirmed(false);
+  };
+
+  const handleCompoundChange = (compoundId: string) => {
+    setCompoundFilterId(compoundId);
+    setFormData({
+      ...formData,
+      compoundId: '',
+      cellId: '',
+    });
+    setExistingCommodity(null);
+    setShowWarning(false);
+    setUserConfirmed(false);
   };
 
   const handleCellSelection = async (cellIds: string[]) => {
@@ -142,6 +161,10 @@ export function CommodityModal({
     const compound = selectedSite?.compounds?.find((c) =>
       c.cells?.some((cell) => cell.id === cellId)
     );
+
+    if (compound?.id) {
+      setCompoundFilterId(compound.id);
+    }
 
     setFormData({
       ...formData,
@@ -325,6 +348,30 @@ export function CommodityModal({
             </Select>
           </div>
 
+          {/* Compound (Optional) */}
+          <div className="space-y-2">
+            <Label htmlFor="compoundId">{tSites('compound')}</Label>
+            <Select
+              value={compoundFilterId}
+              onValueChange={handleCompoundChange}
+              disabled={!formData.siteId}
+            >
+              <SelectTrigger id="compoundId" className="w-full">
+                <SelectValue placeholder={tSites('allCompounds')} />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">{tSites('allCompounds')}</SelectItem>
+                {sites
+                  .find((site) => site.id === formData.siteId)
+                  ?.compounds?.map((compound) => (
+                    <SelectItem key={compound.id} value={compound.id}>
+                      {compound.name}
+                    </SelectItem>
+                  ))}
+              </SelectContent>
+            </Select>
+          </div>
+
           {/* Cell Selection (Grouped by Compound) */}
           <div className="space-y-2">
             <Label htmlFor="cellId">
@@ -333,6 +380,7 @@ export function CommodityModal({
             <CellSelect
               sites={sites}
               selectedSiteId={formData.siteId}
+              selectedCompoundId={compoundFilterId === 'all' ? undefined : compoundFilterId}
               selectedCellIds={formData.cellId ? [formData.cellId] : []}
               onCellSelectionChange={handleCellSelection}
               multiSelect={false}

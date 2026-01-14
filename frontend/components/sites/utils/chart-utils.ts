@@ -1,4 +1,3 @@
-import { format } from 'date-fns';
 import type { DateRange, Trade, SensorReading, ChartDataPoint, CommodityMarker } from '../types';
 import { DateRangeEnum } from '../types';
 
@@ -14,17 +13,25 @@ export const commodityColors = [
   '#14B8A6', // Teal
 ];
 
-export function getDateFormat(dateRange: DateRange): string {
+export function getDateFormatter(dateRange: DateRange, locale: string) {
+  let options: Intl.DateTimeFormatOptions;
+
   switch (dateRange) {
     case DateRangeEnum['7days']:
-      return 'MMM dd';
+      options = { month: 'short', day: '2-digit' };
+      break;
     case DateRangeEnum.month:
-      return 'MMM dd';
+      options = { month: 'short', day: '2-digit' };
+      break;
     case DateRangeEnum.year:
-      return 'MMM yyyy';
+      options = { month: 'short', year: 'numeric' };
+      break;
     default:
-      return 'MMM dd';
+      options = { month: 'short', day: '2-digit' };
+      break;
   }
+
+  return new Intl.DateTimeFormat(locale, options);
 }
 
 export function getCommodityAtTime(
@@ -53,14 +60,14 @@ export function getCommodityAtTime(
 
 export function aggregateReadingsByDate(
   readings: SensorReading[],
-  dateFormat: string,
+  dateFormatter: Intl.DateTimeFormat,
   getCommodity: (timestamp: string) => string,
   getValue: (reading: SensorReading) => number
 ) {
   const byDate = new Map<string, { sum: number; count: number; fullDate: string }>();
 
   readings.forEach((r) => {
-    const dateKey = format(new Date(r.recordedAt), dateFormat);
+    const dateKey = dateFormatter.format(new Date(r.recordedAt));
     if (!byDate.has(dateKey)) {
       byDate.set(dateKey, { sum: 0, count: 0, fullDate: r.recordedAt });
     }
@@ -91,7 +98,7 @@ export function getChartDomain(values: number[]): { min: number; max: number } {
 
 export function generateCommodityMarkers(
   trades: Trade[],
-  dateFormat: string
+  dateFormatter: Intl.DateTimeFormat
 ): CommodityMarker[] {
   const uniqueMarkers = new Map<string, CommodityMarker>();
 
@@ -102,7 +109,7 @@ export function generateCommodityMarkers(
         trade.commodity.commodityType?.name || trade.commodity.name || 'Unknown';
       if (!uniqueMarkers.has(commodityName)) {
         uniqueMarkers.set(commodityName, {
-          date: format(new Date(trade.tradedAt), dateFormat),
+          date: dateFormatter.format(new Date(trade.tradedAt)),
           fullDate: trade.tradedAt,
           commodity: commodityName,
           color: commodityColors[index % commodityColors.length],

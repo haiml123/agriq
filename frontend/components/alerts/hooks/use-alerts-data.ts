@@ -41,10 +41,8 @@ export function useAlertsData(filters: UseAlertsDataParams) {
       // Status filter
       if (filters.statusFilter === 'all') {
         params.status = 'all';
-      } else if (filters.statusFilter.length > 0) {
-        params.status = filters.statusFilter.join(',');
       } else {
-        params.status = 'all';
+        params.status = filters.statusFilter;
       }
 
       // Severity filter

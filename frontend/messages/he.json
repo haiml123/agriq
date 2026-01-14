@@ -305,6 +305,8 @@
     "arrivalDate": "תאריך הגעה",
     "severity": "חומרה",
     "dateRange": "טווח תאריכים",
+    "commodityLabel": "סחורה",
+    "dateLabel": "תאריך",
     "last7Days": "7 ימים אחרונים",
     "lastMonth": "חודש אחרון",
     "lastYear": "שנה אחרונה",

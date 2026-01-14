@@ -1,13 +1,6 @@
 import { useTranslations } from 'next-intl';
-import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuCheckboxItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
 import type { StatusFilter, SeverityFilter, TimeFilter } from './types';
 import { AlertStatusEnum, SeverityEnum } from './types';
 
@@ -53,33 +46,6 @@ export function AlertsFilters({
   const t = useTranslations('pages.alerts');
   const tSeverity = useTranslations('severity');
   const tStatus = useTranslations('alertStatus');
-  const isAllStatuses = statusFilter === 'all';
-  const selectedStatuses = isAllStatuses ? [] : statusFilter;
-  const statusLabel = isAllStatuses
-    ? t('allAlerts')
-    : selectedStatuses.map((status) => tStatus(status)).join(', ');
-
-  const toggleStatus = (value: string) => {
-    if (value === 'all') {
-      setStatusFilter('all');
-      return;
-    }
-
-    const next = isAllStatuses ? [] : [...selectedStatuses];
-    const statusValue = value as 'OPEN' | 'ACKNOWLEDGED';
-    const existingIndex = next.indexOf(statusValue);
-    if (existingIndex >= 0) {
-      next.splice(existingIndex, 1);
-    } else {
-      next.push(statusValue);
-    }
-
-    if (next.length === 0) {
-      setStatusFilter('all');
-    } else {
-      setStatusFilter(next);
-    }
-  };
 
   return (
     <Card className="mb-6">
@@ -158,33 +124,18 @@ export function AlertsFilters({
 
           <div className="flex flex-col w-48">
             <label className="text-sm font-medium mb-2">{t('status')}</label>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline" className="w-full h-10 justify-between">
-                  <span className="truncate">{statusLabel || t('allAlerts')}</span>
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent className="w-56">
-                <DropdownMenuCheckboxItem
-                  checked={isAllStatuses}
-                  onCheckedChange={() => toggleStatus('all')}
-                >
-                  {t('allAlerts')}
-                </DropdownMenuCheckboxItem>
-                <DropdownMenuCheckboxItem
-                  checked={!isAllStatuses && selectedStatuses.includes(AlertStatusEnum.OPEN)}
-                  onCheckedChange={() => toggleStatus(AlertStatusEnum.OPEN)}
-                >
-                  {tStatus(AlertStatusEnum.OPEN)}
-                </DropdownMenuCheckboxItem>
-                <DropdownMenuCheckboxItem
-                  checked={!isAllStatuses && selectedStatuses.includes(AlertStatusEnum.ACKNOWLEDGED)}
-                  onCheckedChange={() => toggleStatus(AlertStatusEnum.ACKNOWLEDGED)}
-                >
+            <Select value={statusFilter} onValueChange={(val) => setStatusFilter(val as StatusFilter)}>
+              <SelectTrigger className="w-full h-10">
+                <SelectValue placeholder={t('allAlerts')} />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">{t('allAlerts')}</SelectItem>
+                <SelectItem value={AlertStatusEnum.OPEN}>{tStatus(AlertStatusEnum.OPEN)}</SelectItem>
+                <SelectItem value={AlertStatusEnum.ACKNOWLEDGED}>
                   {tStatus(AlertStatusEnum.ACKNOWLEDGED)}
-                </DropdownMenuCheckboxItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+                </SelectItem>
+              </SelectContent>
+            </Select>
           </div>
 
           <div className="flex flex-col w-40">
