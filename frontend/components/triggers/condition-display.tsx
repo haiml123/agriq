@@ -2,13 +2,77 @@ import type { Condition } from '@/schemas/trigger.schema';
 
 interface ConditionDisplayProps {
     condition: Condition;
+    valueSources?: string[];
 }
 
-export function ConditionDisplay({ condition }: ConditionDisplayProps) {
-    const metricLabel = condition.metric === 'TEMPERATURE' ? 'Temperature' : 'Humidity';
-    const unit = condition.metric === 'TEMPERATURE' ? '°C' : '%';
+export function ConditionDisplay({ condition, valueSources }: ConditionDisplayProps) {
+    const resolvedValueSources = valueSources ?? condition.valueSources;
+    const sourceLabelMap: Record<string, string> = {
+        SENSOR: 'sensor',
+        GATEWAY: 'gateway',
+        OUTSIDE: 'outside',
+    };
+    const sourceLabel = sourceLabelMap[condition.sourceType ?? 'SENSOR'] ?? condition.sourceType ?? 'sensor';
+    const metricLabelMap: Record<string, string> = {
+        TEMPERATURE: 'Temperature',
+        HUMIDITY: 'Humidity',
+        EMC: 'EMC',
+        MEDIAN_TEMPERATURE: 'Median Temperature',
+        MEDIAN_HUMIDITY: 'Median Humidity',
+    };
+    const unitMap: Record<string, string> = {
+        TEMPERATURE: '°C',
+        HUMIDITY: '%',
+        EMC: '%',
+        MEDIAN_TEMPERATURE: '°C',
+        MEDIAN_HUMIDITY: '%',
+    };
+    const metricLabel = metricLabelMap[condition.metric] ?? condition.metric;
+    const unit = unitMap[condition.metric] ?? '';
 
     if (condition.type === 'THRESHOLD') {
+        if (resolvedValueSources && resolvedValueSources.length > 0) {
+            const formattedSources = resolvedValueSources.map((source) => {
+                if (source === 'GATEWAY') return 'Gateway';
+                if (source === 'OUTSIDE') return 'Outside';
+                return source;
+            });
+            const sourceText =
+                formattedSources.length === 1
+                    ? formattedSources[0]
+                    : formattedSources.join(' & ');
+            const suffixMap: Record<string, string> = {
+                TEMPERATURE: 'temperature',
+                MEDIAN_TEMPERATURE: 'temperature',
+                HUMIDITY: 'humidity',
+                MEDIAN_HUMIDITY: 'humidity',
+            };
+            const sourceMetricSuffix = suffixMap[condition.metric];
+
+            const operatorText: Record<string, string> = {
+                ABOVE: 'is above',
+                BELOW: 'is below',
+                EQUALS: 'equals',
+                BETWEEN: 'is between',
+            };
+
+            return (
+                <span className="text-sm">
+                    <span className="text-blue-600 dark:text-blue-400 font-medium">{sourceLabel} </span>
+                    <span className="font-medium text-foreground">{metricLabel}</span>{' '}
+                    <span className="text-muted-foreground">
+                        {operatorText[condition.operator || 'ABOVE']} from
+                    </span>{' '}
+                    <span className="font-semibold text-emerald-600 dark:text-emerald-400">
+                        {sourceText}
+                    </span>
+                    {sourceMetricSuffix && (
+                        <span className="text-muted-foreground"> {sourceMetricSuffix}</span>
+                    )}
+                </span>
+            );
+        }
+
         const operatorText: Record<string, string> = {
             ABOVE: 'is above',
             BELOW: 'is below',
@@ -34,6 +98,7 @@ export function ConditionDisplay({ condition }: ConditionDisplayProps) {
 
         return (
             <span className="text-sm">
+                <span className="text-blue-600 dark:text-blue-400 font-medium">{sourceLabel} </span>
                 <span className="font-medium text-foreground">{metricLabel}</span>{' '}
                 <span className="text-muted-foreground">{operatorText[condition.operator || 'ABOVE']}</span>{' '}
                 <span className="font-semibold text-emerald-600 dark:text-emerald-400">
@@ -52,6 +117,7 @@ export function ConditionDisplay({ condition }: ConditionDisplayProps) {
 
         return (
             <span className="text-sm">
+                <span className="text-blue-600 dark:text-blue-400 font-medium">{sourceLabel} </span>
                 <span className="font-medium text-foreground">{metricLabel}</span>{' '}
                 <span className="text-muted-foreground">{directionText[condition.changeDirection || 'ANY']}</span>{' '}
                 <span className="font-semibold text-emerald-600 dark:text-emerald-400">
@@ -59,7 +125,7 @@ export function ConditionDisplay({ condition }: ConditionDisplayProps) {
                 </span>
                 <span className="text-muted-foreground"> in </span>
                 <span className="font-semibold text-emerald-600 dark:text-emerald-400">
-                    {condition.timeWindowDays} days
+                    {condition.timeWindowHours} hours
                 </span>
             </span>
         );

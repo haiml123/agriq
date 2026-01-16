@@ -1,7 +1,7 @@
 import { z } from 'zod'
 
 export const communicationTypeSchema = z.enum(["EMAIL", "SMS", "PUSH"]);
-export const metricSchema = z.enum(["TEMPERATURE", "HUMIDITY", "EMC"])
+export const metricSchema = z.enum(["TEMPERATURE", "HUMIDITY", "EMC", "MEDIAN_TEMPERATURE", "MEDIAN_HUMIDITY"])
 export const severitySchema = z.enum(["LOW", "MEDIUM", "HIGH", "CRITICAL"])
 export const alertStatusSchema = z.enum(['OPEN', 'ACKNOWLEDGED', 'IN_PROGRESS', 'RESOLVED', 'DISMISSED']);
 export const entityStatusSchema = z.enum(['ACTIVE', "PENDING", "BLOCKED", "DELETED"]);

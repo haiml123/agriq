@@ -33,6 +33,19 @@ export enum MetricType {
   TEMPERATURE = 'TEMPERATURE',
   HUMIDITY = 'HUMIDITY',
   EMC = 'EMC',
+  MEDIAN_TEMPERATURE = 'MEDIAN_TEMPERATURE',
+  MEDIAN_HUMIDITY = 'MEDIAN_HUMIDITY',
+}
+
+export enum ValueSource {
+  GATEWAY = 'GATEWAY',
+  OUTSIDE = 'OUTSIDE',
+}
+
+export enum ConditionSourceType {
+  SENSOR = 'SENSOR',
+  GATEWAY = 'GATEWAY',
+  OUTSIDE = 'OUTSIDE',
 }
 
 export enum ConditionType {
@@ -98,20 +111,29 @@ export class ConditionDto {
 
   @IsNumber()
   @IsOptional()
-  secondary_value?: number;
+  secondaryValue?: number;
 
   // Change fields
   @IsEnum(ChangeDirection)
   @IsOptional()
-  change_direction?: ChangeDirection;
+  changeDirection?: ChangeDirection;
 
   @IsNumber()
   @IsOptional()
-  change_amount?: number;
+  changeAmount?: number;
 
   @IsNumber()
   @IsOptional()
-  time_window_days?: number;
+  timeWindowHours?: number;
+
+  @IsArray()
+  @IsEnum(ValueSource, { each: true })
+  @IsOptional()
+  valueSources?: ValueSource[];
+
+  @IsEnum(ConditionSourceType)
+  @IsOptional()
+  sourceType?: ConditionSourceType;
 }
 
 export class ActionDto {

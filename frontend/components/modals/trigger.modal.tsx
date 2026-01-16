@@ -11,6 +11,7 @@ interface TriggerModalProps {
     onSubmit: (trigger: Trigger) => Promise<Trigger | null>;
     onClose: (result?: Trigger | null) => void;
     organizations?: Organization[];
+    dialogClassName?: string;
 }
 
 export function TriggerModal({ trigger, onSubmit, onClose, organizations }: TriggerModalProps) {

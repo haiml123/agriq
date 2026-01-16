@@ -23,7 +23,7 @@ type TriggerCondition = {
   id: string;
   metric: MetricType;
   type: ConditionType;
-  time_window_days?: number;
+  timeWindowHours?: number;
 };
 
 @Injectable()
@@ -73,11 +73,11 @@ export class TriggerContextService {
     });
   }
 
-  getMaxChangeWindowDays(triggers: EventTrigger[]): number | null {
+  getMaxChangeWindowHours(triggers: EventTrigger[]): number | null {
     const windows = triggers.flatMap((trigger) =>
       this.parseConditions(trigger.conditions)
         .filter((condition) => condition.type === ConditionType.CHANGE)
-        .map((condition) => condition.time_window_days ?? 0),
+        .map((condition) => condition.timeWindowHours ?? 0),
     );
 
     const maxWindow = windows.length > 0 ? Math.max(...windows) : 0;
@@ -113,7 +113,17 @@ export class TriggerContextService {
           MetricType.TEMPERATURE,
           reading.temperature,
         );
+        this.assignMetricValue(
+          baseline,
+          MetricType.MEDIAN_TEMPERATURE,
+          reading.temperature,
+        );
         this.assignMetricValue(baseline, MetricType.HUMIDITY, reading.humidity);
+        this.assignMetricValue(
+          baseline,
+          MetricType.MEDIAN_HUMIDITY,
+          reading.humidity,
+        );
       }
     }
 
@@ -136,7 +146,17 @@ export class TriggerContextService {
           MetricType.TEMPERATURE,
           reading.temperature,
         );
+        this.assignMetricValue(
+          baseline,
+          MetricType.MEDIAN_TEMPERATURE,
+          reading.temperature,
+        );
         this.assignMetricValue(baseline, MetricType.HUMIDITY, reading.humidity);
+        this.assignMetricValue(
+          baseline,
+          MetricType.MEDIAN_HUMIDITY,
+          reading.humidity,
+        );
       }
     }
 
@@ -179,10 +199,10 @@ export class TriggerContextService {
     this.parseConditions(trigger.conditions)
       .filter((condition) => condition.type === ConditionType.CHANGE)
       .forEach((condition) => {
-        const windowDays = condition.time_window_days ?? 1;
+        const windowHours = condition.timeWindowHours ?? 1;
         const existing = windows.get(condition.metric) ?? 0;
-        if (windowDays > existing) {
-          windows.set(condition.metric, windowDays);
+        if (windowHours > existing) {
+          windows.set(condition.metric, windowHours);
         }
       });
 

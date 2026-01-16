@@ -2,10 +2,12 @@ import { Injectable } from '@nestjs/common';
 import { EventTrigger } from '@prisma/client';
 import {
   ChangeDirection,
+  ConditionSourceType,
   ConditionLogic,
   ConditionType,
   MetricType,
   Operator,
+  ValueSource,
 } from './dto';
 
 export interface TriggerEvaluationContext {
@@ -25,10 +27,12 @@ type TriggerCondition = {
   type: ConditionType;
   operator?: Operator;
   value?: number;
-  secondary_value?: number;
-  change_direction?: ChangeDirection;
-  change_amount?: number;
-  time_window_days?: number;
+  secondaryValue?: number;
+  changeDirection?: ChangeDirection;
+  changeAmount?: number;
+  timeWindowHours?: number;
+  valueSources?: ValueSource[];
+  sourceType?: ConditionSourceType;
 };
 
 @Injectable()
@@ -108,7 +112,7 @@ export class TriggerEvaluatorService {
   }
 
   private evaluateThreshold(condition: TriggerCondition, current: number): boolean {
-    const { operator, value, secondary_value } = condition;
+    const { operator, value, secondaryValue } = condition;
 
     if (!operator || value === undefined) {
       return false;
@@ -122,11 +126,11 @@ export class TriggerEvaluatorService {
       case Operator.EQUALS:
         return current === value;
       case Operator.BETWEEN: {
-        if (secondary_value === undefined) {
+        if (secondaryValue === undefined) {
           return false;
         }
-        const min = Math.min(value, secondary_value);
-        const max = Math.max(value, secondary_value);
+        const min = Math.min(value, secondaryValue);
+        const max = Math.max(value, secondaryValue);
         return current >= min && current <= max;
       }
       default:
@@ -140,7 +144,7 @@ export class TriggerEvaluatorService {
     previousMetrics?: Partial<Record<MetricType, number>>,
   ): boolean {
     const previous = previousMetrics?.[condition.metric];
-    const changeAmount = condition.change_amount ?? 0;
+    const changeAmount = condition.changeAmount ?? 0;
 
     if (previous === undefined || Number.isNaN(previous)) {
       return false;
@@ -148,7 +152,7 @@ export class TriggerEvaluatorService {
 
     const delta = current - previous;
 
-    switch (condition.change_direction) {
+    switch (condition.changeDirection) {
       case ChangeDirection.INCREASE:
         return delta >= changeAmount;
       case ChangeDirection.DECREASE:

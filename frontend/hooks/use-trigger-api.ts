@@ -23,10 +23,7 @@ type ApiTriggerResponse = {
     } | null;
     conditionLogic?: Trigger['conditionLogic'];
     conditions?: (Condition & {
-        secondary_value?: number;
-        change_direction?: Condition['changeDirection'];
-        change_amount?: number;
-        time_window_days?: number;
+        timeWindowHours?: number;
     })[];
     actions?: (Action & {
         webhookUrl?: string;
@@ -42,10 +39,12 @@ const mapConditionFromApi = (condition: any): Condition => ({
     type: condition?.type,
     operator: condition?.operator,
     value: condition?.value,
-    secondaryValue: condition?.secondary_value ?? condition?.secondaryValue,
-    changeDirection: condition?.change_direction ?? condition?.changeDirection,
-    changeAmount: condition?.change_amount ?? condition?.changeAmount,
-    timeWindowDays: condition?.time_window_days ?? condition?.timeWindowDays,
+    secondaryValue: condition?.secondaryValue,
+    changeDirection: condition?.changeDirection,
+    changeAmount: condition?.changeAmount,
+    timeWindowHours: condition?.timeWindowHours,
+    valueSources: condition?.valueSources,
+    sourceType: condition?.sourceType,
 });
 
 const mapActionFromApi = (action: any): Action => ({
@@ -86,10 +85,12 @@ const mapConditionToApi = (condition: Condition) => ({
     type: condition.type,
     operator: condition.operator,
     value: condition.value,
-    secondary_value: condition.secondaryValue,
-    change_direction: condition.changeDirection,
-    change_amount: condition.changeAmount,
-    time_window_days: condition.timeWindowDays,
+    secondaryValue: condition.secondaryValue,
+    changeDirection: condition.changeDirection,
+    changeAmount: condition.changeAmount,
+    timeWindowHours: condition.timeWindowHours,
+    valueSources: condition.valueSources,
+    sourceType: condition.sourceType,
 });
 
 const mapActionToApi = (action: Action) => ({

@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, ReactNode, useCallback, useContext, useState } from 'react';
+import { createContext, isValidElement, ReactNode, useCallback, useContext, useState } from 'react';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 
 interface ModalItem {
@@ -49,12 +49,20 @@ export function ModalProvider({ children }: { children: ReactNode }) {
         <ModalContext.Provider value={{ open, close }}>
             {children}
             {modals.map((modal, index) => (
+                // Allow modal content to request a DialogContent className.
                 <Dialog
                     key={modal.id}
                     open={true}
                     onOpenChange={(open) => !open && close()}
                 >
-                    <DialogContent style={{ zIndex: 50 + index }}>
+                    <DialogContent
+                        className={
+                            isValidElement(modal.content)
+                                ? (modal.content.props as { dialogClassName?: string }).dialogClassName
+                                : undefined
+                        }
+                        style={{ zIndex: 50 + index }}
+                    >
                         {modal.content}
                     </DialogContent>
                 </Dialog>

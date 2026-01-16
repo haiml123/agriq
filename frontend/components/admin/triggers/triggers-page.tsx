@@ -76,6 +76,7 @@ export function TriggersPage() {
             <TriggerModal
                 trigger={editTrigger ?? null}
                 onClose={onClose}
+                dialogClassName="sm:max-w-4xl"
                 onSubmit={async (data) => {
                     if (editTrigger?.id) {
                         const response = await update(editTrigger.id, data);

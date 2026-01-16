@@ -7,6 +7,7 @@ export const changeDirectionSchema = z.enum(["INCREASE", "DECREASE", "ANY"])
 export const conditionLogicSchema = z.enum(["AND", "OR"])
 export const actionTypeSchema = z.enum(["EMAIL", "SMS", "PUSH"])
 export const scopeTypeSchema = z.enum(["ALL", "ORGANIZATION", "SITE"])
+export const sourceTypeSchema = z.enum(["SENSOR", "GATEWAY", "OUTSIDE"])
 
 export const ConditionTypeEnum = conditionTypeSchema.enum;
 export const OperatorEnum = operatorSchema.enum;
@@ -21,13 +22,15 @@ export const triggerCommodityTypeSchema = z.object({
 export const conditionSchema = z.object({
     id: z.string(),
     metric: metricSchema,
+    sourceType: sourceTypeSchema.optional(),
     type: conditionTypeSchema,
     operator: operatorSchema.optional(),
     value: z.number().optional(),
     secondaryValue: z.number().optional(),
     changeDirection: changeDirectionSchema.optional(),
     changeAmount: z.number().optional(),
-    timeWindowDays: z.number().optional(),
+    timeWindowHours: z.number().optional(),
+    valueSources: z.array(z.enum(['GATEWAY', 'OUTSIDE'])).optional(),
 })
 
 export const notificationTemplateSchema = z.object({
@@ -70,6 +73,7 @@ export type ChangeDirection = z.infer<typeof changeDirectionSchema>
 export type ConditionLogic = z.infer<typeof conditionLogicSchema>
 export type ActionType = z.infer<typeof actionTypeSchema>
 export type ScopeType = z.infer<typeof scopeTypeSchema>
+export type SourceType = z.infer<typeof sourceTypeSchema>
 export type Condition = z.infer<typeof conditionSchema>
 export type NotificationTemplate = z.infer<typeof notificationTemplateSchema>
 export type Action = z.infer<typeof actionSchema>
@@ -98,9 +102,11 @@ export const TEMPLATE_VARIABLES = [
 export const createDefaultCondition = (): Condition => ({
     id: Date.now().toString(),
     metric: "TEMPERATURE",
+    sourceType: "SENSOR",
     type: "THRESHOLD",
     operator: "ABOVE",
     value: 30,
+    valueSources: [],
 })
 
 export const createDefaultAction = (type: CommunicationType): Action => ({

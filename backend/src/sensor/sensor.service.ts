@@ -56,7 +56,9 @@ export class SensorService {
   }): Partial<Record<MetricType, number>> {
     return {
       [MetricType.TEMPERATURE]: reading.temperature,
+      [MetricType.MEDIAN_TEMPERATURE]: reading.temperature,
       [MetricType.HUMIDITY]: reading.humidity,
+      [MetricType.MEDIAN_HUMIDITY]: reading.humidity,
     };
   }
 
@@ -401,13 +403,13 @@ export class SensorService {
         const changeWindows = this.triggerContext.getChangeMetricWindows(trigger);
         const previousMetrics: Partial<Record<MetricType, number>> = {};
 
-        for (const [metric, windowDays] of changeWindows.entries()) {
+        for (const [metric, windowHours] of changeWindows.entries()) {
           const baseline = await this.triggerContext.loadBaselineMetrics({
             source: 'SENSOR',
             sourceId: sensor.id,
             since: new Date(
               new Date(latestReading.recordedAt).getTime() -
-                windowDays * 24 * 60 * 60 * 1000,
+                windowHours * 60 * 60 * 1000,
             ),
             before: new Date(latestReading.recordedAt),
             metrics: [metric],
