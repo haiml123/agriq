@@ -45,6 +45,7 @@ const mapConditionFromApi = (condition: any): Condition => ({
     timeWindowHours: condition?.timeWindowHours,
     valueSources: condition?.valueSources,
     sourceType: condition?.sourceType,
+    isLocal: condition?.isLocal,
 });
 
 const mapActionFromApi = (action: any): Action => ({
@@ -91,6 +92,7 @@ const mapConditionToApi = (condition: Condition) => ({
     timeWindowHours: condition.timeWindowHours,
     valueSources: condition.valueSources,
     sourceType: condition.sourceType,
+    isLocal: condition.isLocal,
 });
 
 const mapActionToApi = (action: Action) => ({

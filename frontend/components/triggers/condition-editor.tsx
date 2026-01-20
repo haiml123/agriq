@@ -45,6 +45,12 @@ const METRICS_BY_SOURCE: Record<string, string[]> = {
     OUTSIDE: [MetricTypeEnum.TEMPERATURE, MetricTypeEnum.HUMIDITY],
 };
 
+const LOCAL_SENSOR_METRICS = [
+    MetricTypeEnum.TEMPERATURE,
+    MetricTypeEnum.HUMIDITY,
+    MetricTypeEnum.EMC,
+];
+
 const VALUE_SOURCE_METRICS = new Set<Condition['metric']>([
     MetricTypeEnum.TEMPERATURE,
     MetricTypeEnum.MEDIAN_TEMPERATURE,
@@ -59,26 +65,35 @@ export function ConditionEditor({
     canRemove,
 }: ConditionEditorProps) {
     const sourceType = condition.sourceType ?? 'SENSOR';
+    const isLocal = condition.isLocal ?? false;
     const availableMetrics = useMemo(() => {
-        return METRIC_OPTIONS.filter((option) => METRICS_BY_SOURCE[sourceType]?.includes(option.value));
-    }, [sourceType]);
+        const allowed = isLocal && sourceType === 'SENSOR' ? LOCAL_SENSOR_METRICS : METRICS_BY_SOURCE[sourceType];
+        return METRIC_OPTIONS.filter((option) => allowed?.includes(option.value));
+    }, [isLocal, sourceType]);
 
-    const updateField = (field: string, value: string | number | string[]) => {
+    const updateField = (field: string, value: string | number | string[] | boolean) => {
         onChange({ ...condition, [field]: value });
     };
 
+    const showLocalOption = sourceType === 'SENSOR';
+    const isSourceLocked = showLocalOption && isLocal;
+
     useEffect(() => {
-        const allowedMetrics = METRICS_BY_SOURCE[sourceType] || [];
+        const allowedMetrics =
+            isLocal && sourceType === 'SENSOR'
+                ? LOCAL_SENSOR_METRICS
+                : METRICS_BY_SOURCE[sourceType] || [];
         if (allowedMetrics.length > 0 && !allowedMetrics.includes(condition.metric)) {
             updateField('metric', allowedMetrics[0]);
         }
-    }, [condition.metric, sourceType]);
+    }, [condition.metric, isLocal, sourceType]);
 
     const valueSources = condition.valueSources ?? [];
     const showValueSourceOptions =
         condition.type === ConditionTypeEnum.THRESHOLD &&
         VALUE_SOURCE_METRICS.has(condition.metric) &&
-        sourceType === 'SENSOR';
+        sourceType === 'SENSOR' &&
+        !isLocal;
     const disableValueInputs = valueSources.length > 0;
 
     useEffect(() => {
@@ -88,10 +103,56 @@ export function ConditionEditor({
     }, [showValueSourceOptions, valueSources.length]);
 
     useEffect(() => {
+        if (!showLocalOption && isLocal) {
+            updateField('isLocal', false);
+        }
+    }, [isLocal, showLocalOption]);
+
+    useEffect(() => {
         if (!condition.sourceType) {
             updateField('sourceType', 'SENSOR');
         }
     }, [condition.sourceType]);
+
+    useEffect(() => {
+        if (isLocal && condition.sourceType !== 'SENSOR') {
+            updateField('sourceType', 'SENSOR');
+        }
+    }, [condition.sourceType, isLocal]);
+
+    useEffect(() => {
+        if (isLocal && condition.type !== ConditionTypeEnum.THRESHOLD) {
+            onChange({
+                ...condition,
+                type: ConditionTypeEnum.THRESHOLD,
+                operator: condition.operator || 'ABOVE',
+                value: condition.value ?? 30,
+            });
+        }
+    }, [condition, isLocal, onChange]);
+
+    const allowedOperators = isLocal
+        ? ['ABOVE', 'BELOW', 'BETWEEN']
+        : ['ABOVE', 'BELOW', 'EQUALS', 'BETWEEN'];
+    const allowedChangeDirections = isLocal
+        ? ['INCREASE', 'DECREASE']
+        : ['ANY', 'INCREASE', 'DECREASE'];
+
+    useEffect(() => {
+        if (condition.type === ConditionTypeEnum.THRESHOLD && condition.operator) {
+            if (!allowedOperators.includes(condition.operator)) {
+                updateField('operator', allowedOperators[0]);
+            }
+        }
+    }, [allowedOperators, condition.operator, condition.type]);
+
+    useEffect(() => {
+        if (condition.type === ConditionTypeEnum.CHANGE && condition.changeDirection) {
+            if (!allowedChangeDirections.includes(condition.changeDirection)) {
+                updateField('changeDirection', allowedChangeDirections[0]);
+            }
+        }
+    }, [allowedChangeDirections, condition.changeDirection, condition.type]);
 
     const toggleValueSource = (sourceType: 'GATEWAY' | 'OUTSIDE') => {
         const nextSources = valueSources.includes(sourceType)
@@ -112,8 +173,23 @@ export function ConditionEditor({
                 <div className="flex items-start justify-between">
                     <div className="flex flex-wrap gap-4 flex-1">
                         <div className="space-y-2">
-                            <Label>Source</Label>
-                            <Select value={sourceType} onValueChange={(value) => updateField('sourceType', value)}>
+                            <div className="flex items-center justify-between">
+                                <Label>Source</Label>
+                                {showLocalOption && (
+                                    <label className="flex items-center gap-2 text-xs text-muted-foreground">
+                                        <Checkbox
+                                            checked={isLocal}
+                                            onCheckedChange={(checked) => updateField('isLocal', Boolean(checked))}
+                                        />
+                                        Local
+                                    </label>
+                                )}
+                            </div>
+                            <Select
+                                value={sourceType}
+                                onValueChange={(value) => updateField('sourceType', value)}
+                                disabled={isSourceLocked}
+                            >
                                 <SelectTrigger className="w-[140px]">
                                     <SelectValue placeholder="Select source" />
                                 </SelectTrigger>
@@ -165,6 +241,7 @@ export function ConditionEditor({
                                         });
                                     }
                                 }}
+                                disabled={isLocal}
                             >
                                 <SelectTrigger className="w-[180px]">
                                     <SelectValue />
@@ -185,10 +262,18 @@ export function ConditionEditor({
                                             <SelectValue />
                                         </SelectTrigger>
                                         <SelectContent>
-                                            <SelectItem value="ABOVE">Above</SelectItem>
-                                            <SelectItem value="BELOW">Below</SelectItem>
-                                            <SelectItem value="EQUALS">Equals</SelectItem>
-                                            <SelectItem value="BETWEEN">Between</SelectItem>
+                                            {allowedOperators.includes('ABOVE') && (
+                                                <SelectItem value="ABOVE">Above</SelectItem>
+                                            )}
+                                            {allowedOperators.includes('BELOW') && (
+                                                <SelectItem value="BELOW">Below</SelectItem>
+                                            )}
+                                            {allowedOperators.includes('EQUALS') && (
+                                                <SelectItem value="EQUALS">Equals</SelectItem>
+                                            )}
+                                            {allowedOperators.includes('BETWEEN') && (
+                                                <SelectItem value="BETWEEN">Between</SelectItem>
+                                            )}
                                         </SelectContent>
                                     </Select>
                                 </div>
@@ -252,9 +337,15 @@ export function ConditionEditor({
                                             <SelectValue />
                                         </SelectTrigger>
                                         <SelectContent>
-                                            <SelectItem value="ANY">Any change</SelectItem>
-                                            <SelectItem value="INCREASE">Increase only</SelectItem>
-                                            <SelectItem value="DECREASE">Decrease only</SelectItem>
+                                            {allowedChangeDirections.includes('ANY') && (
+                                                <SelectItem value="ANY">Any change</SelectItem>
+                                            )}
+                                            {allowedChangeDirections.includes('INCREASE') && (
+                                                <SelectItem value="INCREASE">Increase only</SelectItem>
+                                            )}
+                                            {allowedChangeDirections.includes('DECREASE') && (
+                                                <SelectItem value="DECREASE">Decrease only</SelectItem>
+                                            )}
                                         </SelectContent>
                                     </Select>
                                 </div>
