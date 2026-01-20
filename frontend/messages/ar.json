@@ -204,7 +204,8 @@
     "triggers": "المحفزات",
     "commodities": "السلع",
     "lookupTables": "جداول البحث",
-    "simulator": "Simulator"
+    "simulator": "Simulator",
+    "updates": "تحديثات البوابات"
   },
   "simulator": {
     "title": "Simulator",
@@ -422,6 +423,15 @@
       "getStartedAdmin": "ابدأ بإنشاء موقعك الأول",
       "getStartedUser": "لم يتم تخصيص أي مواقع لك بعد"
     }
+  },
+  "adminUpdates": {
+    "title": "تحديثات البوابات",
+    "description": "إدارة حزم التحديث لأجهزة البوابة",
+    "uploadTitle": "رفع حزمة tar",
+    "uploadDescription": "اختر أرشيف tar لنشره لتنزيل البوابات.",
+    "fileLabel": "ملف tar",
+    "fileHelper": "يتم دعم ملفات ‎.tar فقط.",
+    "uploadButton": "رفع (قريبًا)"
   },
   "modals": {
     "site": {

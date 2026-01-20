@@ -3,10 +3,10 @@ import { Card } from '@/components/ui/card';
 import { CloudSun, Thermometer } from 'lucide-react';
 
 interface EnvironmentSummaryProps {
-  gatewayTemperature?: number;
-  gatewayHumidity?: number;
-  outsideTemperature?: number;
-  outsideHumidity?: number;
+  gatewayTemperature?: number | null;
+  gatewayHumidity?: number | null;
+  outsideTemperature?: number | null;
+  outsideHumidity?: number | null;
 }
 
 export function EnvironmentSummary({
@@ -17,7 +17,7 @@ export function EnvironmentSummary({
 }: EnvironmentSummaryProps) {
   const t = useTranslations('sites');
 
-  const formatValue = (value: number | undefined, suffix: string) => {
+  const formatValue = (value: number | null | undefined, suffix: string) => {
     if (value == null || Number.isNaN(value)) {
       return t('noDataAvailable');
     }

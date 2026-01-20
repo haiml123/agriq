@@ -204,7 +204,8 @@
     "triggers": "Triggers",
     "commodities": "Commodities",
     "lookupTables": "Lookup tables",
-    "simulator": "Simulator"
+    "simulator": "Simulator",
+    "updates": "Gateway Updates"
   },
   "simulator": {
     "title": "Simulator",
@@ -521,6 +522,15 @@
       "supportDesc": "Need help? Contact our support team for assistance.",
       "documentation": "Documentation"
     }
+  },
+  "adminUpdates": {
+    "title": "Gateway Updates",
+    "description": "Manage update bundles for gateway devices",
+    "uploadTitle": "Upload tar bundle",
+    "uploadDescription": "Select a tar archive to publish for gateway downloads.",
+    "fileLabel": "Tar file",
+    "fileHelper": "Only .tar files are supported.",
+    "uploadButton": "Upload (coming soon)"
   },
   "modals": {
     "site": {

@@ -1,6 +1,6 @@
 "use client";
 
-import { Building2, FlaskConical, Table2, Wheat, Zap } from 'lucide-react';
+import { Building2, FlaskConical, Package, Table2, Wheat, Zap } from 'lucide-react';
 import { AppSidebarLayout, NavItem } from '@/components/layout/app-sidebar-layout';
 import { ReactNode } from 'react';
 import { useTranslations } from 'next-intl';
@@ -48,6 +48,12 @@ export default function AlertsLayout({ children }: AlertsLayoutProps) {
             label: t('simulator'),
             href: "/admin/simulator",
             icon: FlaskConical,
+            roles: [RoleTypeEnum.SUPER_ADMIN],
+        },
+        {
+            label: t('updates'),
+            href: "/admin/updates",
+            icon: Package,
             roles: [RoleTypeEnum.SUPER_ADMIN],
         },
 

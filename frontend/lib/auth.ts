@@ -1,7 +1,9 @@
 import NextAuth from 'next-auth';
 import Credentials from 'next-auth/providers/credentials';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3005";
+import { config } from '../configuration';
+
+const API_URL = config.apiUrl;
 
 const logger = {
     error: (code: any, ...message: any[]) => {
@@ -14,7 +16,7 @@ const logger = {
         console.warn('[auth][warn]', code, ...message);
     },
     debug: (code: any, ...message: any[]) => {
-        if (process.env.NODE_ENV === 'development') {
+        if (config.nodeEnv === 'development') {
             console.debug('[auth][debug]', code, ...message);
         }
     },

@@ -10,7 +10,7 @@ import { CellSection } from './cell-section';
 import { CellSectionSkeleton } from './skeletons/cell-section-skeleton';
 import { useSitesData, useCellsDetails } from './hooks/use-sites-data';
 import { useSitesFilters } from './hooks/use-sites-filters';
-import type { MultipleCellsDetails, SensorReading, CellTrade, CellAlert } from './types';
+import type { MultipleCellsDetails, SensorReading, Trade, Alert } from './types';
 import { toast } from 'sonner';
 
 const exportHeaders = [
@@ -50,7 +50,7 @@ const getLatestReadings = (readings: SensorReading[]) => {
   return latest;
 };
 
-const getTradeSummary = (trades: CellTrade[]) => {
+const getTradeSummary = (trades: Trade[]) => {
   const summary = new Map<string, { count: number; totalKg: number }>();
   trades.forEach((trade) => {
     const current = summary.get(trade.cellId) || { count: 0, totalKg: 0 };
@@ -62,7 +62,7 @@ const getTradeSummary = (trades: CellTrade[]) => {
   return summary;
 };
 
-const getAlertSummary = (alerts: CellAlert[]) => {
+const getAlertSummary = (alerts: Alert[]) => {
   const summary = new Map<string, number>();
   alerts.forEach((alert) => {
     summary.set(alert.cellId, (summary.get(alert.cellId) || 0) + 1);

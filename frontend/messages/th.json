@@ -204,7 +204,8 @@
     "triggers": "ทริกเกอร์",
     "commodities": "สินค้า",
     "lookupTables": "ตารางค้นหา",
-    "simulator": "Simulator"
+    "simulator": "Simulator",
+    "updates": "อัปเดตเกตเวย์"
   },
   "simulator": {
     "title": "Simulator",
@@ -422,6 +423,15 @@
       "getStartedAdmin": "เริ่มต้นด้วยการสร้างไซต์แรกของคุณ",
       "getStartedUser": "คุณยังไม่ได้รับมอบหมายให้ดูแลไซต์ใดๆ"
     }
+  },
+  "adminUpdates": {
+    "title": "อัปเดตเกตเวย์",
+    "description": "จัดการแพ็กเกจอัปเดตสำหรับอุปกรณ์เกตเวย์",
+    "uploadTitle": "อัปโหลดชุด tar",
+    "uploadDescription": "เลือกไฟล์ tar สำหรับเผยแพร่ให้เกตเวย์ดาวน์โหลด",
+    "fileLabel": "ไฟล์ tar",
+    "fileHelper": "รองรับเฉพาะไฟล์ ‎.tar เท่านั้น",
+    "uploadButton": "อัปโหลด (เร็วๆ นี้)"
   },
   "modals": {
     "site": {

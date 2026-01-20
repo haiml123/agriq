@@ -45,7 +45,7 @@ const METRICS_BY_SOURCE: Record<string, string[]> = {
     OUTSIDE: [MetricTypeEnum.TEMPERATURE, MetricTypeEnum.HUMIDITY],
 };
 
-const VALUE_SOURCE_METRICS = new Set([
+const VALUE_SOURCE_METRICS = new Set<Condition['metric']>([
     MetricTypeEnum.TEMPERATURE,
     MetricTypeEnum.MEDIAN_TEMPERATURE,
     MetricTypeEnum.HUMIDITY,

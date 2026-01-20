@@ -1,4 +1,6 @@
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3005';
+import { config } from '../configuration';
+
+const API_URL = config.apiUrl;
 
 type Params = Record<string, string | number | boolean | undefined>;
 

@@ -1,6 +1,6 @@
 import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { SiteAccessService } from '../site/site-access.service';
+import { SiteAccessService } from '../site';
 import type { AppUser } from '../types/user.type';
 
 const WEATHER_API_URL = 'https://api.weatherapi.com/v1/current.json';

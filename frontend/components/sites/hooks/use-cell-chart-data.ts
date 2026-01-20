@@ -1,5 +1,11 @@
 import { useLocale, useTranslations } from 'next-intl';
-import type { MultipleCellsDetails, CellChartData, DateRange, GatewayReading } from '../types';
+import type {
+  MultipleCellsDetails,
+  CellChartData,
+  DateRange,
+  GatewayReading,
+  ChartDataPoint,
+} from '../types';
 import {
   getDateFormatter,
   getCommodityAtTime,
@@ -9,14 +15,21 @@ import {
 } from '../utils/chart-utils';
 
 type SeriesPoint = { date: string; fullDate: string; value: number };
+type NumericChartKey =
+  | 'temperature'
+  | 'humidity'
+  | 'ambientTemperature'
+  | 'ambientHumidity'
+  | 'outsideTemperature'
+  | 'outsideHumidity';
 
 const mergeSeriesByDate = (
-  base: CellChartData['temperatureData'],
+  base: ChartDataPoint[],
   series: SeriesPoint[],
-  key: keyof CellChartData['temperatureData'][number],
+  key: NumericChartKey,
   fallbackCommodity: string,
 ) => {
-  const merged = new Map<string, CellChartData['temperatureData'][number]>();
+  const merged = new Map<string, ChartDataPoint>();
 
   base.forEach((point) => {
     merged.set(point.date, { ...point });
@@ -30,12 +43,13 @@ const mergeSeriesByDate = (
         existing.fullDate = point.fullDate;
       }
     } else {
-      merged.set(point.date, {
+      const newPoint: ChartDataPoint = {
         date: point.date,
         fullDate: point.fullDate,
         commodity: fallbackCommodity,
-        [key]: point.value,
-      });
+      };
+      newPoint[key] = point.value;
+      merged.set(point.date, newPoint);
     }
   });
 
@@ -78,12 +92,17 @@ export function useCellChartData(
     getCommodityAtTime(trades, timestamp, t('noCommodity'), t('unknownCommodity'));
 
   // Temperature data
-  let temperatureData = aggregateReadingsByDate(
+  let temperatureData: ChartDataPoint[] = aggregateReadingsByDate(
     sensorReadings,
     dateFormatter,
     getCommodity,
     (reading) => reading.temperature
-  ).map((d) => ({ ...d, temperature: d.value }));
+  ).map((d) => ({
+    date: d.date,
+    fullDate: d.fullDate,
+    commodity: d.commodity,
+    temperature: d.value,
+  }));
 
   const ambientTemperature = aggregateReadingsByDate(
     gatewayReadings,
@@ -113,12 +132,17 @@ export function useCellChartData(
   );
 
   // Humidity data
-  let humidityData = aggregateReadingsByDate(
+  let humidityData: ChartDataPoint[] = aggregateReadingsByDate(
     sensorReadings,
     dateFormatter,
     getCommodity,
     (reading) => reading.humidity
-  ).map((d) => ({ ...d, humidity: d.value }));
+  ).map((d) => ({
+    date: d.date,
+    fullDate: d.fullDate,
+    commodity: d.commodity,
+    humidity: d.value,
+  }));
 
   const ambientHumidity = aggregateReadingsByDate(
     gatewayReadings,

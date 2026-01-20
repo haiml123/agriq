@@ -204,7 +204,8 @@
     "triggers": "טריגרים",
     "commodities": "סחורות",
     "lookupTables": "טבלאות חיפוש",
-    "simulator": "Simulator"
+    "simulator": "Simulator",
+    "updates": "עדכוני שערים"
   },
   "simulator": {
     "title": "Simulator",
@@ -402,6 +403,15 @@
       "getStartedAdmin": "התחל על ידי יצירת האתר הראשון שלך",
       "getStartedUser": "טרם הוקצו לך אתרים"
     }
+  },
+  "adminUpdates": {
+    "title": "עדכוני שערים",
+    "description": "ניהול חבילות עדכון למכשירי שער",
+    "uploadTitle": "העלאת חבילת tar",
+    "uploadDescription": "בחר ארכיון tar לפרסום להורדה על ידי שערים.",
+    "fileLabel": "קובץ tar",
+    "fileHelper": "נתמכים רק קבצי ‎.tar",
+    "uploadButton": "העלה (בקרוב)"
   },
   "modals": {
     "site": {

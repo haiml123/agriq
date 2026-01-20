@@ -13,7 +13,9 @@ interface CellSectionProps {
   isFirst?: boolean;
 }
 
-const getLatestReading = (readings: Array<{ recordedAt: string }>) =>
+const getLatestReading = <T extends { recordedAt: string }>(
+  readings: T[],
+): T | undefined =>
   readings
     .slice()
     .sort((a, b) => new Date(b.recordedAt).getTime() - new Date(a.recordedAt).getTime())[0];
