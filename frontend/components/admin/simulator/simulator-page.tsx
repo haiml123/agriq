@@ -13,7 +13,8 @@ import { useCurrentUser } from '@/hooks';
 import { useGatewayApi } from '@/hooks/use-gateway-api';
 import type { CreateSensorReadingDto, Gateway, Sensor, SensorReading } from '@/schemas/sites.schema';
 import { toast } from 'sonner';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
+import { resolveLocaleText } from '@/utils/locale';
 
 type GatewayOption = {
   id: string;
@@ -40,16 +41,18 @@ const buildSensorLabel = (sensor: Sensor) => {
   return sensor.externalId;
 };
 
-const buildGatewayLabel = (gateway: Gateway) => {
+const buildGatewayLabel = (gateway: Gateway, locale: string) => {
   const baseLabel =
     gateway.name && gateway.name.trim().length > 0 ? gateway.name : gateway.externalId;
   const cellLabel = gateway.cell?.compound?.site?.name && gateway.cell?.compound?.name
     ? buildCellLabel(
-        gateway.cell.compound.site.name,
-        gateway.cell.compound.name,
-        gateway.cell.name,
+        resolveLocaleText(gateway.cell.compound.site?.locale, locale, gateway.cell.compound.site.name),
+        resolveLocaleText(gateway.cell.compound?.locale, locale, gateway.cell.compound.name),
+        resolveLocaleText(gateway.cell?.locale, locale, gateway.cell.name),
       )
-    : gateway.cell?.name;
+    : gateway.cell
+      ? resolveLocaleText(gateway.cell?.locale, locale, gateway.cell.name)
+      : undefined;
   return cellLabel ? `${baseLabel} - ${cellLabel}` : baseLabel;
 };
 
@@ -57,6 +60,7 @@ export function SimulatorPage() {
   const t = useTranslations('simulator');
   const tCommon = useTranslations('common');
   const tToast = useTranslations('toast.simulator');
+  const locale = useLocale();
   const router = useRouter();
   const { user, isSuperAdmin, isLoading: isCurrentUserLoading } = useCurrentUser();
   const {
@@ -94,7 +98,7 @@ export function SimulatorPage() {
   const gatewayOptions = useMemo<GatewayOption[]>(() => {
     return gateways.map((gateway) => ({
       id: gateway.id,
-      label: buildGatewayLabel(gateway),
+      label: buildGatewayLabel(gateway, locale),
     }));
   }, [gateways]);
 
@@ -546,7 +550,7 @@ export function SimulatorPage() {
                     <TableCell>{sensor.name || tCommon('none')}</TableCell>
                     <TableCell>{sensor.externalId}</TableCell>
                     <TableCell>
-                      {sensor.gateway ? buildGatewayLabel(sensor.gateway) : tCommon('none')}
+                      {sensor.gateway ? buildGatewayLabel(sensor.gateway, locale) : tCommon('none')}
                     </TableCell>
                     <TableCell>{sensor.status}</TableCell>
                   </TableRow>

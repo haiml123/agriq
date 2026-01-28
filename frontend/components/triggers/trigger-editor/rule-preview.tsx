@@ -1,6 +1,8 @@
 import { getCommodityLabel, type Trigger, type TriggerCommodityType } from '@/schemas/trigger.schema';
 import { Card, CardContent } from '@/components/ui/card';
 import { ConditionDisplay, SeverityBadge } from '@/components/triggers';
+import { useLocale } from 'next-intl';
+import { useTranslationMap } from '@/hooks/use-translation-map';
 
 interface RulePreviewProps {
     trigger: Trigger;
@@ -8,6 +10,25 @@ interface RulePreviewProps {
 }
 
 export function RulePreview({ trigger, commodityTypes }: RulePreviewProps) {
+    const locale = useLocale();
+    const resolveCommodityTypeName = useTranslationMap('commodity_type', locale);
+
+    const translatedCommodityType = trigger.commodityType?.id
+        ? {
+              ...trigger.commodityType,
+              name: resolveCommodityTypeName(
+                  trigger.commodityType.id,
+                  'name',
+                  trigger.commodityType.name
+              ),
+          }
+        : trigger.commodityType;
+
+    const translatedCommodityTypes = commodityTypes?.map((type) => ({
+        ...type,
+        name: resolveCommodityTypeName(type.id, 'name', type.name),
+    }));
+
     const { commodityTypeId, commodityType, conditions, conditionLogic, actions, severity } = trigger;
 
     return (
@@ -19,8 +40,8 @@ export function RulePreview({ trigger, commodityTypes }: RulePreviewProps) {
                 <div className="text-sm">
                     <RuleText
                         commodityTypeId={commodityTypeId}
-                        commodityType={commodityType}
-                        commodityTypes={commodityTypes}
+                        commodityType={translatedCommodityType}
+                        commodityTypes={translatedCommodityTypes}
                         conditions={conditions}
                         conditionLogic={conditionLogic}
                         actions={actions}

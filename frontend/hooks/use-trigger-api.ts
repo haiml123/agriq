@@ -5,7 +5,7 @@ import { useApi } from './use-api';
 import { Action, Condition, Trigger } from '@/schemas/trigger.schema';
 import { PaginatedResponse } from '@/schemas/organization.schema';
 
-const basePath = '/events/triggers';
+const basePath = '/triggers';
 
 type ApiTriggerResponse = {
     id?: string;

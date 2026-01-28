@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useLocale } from 'next-intl';
 import {
   Cell,
   Compound,
@@ -16,9 +17,11 @@ import { CellModal, type CellModalResult } from '@/components/modals/cell.modal'
 import { CompoundModal } from '@/components/modals/compound.modal';
 import { SiteModal } from '@/components/modals/site.modal';
 import { DeleteConfirmModal } from '@/components/modals/delete-confirm.modal';
+import { resolveLocaleText } from '@/utils/locale';
 
 interface SitesListProps {
   sites: Site[];
+  getSiteDisplayName?: (site: Site) => string;
   availableGateways?: Gateway[];
   onEditSite?: (siteId: string, data: UpdateSiteDto) => void;
   onDeleteSite?: (siteId: string) => void;
@@ -32,6 +35,7 @@ interface SitesListProps {
 
 export const SitesList: React.FC<SitesListProps> = ({
   sites,
+  getSiteDisplayName,
   availableGateways,
   onEditSite,
   onDeleteSite,
@@ -43,6 +47,7 @@ export const SitesList: React.FC<SitesListProps> = ({
   onDeleteCell,
 }) => {
   const modal = useModal();
+  const locale = useLocale();
   const [expandedSites, setExpandedSites] = useState<Set<string>>(new Set());
   const [expandedCompounds, setExpandedCompounds] = useState<Set<string>>(new Set());
 
@@ -80,8 +85,10 @@ export const SitesList: React.FC<SitesListProps> = ({
   };
 
   const handleDeleteSite = async (site: Site) => {
+    const displayName =
+      getSiteDisplayName?.(site) ?? resolveLocaleText(site.locale, locale, site.name);
     const confirmed = await modal.open<boolean>((onClose) => (
-        <DeleteConfirmModal itemType="Site" itemName={site.name} onClose={onClose} />
+        <DeleteConfirmModal itemType="Site" itemName={displayName} onClose={onClose} />
     ));
     if (confirmed) {
       onDeleteSite?.(site.id);
@@ -90,8 +97,10 @@ export const SitesList: React.FC<SitesListProps> = ({
 
   // Compound handlers
   const handleCreateCompound = async (site: Site) => {
+    const displayName =
+      getSiteDisplayName?.(site) ?? resolveLocaleText(site.locale, locale, site.name);
     const result = await modal.open<CreateCompoundDto | null>((onClose) => (
-        <CompoundModal siteName={site.name} onClose={onClose} />
+        <CompoundModal siteName={displayName} onClose={onClose} />
     ));
     if (result) {
       onCreateCompound?.(site.id, result);
@@ -108,8 +117,9 @@ export const SitesList: React.FC<SitesListProps> = ({
   };
 
   const handleDeleteCompound = async (compound: Compound) => {
+    const compoundName = resolveLocaleText(compound.locale, locale, compound.name);
     const confirmed = await modal.open<boolean>((onClose) => (
-        <DeleteConfirmModal itemType="Compound" itemName={compound.name} onClose={onClose} />
+        <DeleteConfirmModal itemType="Compound" itemName={compoundName} onClose={onClose} />
     ));
     if (confirmed) {
       onDeleteCompound?.(compound.id);
@@ -118,8 +128,9 @@ export const SitesList: React.FC<SitesListProps> = ({
 
   // Cell handlers
   const handleCreateCell = async (compound: Compound) => {
+    const compoundName = resolveLocaleText(compound.locale, locale, compound.name);
     const result = await modal.open<CellModalResult | null>((onClose) => (
-        <CellModal compoundName={compound.name} availableGateways={availableGateways} onClose={onClose} />
+        <CellModal compoundName={compoundName} availableGateways={availableGateways} onClose={onClose} />
     ));
     if (result) {
       onCreateCell?.(compound.id, result);
@@ -136,8 +147,9 @@ export const SitesList: React.FC<SitesListProps> = ({
   };
 
   const handleDeleteCell = async (cell: Cell) => {
+    const cellName = resolveLocaleText(cell.locale, locale, cell.name);
     const confirmed = await modal.open<boolean>((onClose) => (
-        <DeleteConfirmModal itemType="Cell" itemName={cell.name} onClose={onClose} />
+        <DeleteConfirmModal itemType="Cell" itemName={cellName} onClose={onClose} />
     ));
     if (confirmed) {
       onDeleteCell?.(cell.id);
@@ -148,9 +160,10 @@ export const SitesList: React.FC<SitesListProps> = ({
       <div className="divide-y divide-border">
         {sites.map((site, idx) => (
             <SiteRow
-                key={site.id}
-                site={site}
-                isExpanded={expandedSites.has(site.id)}
+              key={site.id}
+              site={site}
+              displayName={getSiteDisplayName?.(site)}
+              isExpanded={expandedSites.has(site.id)}
                 onToggle={() => toggleSite(site.id)}
                 expandedCompounds={expandedCompounds}
                 onToggleCompound={toggleCompound}

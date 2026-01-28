@@ -4,16 +4,40 @@ import { z } from 'zod';
 export const tradeSiteSchema = z.object({
     id: z.string(),
     name: z.string(),
+    locale: z
+        .object({
+            en: z.string().optional(),
+            he: z.string().optional(),
+            ar: z.string().optional(),
+            th: z.string().optional(),
+        })
+        .optional(),
 });
 
 export const tradeCompoundSchema = z.object({
     id: z.string(),
     name: z.string(),
+    locale: z
+        .object({
+            en: z.string().optional(),
+            he: z.string().optional(),
+            ar: z.string().optional(),
+            th: z.string().optional(),
+        })
+        .optional(),
 });
 
 export const tradeCellSchema = z.object({
     id: z.string(),
     name: z.string(),
+    locale: z
+        .object({
+            en: z.string().optional(),
+            he: z.string().optional(),
+            ar: z.string().optional(),
+            th: z.string().optional(),
+        })
+        .optional(),
 });
 
 export const tradeCommodityTypeSchema = z.object({

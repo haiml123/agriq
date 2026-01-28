@@ -1,11 +1,14 @@
 import React from 'react';
+import { useLocale } from 'next-intl';
 import { Building2, ChevronDown, ChevronRight, MapPin, Pencil, Plus, Trash2 } from 'lucide-react';
 import { Cell, Compound, Site } from '@/schemas/sites.schema';
 import { CompoundRow } from '@/components/sites-table/compound-row';
 import { Button } from '@/components/ui/button';
+import { resolveLocaleText } from '@/utils/locale';
 
 interface SiteRowProps {
   site: Site;
+  displayName?: string;
   isExpanded: boolean;
   onToggle: () => void;
   expandedCompounds: Set<string>;
@@ -23,6 +26,7 @@ interface SiteRowProps {
 
 export const SiteRow: React.FC<SiteRowProps> = ({
   site,
+  displayName,
   isExpanded,
   onToggle,
   expandedCompounds,
@@ -37,8 +41,10 @@ export const SiteRow: React.FC<SiteRowProps> = ({
   onEditCell,
   onDeleteCell,
 }) => {
+  const locale = useLocale();
   const allCells = site.compounds?.flatMap((c) => c.cells) ?? [];
   const totalCells = allCells.length;
+  const resolvedSiteName = displayName ?? resolveLocaleText(site.locale, locale, site.name);
 
   return (
     <div>
@@ -58,7 +64,7 @@ export const SiteRow: React.FC<SiteRowProps> = ({
             <Building2 size={18} className="text-emerald-500" />
           </div>
           <div>
-            <span className="text-foreground font-semibold block">{site.name}</span>
+            <span className="text-foreground font-semibold block">{resolvedSiteName}</span>
             <div className="flex items-center gap-2 mt-1">
               <span className="text-xs text-muted-foreground bg-muted px-2.5 py-0.5 rounded-full">
                 {site.compounds?.length ?? 0} compounds

@@ -5,16 +5,40 @@ import { severitySchema, alertStatusSchema } from '@/schemas/common.schema';
 export const alertSiteSchema = z.object({
     id: z.string(),
     name: z.string(),
+    locale: z
+        .object({
+            en: z.string().optional(),
+            he: z.string().optional(),
+            ar: z.string().optional(),
+            th: z.string().optional(),
+        })
+        .optional(),
 });
 
 export const alertCompoundSchema = z.object({
     id: z.string(),
     name: z.string(),
+    locale: z
+        .object({
+            en: z.string().optional(),
+            he: z.string().optional(),
+            ar: z.string().optional(),
+            th: z.string().optional(),
+        })
+        .optional(),
 });
 
 export const alertCellSchema = z.object({
     id: z.string(),
     name: z.string(),
+    locale: z
+        .object({
+            en: z.string().optional(),
+            he: z.string().optional(),
+            ar: z.string().optional(),
+            th: z.string().optional(),
+        })
+        .optional(),
 });
 
 export const alertUserSchema = z.object({
@@ -30,8 +54,11 @@ export const alertCommoditySchema = z.object({
 // Main alert schema from API
 export const apiAlertSchema = z.object({
     id: z.string(),
+    triggerId: z.string().nullable().optional(),
     title: z.string().optional(),
     description: z.string().optional(),
+    descriptionKey: z.string().nullable().optional(),
+    descriptionParams: z.any().optional(),
     severity: severitySchema,
     status: alertStatusSchema,
     startedAt: z.string(),

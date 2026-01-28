@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
@@ -13,22 +13,26 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { ChevronDown } from 'lucide-react';
+import { resolveLocaleText, type LocaleMap } from '@/utils/locale';
 
 export interface CellSelectSite {
   id: string;
   name: string;
+  locale?: LocaleMap;
   compounds?: CellSelectCompound[];
 }
 
 export interface CellSelectCompound {
   id: string;
   name: string;
+  locale?: LocaleMap;
   cells?: CellSelectCell[];
 }
 
 export interface CellSelectCell {
   id: string;
   name: string;
+  locale?: LocaleMap;
 }
 
 interface CellSelectProps {
@@ -57,6 +61,7 @@ export function CellSelect({
   disableCompoundToggle = false,
 }: CellSelectProps) {
   const t = useTranslations('sites');
+  const locale = useLocale();
   const [dropdownOpen, setDropdownOpen] = useState(false);
 
   // Get the selected site's compounds and cells
@@ -179,7 +184,9 @@ export function CellSelect({
     const selectedCell = compounds
       .flatMap((c) => c.cells || [])
       .find((cell) => cell.id === selectedCellIds[0]);
-    return selectedCell?.name || placeholder;
+    return selectedCell
+      ? resolveLocaleText(selectedCell.locale, locale, selectedCell.name)
+      : placeholder;
   };
 
   // Get selected cell names for display below the dropdown
@@ -190,7 +197,7 @@ export function CellSelect({
     compounds.forEach((compound) => {
       compound.cells?.forEach((cell) => {
         if (selectedCellIds.includes(cell.id)) {
-          names.push(cell.name);
+          names.push(resolveLocaleText(cell.locale, locale, cell.name));
         }
       });
     });
@@ -253,7 +260,7 @@ export function CellSelect({
                     />
                   )}
                   <span className="text-xs font-semibold text-muted-foreground uppercase">
-                    {compound.name}
+                    {resolveLocaleText(compound.locale, locale, compound.name)}
                   </span>
                 </div>
               )}
@@ -261,7 +268,7 @@ export function CellSelect({
               {/* Compound Label (single-select mode) */}
               {!multiSelect && (
                 <DropdownMenuLabel className="text-xs font-semibold text-muted-foreground uppercase">
-                  {compound.name}
+                  {resolveLocaleText(compound.locale, locale, compound.name)}
                 </DropdownMenuLabel>
               )}
 
@@ -274,7 +281,7 @@ export function CellSelect({
                   onSelect={(e) => e.preventDefault()}
                   className={multiSelect ? 'pl-8' : ''}
                 >
-                  {cell.name}
+                  {resolveLocaleText(cell.locale, locale, cell.name)}
                 </DropdownMenuCheckboxItem>
               ))}
               <DropdownMenuSeparator />

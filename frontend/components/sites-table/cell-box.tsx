@@ -3,7 +3,8 @@ import { Box, Droplets, Thermometer, Trash2 } from 'lucide-react';
 import { Cell } from '@/schemas/sites.schema';
 import { StatusDot } from '@/components/ui/status-indicator';
 import { Button } from '@/components/ui/button';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
+import { resolveLocaleText } from '@/utils/locale';
 
 interface CellBoxProps {
   cell: Cell;
@@ -13,6 +14,7 @@ interface CellBoxProps {
 
 export const CellBox: React.FC<CellBoxProps> = ({ cell, onEdit, onDelete }) => {
   const t = useTranslations('sites');
+  const locale = useLocale();
   const hasGateway = Boolean(cell.gateways && cell.gateways.length > 0);
   cell.temp = 30;
   cell.humidity = 50;
@@ -27,7 +29,9 @@ export const CellBox: React.FC<CellBoxProps> = ({ cell, onEdit, onDelete }) => {
         <div className="flex items-center justify-between gap-2 mb-2">
           <div className="flex items-center gap-2 flex-1 min-w-0">
             <Box size={12} className="text-violet-500 flex-shrink-0" />
-            <span className="text-foreground font-medium text-sm truncate">{cell.name}</span>
+            <span className="text-foreground font-medium text-sm truncate">
+              {resolveLocaleText(cell.locale, locale, cell.name)}
+            </span>
           </div>
           <StatusDot status={cell.status} />
         </div>

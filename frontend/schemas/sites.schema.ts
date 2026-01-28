@@ -11,6 +11,14 @@ export const createCellSchema = z.object({
   length: z.number().min(0),
   width: z.number().min(0),
   status: entityStatusSchema.optional(),
+  locale: z
+    .object({
+      en: z.string().optional(),
+      he: z.string().optional(),
+      ar: z.string().optional(),
+      th: z.string().optional(),
+    })
+    .optional(),
 });
 
 export const updateCellSchema = z.object({
@@ -19,6 +27,14 @@ export const updateCellSchema = z.object({
   length: z.number().min(0).optional(),
   width: z.number().min(0).optional(),
   status: entityStatusSchema.optional(),
+  locale: z
+    .object({
+      en: z.string().optional(),
+      he: z.string().optional(),
+      ar: z.string().optional(),
+      th: z.string().optional(),
+    })
+    .optional(),
 });
 
 
@@ -26,6 +42,14 @@ export const cellSchema = z.object({
   id: z.string(),
   status: entityStatusSchema,
   name: z.string(),
+  locale: z
+    .object({
+      en: z.string().optional(),
+      he: z.string().optional(),
+      ar: z.string().optional(),
+      th: z.string().optional(),
+    })
+    .optional(),
   height: z.number(),
   length: z.number(),
   width: z.number(),
@@ -48,6 +72,14 @@ export const cellSchema = z.object({
 export const compoundSchema = z.object({
   id: z.string(),
   name: z.string(),
+  locale: z
+    .object({
+      en: z.string().optional(),
+      he: z.string().optional(),
+      ar: z.string().optional(),
+      th: z.string().optional(),
+    })
+    .optional(),
   siteId: z.string(),
   createdBy: z.string().nullable().optional(),
   createdAt: z.date().optional(),
@@ -62,11 +94,27 @@ export const createCompoundSchema = z.object({
   name: z.string().min(1).max(100),
   siteId: z.string().optional(),
   status: entityStatusSchema.optional(),
+  locale: z
+    .object({
+      en: z.string().optional(),
+      he: z.string().optional(),
+      ar: z.string().optional(),
+      th: z.string().optional(),
+    })
+    .optional(),
 });
 
 export const updateCompoundSchema = z.object({
   name: z.string().min(1).max(100).optional(),
   status: entityStatusSchema.optional(),
+  locale: z
+    .object({
+      en: z.string().optional(),
+      he: z.string().optional(),
+      ar: z.string().optional(),
+      th: z.string().optional(),
+    })
+    .optional(),
 });
 
 // ============ SITE SCHEMAS ============
@@ -74,6 +122,14 @@ export const updateCompoundSchema = z.object({
 export const siteSchema = z.object({
   id: z.string(),
   name: z.string(),
+  locale: z
+    .object({
+      en: z.string().optional(),
+      he: z.string().optional(),
+      ar: z.string().optional(),
+      th: z.string().optional(),
+    })
+    .optional(),
   organizationId: z.string(),
   address: z.string().nullable().optional(),
   latitude: z.number().nullable().optional(),
@@ -92,12 +148,28 @@ export const createSiteSchema = z.object({
   name: z.string().min(1).max(100),
   organizationId: z.string().optional(),
   address: z.string().max(255).optional(),
+  locale: z
+    .object({
+      en: z.string().optional(),
+      he: z.string().optional(),
+      ar: z.string().optional(),
+      th: z.string().optional(),
+    })
+    .optional(),
 });
 
 export const updateSiteSchema = z.object({
   name: z.string().min(1).max(100).optional(),
   address: z.string().max(255).optional(),
   organizationId: z.string().optional(),
+  locale: z
+    .object({
+      en: z.string().optional(),
+      he: z.string().optional(),
+      ar: z.string().optional(),
+      th: z.string().optional(),
+    })
+    .optional(),
 });
 
 export const siteListParamsSchema = z.object({
@@ -241,8 +313,11 @@ export const cellTradeSchema = z.object({
 export const cellAlertSchema = z.object({
   id: z.string(),
   cellId: z.string(),
+  triggerId: z.string().nullable().optional(),
   title: z.string().nullable(),
   description: z.string(),
+  descriptionKey: z.string().nullable().optional(),
+  descriptionParams: z.any().optional(),
   severity: severitySchema,
   status: alertStatusSchema,
   thresholdValue: z.number().nullable(),

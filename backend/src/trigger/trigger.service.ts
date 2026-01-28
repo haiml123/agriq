@@ -38,14 +38,14 @@ export class TriggerService {
           select: { id: true, name: true },
         },
         site: {
-          select: { id: true, name: true },
+          select: { id: true, name: true, locale: true },
         },
       },
     });
   }
 
   async findAll(query: ListTriggersQueryDto) {
-    const {
+    let {
       organizationId,
       siteId,
       compoundId,
@@ -57,6 +57,9 @@ export class TriggerService {
       page = 1,
       limit = 10,
     } = query;
+
+    if (typeof page === 'string') page = parseInt(page, 10) || 1;
+    if (typeof limit === 'string') limit = parseInt(limit, 10) || 10;
 
     const skip = (page - 1) * limit;
 
@@ -90,7 +93,7 @@ export class TriggerService {
             select: { id: true, name: true },
           },
           site: {
-            select: { id: true, name: true },
+            select: { id: true, name: true, locale: true },
           },
         },
       }),
@@ -117,10 +120,10 @@ export class TriggerService {
           select: { id: true, name: true },
         },
         site: {
-          select: { id: true, name: true },
+          select: { id: true, name: true, locale: true },
         },
         compound: {
-          select: { id: true, name: true },
+          select: { id: true, name: true, locale: true },
         },
       },
     });
@@ -174,7 +177,7 @@ export class TriggerService {
           select: { id: true, name: true },
         },
         site: {
-          select: { id: true, name: true },
+          select: { id: true, name: true, locale: true },
         },
       },
     });
@@ -197,7 +200,7 @@ export class TriggerService {
           select: { id: true, name: true },
         },
         site: {
-          select: { id: true, name: true },
+          select: { id: true, name: true, locale: true },
         },
       },
     });

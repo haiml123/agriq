@@ -13,8 +13,9 @@ import { Site } from '@/schemas/sites.schema'
 import { useCurrentUser } from '@/hooks'
 import { Loader2 } from 'lucide-react'
 import { RoleType, RoleTypeEnum } from '@/schemas/common.schema';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { toast } from 'sonner';
+import { resolveLocaleText } from '@/utils/locale';
 
 interface UserModalProps {
     user?: User
@@ -26,6 +27,7 @@ export function UserModal({ user, onClose }: UserModalProps) {
     const tCommon = useTranslations('common');
     const tRoles = useTranslations('roles');
     const tToast = useTranslations('toast.user');
+    const locale = useLocale();
     const { user: appUser, isSuperAdmin, isAdmin } = useCurrentUser()
     const { create, update, isCreating } = useUserApi()
     const { getList: getOrganizations } = useOrganizationApi()
@@ -327,7 +329,9 @@ export function UserModal({ user, onClose }: UserModalProps) {
                                                     checked={formData.siteIds.includes(site.id)}
                                                     onCheckedChange={() => handleSiteToggle(site.id)}
                                                 />
-                                                <span className="text-sm">{site.name}</span>
+                                                <span className="text-sm">
+                                                    {resolveLocaleText(site.locale, locale, site.name)}
+                                                </span>
                                             </label>
                                         ))}
                                     </div>

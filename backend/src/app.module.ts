@@ -18,6 +18,7 @@ import { AlertModule } from './alert';
 import { TradeModule } from './trade';
 import { GatewayModule } from './gateway';
 import { WeatherModule } from './weather';
+import { TranslationModule } from './translation';
 
 @Module({
   imports: [
@@ -41,6 +42,7 @@ import { WeatherModule } from './weather';
     EventsModule,
     AlertModule,
     TradeModule,
+    TranslationModule,
   ],
   controllers: [AppController],
   providers: [AppService],

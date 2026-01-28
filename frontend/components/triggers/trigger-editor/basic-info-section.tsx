@@ -6,6 +6,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { SeverityEnum, type Severity } from '@/schemas/common.schema';
 import { ScopeSelector } from '@/components/triggers';
 import type { Organization } from '@/schemas/organization.schema';
+import { useLocale } from 'next-intl';
+import { useTranslationMap } from '@/hooks/use-translation-map';
 
 interface BasicInfoSectionProps {
     formData: Trigger;
@@ -123,6 +125,8 @@ function CommoditySelect({
     commodityTypes: TriggerCommodityType[];
     isLoading?: boolean;
 }) {
+    const locale = useLocale();
+    const resolveCommodityTypeName = useTranslationMap('commodity_type', locale);
     return (
         <div className="space-y-2">
             <Label>Commodity Type *</Label>
@@ -146,7 +150,7 @@ function CommoditySelect({
                     ) : (
                         commodityTypes.map((option) => (
                             <SelectItem key={option.id} value={option.id}>
-                                {option.name}
+                                {resolveCommodityTypeName(option.id, 'name', option.name)}
                             </SelectItem>
                         ))
                     )}

@@ -7,6 +7,7 @@ import {
   IsEnum,
   IsNumber,
   Min,
+  IsObject,
 } from 'class-validator';
 import { entity_status } from '@prisma/client';
 
@@ -36,6 +37,10 @@ export class CreateCellDto {
   @IsEnum(entity_status)
   @IsOptional()
   status?: entity_status = entity_status.ACTIVE;
+
+  @IsObject()
+  @IsOptional()
+  locale?: Record<string, string>;
 }
 
 export class UpdateCellDto {
@@ -63,4 +68,8 @@ export class UpdateCellDto {
   @IsEnum(entity_status)
   @IsOptional()
   status?: entity_status;
+
+  @IsObject()
+  @IsOptional()
+  locale?: Record<string, string>;
 }

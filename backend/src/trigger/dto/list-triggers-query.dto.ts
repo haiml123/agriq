@@ -1,5 +1,5 @@
 import { IsString, IsOptional, IsEnum, IsBoolean } from 'class-validator';
-import { Transform } from 'class-transformer';
+import { Transform, Type } from 'class-transformer';
 import { Severity, ScopeType } from './create-trigger.dto';
 
 export class ListTriggersQueryDto {
@@ -41,10 +41,12 @@ export class ListTriggersQueryDto {
   search?: string;
 
   @Transform(({ value }) => parseInt(value, 10) || 1)
+  @Type(() => Number)
   @IsOptional()
   page?: number = 1;
 
   @Transform(({ value }) => parseInt(value, 10) || 10)
+  @Type(() => Number)
   @IsOptional()
   limit?: number = 10;
 }

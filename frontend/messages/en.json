@@ -204,8 +204,68 @@
     "triggers": "Triggers",
     "commodities": "Commodities",
     "lookupTables": "Lookup tables",
+    "translations": "Translations",
     "simulator": "Simulator",
     "updates": "Gateway Updates"
+  },
+  "adminTranslations": {
+    "title": "Translations",
+    "description": "Manage translations for dynamic data.",
+    "saveChanges": "Save changes",
+    "entityLabel": "Entity",
+    "entityPlaceholder": "Select entity",
+    "entityCommodityTypes": "Commodity types",
+    "entitySites": "Sites",
+    "entityOrganizations": "Organizations",
+    "fieldLabel": "Field",
+    "fieldPlaceholder": "Select field",
+    "fieldName": "Name",
+    "fieldDescription": "Description",
+    "entityItem": "Item",
+    "placeholder": "Enter translation",
+    "emptyState": "No records found.",
+    "noPermission": "You do not have permission to manage translations."
+  },
+  "alertDescription": {
+    "triggerMatched": "{conditions}.",
+    "triggerMatchedNoConditions": "Alert triggered."
+  },
+  "alertCondition": {
+    "threshold": "{metric} {operator} {value}{unit}",
+    "between": "{metric} between {min}{unit} and {max}{unit}",
+    "changeThreshold": "{metric} {direction} {operator} {value}{unit}{window}",
+    "change": "{metric} {direction} by {amount}{unit}{window}",
+    "source": "{metric} from {source}{suffix}"
+  },
+  "alertWindow": {
+    "hours": " in {count, plural, one {# hour} other {# hours}}",
+    "days": " in {count, plural, one {# day} other {# days}}"
+  },
+  "alertMetric": {
+    "TEMPERATURE": "Temperature",
+    "MEDIAN_TEMPERATURE": "Temperature",
+    "HUMIDITY": "Humidity",
+    "MEDIAN_HUMIDITY": "Humidity",
+    "EMC": "EMC"
+  },
+  "alertOperator": {
+    "ABOVE": "above",
+    "BELOW": "below",
+    "EQUALS": "equals",
+    "BETWEEN": "between"
+  },
+  "alertDirection": {
+    "ANY": "changed",
+    "INCREASE": "increased",
+    "DECREASE": "decreased"
+  },
+  "alertSource": {
+    "GATEWAY": "Gateway",
+    "OUTSIDE": "Outside"
+  },
+  "alertConditionSuffix": {
+    "temperature": " temperature",
+    "humidity": " humidity"
   },
   "simulator": {
     "title": "Simulator",

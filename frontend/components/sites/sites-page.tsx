@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from 'react';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { useApp } from '@/providers/app-provider';
 import { CommodityModal } from '@/components/modals/commodity.modal';
 import { SitesHeader } from './sites-header';
@@ -10,6 +10,8 @@ import { CellSection } from './cell-section';
 import { CellSectionSkeleton } from './skeletons/cell-section-skeleton';
 import { useSitesData, useCellsDetails } from './hooks/use-sites-data';
 import { useSitesFilters } from './hooks/use-sites-filters';
+import { useTranslationMap } from '@/hooks/use-translation-map';
+import { resolveLocaleText } from '@/utils/locale';
 import type { MultipleCellsDetails, SensorReading, Trade, Alert } from './types';
 import { toast } from 'sonner';
 
@@ -70,7 +72,7 @@ const getAlertSummary = (alerts: Alert[]) => {
   return summary;
 };
 
-const buildExportRows = (cellsDetails: MultipleCellsDetails) => {
+const buildExportRows = (cellsDetails: MultipleCellsDetails, locale: string) => {
   const latestReadings = getLatestReadings(cellsDetails.sensorReadings);
   const tradeSummary = getTradeSummary(cellsDetails.trades);
   const alertSummary = getAlertSummary(cellsDetails.alerts);
@@ -81,9 +83,9 @@ const buildExportRows = (cellsDetails: MultipleCellsDetails) => {
     const alertsCount = alertSummary.get(cell.id) || 0;
 
     return {
-      site: cell.compound.site.name,
-      compound: cell.compound.name,
-      cell: cell.name,
+      site: resolveLocaleText(cell.compound.site?.locale, locale, cell.compound.site.name),
+      compound: resolveLocaleText(cell.compound?.locale, locale, cell.compound.name),
+      cell: resolveLocaleText(cell.locale, locale, cell.name),
       temperature: reading?.temperature?.toString() || '',
       humidity: reading?.humidity?.toString() || '',
       tradesCount: trades?.count?.toString() || '0',
@@ -95,6 +97,8 @@ const buildExportRows = (cellsDetails: MultipleCellsDetails) => {
 
 export function SitesPage() {
   const t = useTranslations('sites');
+  const locale = useLocale();
+  const resolveCommodityTypeName = useTranslationMap('commodity_type', locale);
   const { user } = useApp();
   const [commodityModalOpen, setCommodityModalOpen] = useState(false);
 
@@ -124,7 +128,7 @@ export function SitesPage() {
       return;
     }
 
-    const rows = buildExportRows(cellsDetails);
+    const rows = buildExportRows(cellsDetails, locale);
     const lines = [
       exportHeaders.join(','),
       ...rows.map((row) =>
@@ -160,7 +164,7 @@ export function SitesPage() {
       return;
     }
 
-    const rows = buildExportRows(cellsDetails);
+    const rows = buildExportRows(cellsDetails, locale);
     const printWindow = window.open('', '_blank', 'noopener,noreferrer');
 
     if (!printWindow) {
@@ -253,6 +257,7 @@ export function SitesPage() {
               cellsDetails={cellsDetails}
               dateRange={filters.dateRange}
               isFirst={index === 0}
+              resolveCommodityTypeName={resolveCommodityTypeName}
             />
           ))}
         </>

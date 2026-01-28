@@ -17,6 +17,7 @@ import {
 } from '@/components/ui/select';
 import { useModal } from '@/components/providers/modal-provider';
 import { ConfirmActionModal } from '@/components/modals';
+import { LocaleTranslationsAccordion, type LocaleTranslations } from '@/components/shared/locale-translations-accordion';
 
 
 interface CellModalProps {
@@ -39,6 +40,9 @@ export function CellModal({ compoundName, cell, availableGateways, onClose }: Ce
     const noGatewayValue = '__no_gateway__';
     const [selectedGatewayId, setSelectedGatewayId] = useState(
         pairedGateway?.id ?? noGatewayValue
+    );
+    const [localeValues, setLocaleValues] = useState<LocaleTranslations>(
+        cell?.locale ?? {}
     );
     const [hasUnpaired, setHasUnpaired] = useState(false);
     const [gatewayError, setGatewayError] = useState('');
@@ -70,6 +74,7 @@ export function CellModal({ compoundName, cell, availableGateways, onClose }: Ce
         onClose({
             ...data,
             gatewayId: selectedGatewayId === noGatewayValue ? null : selectedGatewayId,
+            locale: localeValues,
         });
     };
 
@@ -169,6 +174,7 @@ export function CellModal({ compoundName, cell, availableGateways, onClose }: Ce
                         )}
                     </div>
                 </div>
+                <LocaleTranslationsAccordion value={localeValues} onChange={setLocaleValues} />
                 <div className="space-y-2">
                     <label htmlFor="gatewayId" className="text-sm font-medium text-foreground">
                         {t('gatewaySelectLabel')}

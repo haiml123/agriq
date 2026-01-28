@@ -1,6 +1,6 @@
 "use client";
 
-import { Building2, FlaskConical, Package, Table2, Wheat, Zap } from 'lucide-react';
+import { Building2, FlaskConical, Languages, Package, Table2, Wheat, Zap } from 'lucide-react';
 import { AppSidebarLayout, NavItem } from '@/components/layout/app-sidebar-layout';
 import { ReactNode } from 'react';
 import { useTranslations } from 'next-intl';
@@ -42,6 +42,12 @@ export default function AlertsLayout({ children }: AlertsLayoutProps) {
             label: t('lookupTables'),
             href: "/admin/lookup-tables",
             icon: Table2,
+            roles: [RoleTypeEnum.SUPER_ADMIN],
+        },
+        {
+            label: t('translations'),
+            href: "/admin/translations",
+            icon: Languages,
             roles: [RoleTypeEnum.SUPER_ADMIN],
         },
         {

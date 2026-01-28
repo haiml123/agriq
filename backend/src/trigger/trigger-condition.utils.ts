@@ -47,7 +47,7 @@ export function getMetricUnit(metric: MetricType): string {
   switch (metric) {
     case MetricType.TEMPERATURE:
     case MetricType.MEDIAN_TEMPERATURE:
-      return 'C';
+      return '°C';
     case MetricType.HUMIDITY:
     case MetricType.EMC:
     case MetricType.MEDIAN_HUMIDITY:

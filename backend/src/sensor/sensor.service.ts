@@ -81,16 +81,50 @@ export class SensorService {
     return latestTrade.commodity?.commodityTypeId ?? undefined;
   }
 
-  private buildAlertDescription(
+  private buildAlertDescriptionPayload(
     triggerName: string,
     matchedConditions: TriggerCondition[],
   ) {
+    const conditionParams = matchedConditions.map((condition) => {
+      const raw = condition as any;
+      return {
+        type: condition.type ?? raw.type,
+        metric: condition.metric ?? raw.metric,
+        operator: condition.operator ?? raw.operator,
+        value: condition.value ?? raw.value,
+        secondaryValue: condition.secondaryValue ?? raw.secondaryValue ?? raw.secondary_value,
+        changeDirection:
+          condition.changeDirection ?? raw.changeDirection ?? raw.change_direction,
+        changeAmount: condition.changeAmount ?? raw.changeAmount ?? raw.change_amount,
+        timeWindowHours:
+          condition.timeWindowHours ?? raw.timeWindowHours ?? raw.time_window_hours,
+        timeWindowDays: raw.time_window_days,
+        unit: getMetricUnit((condition.metric ?? raw.metric) as any),
+        valueSources: condition.valueSources ?? raw.valueSources ?? raw.value_sources,
+        sourceType: condition.sourceType ?? raw.sourceType ?? raw.source_type,
+      };
+    });
+
     if (matchedConditions.length === 0) {
-      return `Trigger "${triggerName}" matched.`;
+      return {
+        description: `Trigger "${triggerName}" matched.`,
+        descriptionKey: 'alert.description.triggerMatched',
+        descriptionParams: {
+          triggerName,
+          conditions: [],
+        },
+      };
     }
 
     const summaries = matchedConditions.map(formatConditionSummary);
-    return `Trigger "${triggerName}" matched: ${summaries.join(', ')}.`;
+    return {
+      description: `Trigger "${triggerName}" matched: ${summaries.join(', ')}.`,
+      descriptionKey: 'alert.description.triggerMatched',
+      descriptionParams: {
+        triggerName,
+        conditions: conditionParams,
+      },
+    };
   }
 
   private getAlertThreshold(
@@ -141,7 +175,8 @@ export class SensorService {
       params.matchedConditionIds.includes(condition.id),
     );
 
-    const description = this.buildAlertDescription(
+    const { description, descriptionKey, descriptionParams } =
+      this.buildAlertDescriptionPayload(
       params.trigger.name,
       matchedConditions,
     );
@@ -157,6 +192,8 @@ export class SensorService {
         organizationId: params.organizationId ?? undefined,
         title: params.trigger.name,
         description,
+        descriptionKey,
+        descriptionParams: descriptionParams as any,
         severity: params.trigger.severity as any,
         thresholdValue: threshold.value,
         unit: threshold.unit,

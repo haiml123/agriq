@@ -204,8 +204,68 @@
     "triggers": "ทริกเกอร์",
     "commodities": "สินค้า",
     "lookupTables": "ตารางค้นหา",
+    "translations": "การแปลภาษา",
     "simulator": "Simulator",
     "updates": "อัปเดตเกตเวย์"
+  },
+  "adminTranslations": {
+    "title": "การแปลภาษา",
+    "description": "จัดการคำแปลสำหรับข้อมูลแบบไดนามิก",
+    "saveChanges": "บันทึกการเปลี่ยนแปลง",
+    "entityLabel": "เอนทิตี",
+    "entityPlaceholder": "เลือกเอนทิตี",
+    "entityCommodityTypes": "ประเภทสินค้า",
+    "entitySites": "ไซต์",
+    "entityOrganizations": "องค์กร",
+    "fieldLabel": "ฟิลด์",
+    "fieldPlaceholder": "เลือกฟิลด์",
+    "fieldName": "ชื่อ",
+    "fieldDescription": "คำอธิบาย",
+    "entityItem": "รายการ",
+    "placeholder": "กรอกคำแปล",
+    "emptyState": "ไม่พบรายการ",
+    "noPermission": "คุณไม่มีสิทธิ์จัดการคำแปล"
+  },
+  "alertDescription": {
+    "triggerMatched": "{conditions}.",
+    "triggerMatchedNoConditions": "มีการแจ้งเตือน"
+  },
+  "alertCondition": {
+    "threshold": "{metric} {operator} {value}{unit}",
+    "between": "{metric} ระหว่าง {min}{unit} และ {max}{unit}",
+    "changeThreshold": "{metric} {direction} {operator} {value}{unit}{window}",
+    "change": "{metric} {direction} {amount}{unit}{window}",
+    "source": "{metric} จาก {source}{suffix}"
+  },
+  "alertWindow": {
+    "hours": " ใน {count, plural, one {# ชั่วโมง} other {# ชั่วโมง}}",
+    "days": " ใน {count, plural, one {# วัน} other {# วัน}}"
+  },
+  "alertMetric": {
+    "TEMPERATURE": "อุณหภูมิ",
+    "MEDIAN_TEMPERATURE": "อุณหภูมิ",
+    "HUMIDITY": "ความชื้น",
+    "MEDIAN_HUMIDITY": "ความชื้น",
+    "EMC": "EMC"
+  },
+  "alertOperator": {
+    "ABOVE": "มากกว่า",
+    "BELOW": "น้อยกว่า",
+    "EQUALS": "เท่ากับ",
+    "BETWEEN": "ระหว่าง"
+  },
+  "alertDirection": {
+    "ANY": "เปลี่ยน",
+    "INCREASE": "เพิ่มขึ้น",
+    "DECREASE": "ลดลง"
+  },
+  "alertSource": {
+    "GATEWAY": "เกตเวย์",
+    "OUTSIDE": "ภายนอก"
+  },
+  "alertConditionSuffix": {
+    "temperature": " อุณหภูมิ",
+    "humidity": " ความชื้น"
   },
   "simulator": {
     "title": "Simulator",

@@ -327,13 +327,13 @@ export class CommodityService {
           },
         },
         site: {
-          select: { id: true, name: true },
+          select: { id: true, name: true, locale: true },
         },
         compound: {
-          select: { id: true, name: true },
+          select: { id: true, name: true, locale: true },
         },
         cell: {
-          select: { id: true, name: true },
+          select: { id: true, name: true, locale: true },
         },
       },
     });

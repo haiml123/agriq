@@ -5,6 +5,7 @@ import {
   MaxLength,
   IsOptional,
   IsEnum,
+  IsObject,
 } from 'class-validator';
 import { entity_status } from '@prisma/client';
 
@@ -22,6 +23,10 @@ export class CreateCompoundDto {
   @IsEnum(entity_status)
   @IsOptional()
   status?: entity_status = entity_status.ACTIVE;
+
+  @IsObject()
+  @IsOptional()
+  locale?: Record<string, string>;
 }
 
 export class UpdateCompoundDto {
@@ -34,4 +39,8 @@ export class UpdateCompoundDto {
   @IsEnum(entity_status)
   @IsOptional()
   status?: entity_status;
+
+  @IsObject()
+  @IsOptional()
+  locale?: Record<string, string>;
 }

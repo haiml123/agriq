@@ -47,6 +47,7 @@ export class SiteService {
       data: {
         name: dto.name,
         address: dto.address,
+        ...(dto.locale !== undefined && { locale: dto.locale }),
         organizationId,
         createdBy: user.id,
       },
@@ -147,6 +148,7 @@ export class SiteService {
       data: {
         ...(dto.name && { name: dto.name }),
         ...(dto.address !== undefined && { address: dto.address }),
+        ...(dto.locale !== undefined && { locale: dto.locale }),
       },
       include: { compounds: { include: { cells: { include: { gateways: true } } } } },
     });
@@ -169,6 +171,7 @@ export class SiteService {
         name: dto.name,
         status: dto.status || entity_status.ACTIVE,
         siteId: dto.siteId,
+        ...(dto.locale !== undefined && { locale: dto.locale }),
         createdBy: user.id,
       },
       include: { cells: true },
@@ -192,6 +195,7 @@ export class SiteService {
       data: {
         ...(dto.name && { name: dto.name }),
         ...(dto.status && { status: dto.status }),
+        ...(dto.locale !== undefined && { locale: dto.locale }),
       },
       include: { cells: true },
     });
@@ -217,6 +221,7 @@ export class SiteService {
         width: dto.width,
         status: dto.status || entity_status.ACTIVE,
         compoundId: dto.compoundId,
+        ...(dto.locale !== undefined && { locale: dto.locale }),
         createdBy: user.id,
       },
     });
@@ -242,6 +247,7 @@ export class SiteService {
         ...(dto.length !== undefined && { length: dto.length }),
         ...(dto.width !== undefined && { width: dto.width }),
         ...(dto.status && { status: dto.status }),
+        ...(dto.locale !== undefined && { locale: dto.locale }),
       },
     });
   }

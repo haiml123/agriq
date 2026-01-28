@@ -23,8 +23,9 @@ import { SitesList } from '@/components/sites-table/sites-list'
 import { Button } from '@/components/ui/button'
 import { SiteModal } from '@/components/modals/site.modal'
 import type { CellModalResult } from '@/components/modals/cell.modal'
-import { useTranslations } from 'next-intl'
+import { useLocale, useTranslations } from 'next-intl'
 import { toast } from 'sonner'
+import { resolveLocaleText } from '@/utils/locale'
 
 export default function SitesPage() {
     const t = useTranslations('pages.settingsSites')
@@ -32,6 +33,7 @@ export default function SitesPage() {
     const tToastCompound = useTranslations('toast.compound')
     const tToastCell = useTranslations('toast.cell')
     const modal = useModal()
+    const locale = useLocale()
     const { user, isSuperAdmin, isAdmin, isLoading: isCurrentUserLoading } = useCurrentUser()
     const {
         getSites,
@@ -60,6 +62,10 @@ export default function SitesPage() {
     const [selectedOrganizationId, setSelectedOrganizationId] = useState<string>('all')
     const canCreateSite = isSuperAdmin || isAdmin
     const headingTitle = canCreateSite ? t('allSites') : t('mySites')
+    const getSiteDisplayName = useCallback(
+        (site: Site) => resolveLocaleText(site.locale, locale, site.name),
+        [locale]
+    )
 
     const fetchSites = useCallback(async () => {
         if (isCurrentUserLoading || !user) return
@@ -131,6 +137,7 @@ export default function SitesPage() {
                 name: data.name,
                 address: data.address ?? undefined,
                 organizationId,
+                locale: data.locale,
             }
             const newSite = await createSite(dto)
             if (newSite?.data) {
@@ -150,6 +157,7 @@ export default function SitesPage() {
             const dto: UpdateSiteDto = {
                 name: data.name,
                 address: data.address ?? undefined,
+                locale: data.locale,
             }
             const updated = await updateSite(siteId, dto)
             if (updated?.data) {
@@ -187,6 +195,7 @@ export default function SitesPage() {
             const dto: CreateCompoundDto = {
                 name: data.name,
                 siteId,
+                locale: data.locale,
             }
             const newCompound = await createCompound(dto)
             if (newCompound?.data) {
@@ -209,6 +218,7 @@ export default function SitesPage() {
         try {
             const dto: UpdateCompoundDto = {
                 name: data.name,
+                locale: data.locale,
             }
             const updated = await updateCompound(compoundId, dto)
             if (updated?.data) {
@@ -259,6 +269,7 @@ export default function SitesPage() {
                 length: data.length ?? 0,
                 width: data.width ?? 0,
                 compoundId,
+                locale: data.locale,
             }
             const newCell = await createCell(dto)
             if (newCell?.data) {
@@ -297,6 +308,7 @@ export default function SitesPage() {
                 height: data.height,
                 length: data.length,
                 width: data.width,
+                locale: data.locale,
             }
             const updated = await updateCell(cellId, dto)
             if (updated?.data) {
@@ -421,6 +433,7 @@ export default function SitesPage() {
                 ) : sites?.length > 0 ? (
                     <SitesList
                         sites={sites}
+                        getSiteDisplayName={getSiteDisplayName}
                         availableGateways={availableGateways}
                         onEditSite={handleEditSite}
                         onDeleteSite={handleDeleteSite}

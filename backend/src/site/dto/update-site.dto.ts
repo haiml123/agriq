@@ -1,4 +1,4 @@
-import { IsString, IsOptional, MinLength, MaxLength } from 'class-validator';
+import { IsString, IsOptional, MinLength, MaxLength, IsObject } from 'class-validator';
 
 export class UpdateSiteDto {
   @IsString()
@@ -11,4 +11,8 @@ export class UpdateSiteDto {
   @IsOptional()
   @MaxLength(255)
   address?: string;
+
+  @IsObject()
+  @IsOptional()
+  locale?: Record<string, string>;
 }

@@ -13,13 +13,15 @@ import {
 } from '@/components/ui/select';
 import { CellSelect, type CellSelectSite } from '@/components/ui/cell-select';
 import { useState, useEffect } from 'react';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { useTradeApi } from '@/hooks/use-trade-api';
 import { useSiteApi } from '@/hooks/use-site-api';
 import { useApi } from '@/hooks/use-api';
+import { useTranslationMap } from '@/hooks/use-translation-map';
 import type { CreateTradeDto, ApiTrade } from '@/schemas/trade.schema';
 import { Loader2, Package } from 'lucide-react';
 import { toast } from 'sonner';
+import { resolveLocaleText } from '@/utils/locale';
 
 interface CellInventory {
   commodityTypeId: string;
@@ -35,6 +37,8 @@ export function TransferOutModal({ onClose }: TransferOutModalProps) {
   const t = useTranslations('modals.transferOut');
   const tCommon = useTranslations('common');
   const tToast = useTranslations('toast.commodity');
+  const locale = useLocale();
+  const resolveCommodityTypeName = useTranslationMap('commodity_type', locale);
   const { create, isCreating } = useTradeApi();
   const { getSites } = useSiteApi();
   const { get, post } = useApi();
@@ -56,6 +60,9 @@ export function TransferOutModal({ onClose }: TransferOutModalProps) {
   const [isLoadingSites, setIsLoadingSites] = useState(false);
   const [isLoadingInventory, setIsLoadingInventory] = useState(false);
   const [error, setError] = useState<string>('');
+
+  const getCommodityTypeName = (id: string, fallback: string) =>
+    resolveCommodityTypeName(id, 'name', fallback);
 
   // Load sites when component mounts
   useEffect(() => {
@@ -137,7 +144,9 @@ export function TransferOutModal({ onClose }: TransferOutModalProps) {
 
       trades.forEach(trade => {
         const commodityTypeId = trade.commodity?.commodityType?.id;
-        const commodityTypeName = trade.commodity?.commodityType?.name || trade.commodity?.name || 'Unknown';
+        const commodityTypeName = commodityTypeId && trade.commodity?.commodityType?.name
+          ? getCommodityTypeName(commodityTypeId, trade.commodity.commodityType.name)
+          : trade.commodity?.name || 'Unknown';
 
         if (!commodityTypeId) {
           console.log('Skipping trade without commodityTypeId:', trade);
@@ -320,7 +329,7 @@ export function TransferOutModal({ onClose }: TransferOutModalProps) {
             <SelectContent>
               {sites.map((site) => (
                 <SelectItem key={site.id} value={site.id}>
-                  {site.name}
+                  {resolveLocaleText(site.locale, locale, site.name)}
                 </SelectItem>
               ))}
             </SelectContent>

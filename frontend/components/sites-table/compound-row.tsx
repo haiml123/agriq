@@ -1,8 +1,10 @@
 import React from 'react';
+import { useLocale } from 'next-intl';
 import { ChevronDown, ChevronRight, Pencil, Plus, Trash2, Warehouse } from 'lucide-react';
 import { Cell, Compound } from '@/schemas/sites.schema';
 import { CellBox } from '@/components/sites-table/cell-box';
 import { Button } from '@/components/ui/button';
+import { resolveLocaleText } from '@/utils/locale';
 
 interface CompoundRowProps {
   compound: Compound;
@@ -27,6 +29,7 @@ export const CompoundRow: React.FC<CompoundRowProps> = ({
   onEditCell,
   onDeleteCell,
 }) => {
+  const locale = useLocale();
   return (
     <div className={`${!isLast ? 'border-b border-border' : ''}`}>
       <div
@@ -44,7 +47,9 @@ export const CompoundRow: React.FC<CompoundRowProps> = ({
           <div className="w-8 h-8 rounded-lg bg-cyan-500/10 flex items-center justify-center">
             <Warehouse size={14} className="text-cyan-500" />
           </div>
-          <span className="text-foreground font-medium">{compound.name}</span>
+          <span className="text-foreground font-medium">
+            {resolveLocaleText(compound.locale, locale, compound.name)}
+          </span>
           <span className="text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded-full">
             {compound?.cells?.length || 0} cells
           </span>

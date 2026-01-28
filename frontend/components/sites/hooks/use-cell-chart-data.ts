@@ -62,6 +62,7 @@ export function useCellChartData(
   cellId: string,
   cellsDetails: MultipleCellsDetails | null,
   dateRange: DateRange,
+  resolveCommodityTypeName?: (id: string, field: string, fallback: string) => string
 ): CellChartData {
   const t = useTranslations('sites');
   const locale = useLocale();
@@ -89,7 +90,13 @@ export function useCellChartData(
 
   // Helper to get commodity at a specific time
   const getCommodity = (timestamp: string) =>
-    getCommodityAtTime(trades, timestamp, t('noCommodity'), t('unknownCommodity'));
+    getCommodityAtTime(
+      trades,
+      timestamp,
+      t('noCommodity'),
+      t('unknownCommodity'),
+      resolveCommodityTypeName
+    );
 
   // Temperature data
   let temperatureData: ChartDataPoint[] = aggregateReadingsByDate(
@@ -186,7 +193,11 @@ export function useCellChartData(
   const { min: humidityMin, max: humidityMax } = getChartDomain(humidityValues);
 
   // Generate commodity markers
-  const commodityMarkers = generateCommodityMarkers(trades, dateFormatter);
+  const commodityMarkers = generateCommodityMarkers(
+    trades,
+    dateFormatter,
+    resolveCommodityTypeName
+  );
 
   return {
     temperatureData,

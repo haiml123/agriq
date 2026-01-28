@@ -204,6 +204,7 @@
     "triggers": "טריגרים",
     "commodities": "סחורות",
     "lookupTables": "טבלאות חיפוש",
+    "translations": "תרגומים",
     "simulator": "Simulator",
     "updates": "עדכוני שערים"
   },
@@ -271,6 +272,65 @@
     "gateways": "שערים",
     "languages": "שפות",
     "about": "אודות"
+  },
+  "adminTranslations": {
+    "title": "תרגומים",
+    "description": "ניהול תרגומים עבור נתונים דינמיים.",
+    "saveChanges": "שמור שינויים",
+    "entityLabel": "ישות",
+    "entityPlaceholder": "בחר ישות",
+    "entityCommodityTypes": "סוגי סחורה",
+    "entitySites": "אתרים",
+    "entityOrganizations": "ארגונים",
+    "fieldLabel": "שדה",
+    "fieldPlaceholder": "בחר שדה",
+    "fieldName": "שם",
+    "fieldDescription": "תיאור",
+    "entityItem": "פריט",
+    "placeholder": "הזן תרגום",
+    "emptyState": "לא נמצאו רשומות.",
+    "noPermission": "אין לך הרשאה לנהל תרגומים."
+  },
+  "alertDescription": {
+    "triggerMatched": "{conditions}.",
+    "triggerMatchedNoConditions": "התראה הופעלה."
+  },
+  "alertCondition": {
+    "threshold": "{metric} {operator} {value}{unit}",
+    "between": "{metric} בין {min}{unit} ל-{max}{unit}",
+    "changeThreshold": "{metric} {direction} {operator} {value}{unit}{window}",
+    "change": "{metric} {direction} ב-{amount}{unit}{window}",
+    "source": "{metric} מ-{source}{suffix}"
+  },
+  "alertWindow": {
+    "hours": " ב-{count, plural, one {שעה} other {# שעות}}",
+    "days": " ב-{count, plural, one {יום} other {# ימים}}"
+  },
+  "alertMetric": {
+    "TEMPERATURE": "טמפרטורה",
+    "MEDIAN_TEMPERATURE": "טמפרטורה",
+    "HUMIDITY": "לחות",
+    "MEDIAN_HUMIDITY": "לחות",
+    "EMC": "EMC"
+  },
+  "alertOperator": {
+    "ABOVE": "מעל",
+    "BELOW": "מתחת",
+    "EQUALS": "שווה ל",
+    "BETWEEN": "בין"
+  },
+  "alertDirection": {
+    "ANY": "השתנה",
+    "INCREASE": "עלה",
+    "DECREASE": "ירד"
+  },
+  "alertSource": {
+    "GATEWAY": "Gateway",
+    "OUTSIDE": "חוץ"
+  },
+  "alertConditionSuffix": {
+    "temperature": " טמפרטורה",
+    "humidity": " לחות"
   },
   "sites": {
     "title": "אתרים",

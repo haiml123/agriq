@@ -5,12 +5,15 @@ import { AlertsCard } from './cards/alerts-card';
 import { useCellChartData } from './hooks/use-cell-chart-data';
 import type { Cell, MultipleCellsDetails, DateRange, GatewayReading } from './types';
 import { EnvironmentSummary } from './environment-summary';
+import { useLocale } from 'next-intl';
+import { resolveLocaleText } from '@/utils/locale';
 
 interface CellSectionProps {
   cell: Cell;
   cellsDetails: MultipleCellsDetails;
   dateRange: DateRange;
   isFirst?: boolean;
+  resolveCommodityTypeName?: (id: string, field: string, fallback: string) => string;
 }
 
 const getLatestReading = <T extends { recordedAt: string }>(
@@ -25,8 +28,15 @@ export function CellSection({
   cellsDetails,
   dateRange,
   isFirst,
+  resolveCommodityTypeName,
 }: CellSectionProps) {
-  const cellData = useCellChartData(cell.id, cellsDetails, dateRange);
+  const locale = useLocale();
+  const cellData = useCellChartData(
+    cell.id,
+    cellsDetails,
+    dateRange,
+    resolveCommodityTypeName
+  );
   const gatewayReadings = (cellsDetails.gatewayReadings || []).filter(
     (reading: GatewayReading) => reading.cellId === cell.id,
   );
@@ -37,9 +47,12 @@ export function CellSection({
       {/* Cell Title */}
       <div className="mb-4">
         <h3 className="text-lg font-semibold">
-          {cell.name} - {cell.compound.name}
+          {resolveLocaleText(cell.locale, locale, cell.name)} -{' '}
+          {resolveLocaleText(cell.compound?.locale, locale, cell.compound.name)}
         </h3>
-        <p className="text-sm text-muted-foreground">{cell.compound.site.name}</p>
+        <p className="text-sm text-muted-foreground">
+          {resolveLocaleText(cell.compound.site?.locale, locale, cell.compound.site.name)}
+        </p>
       </div>
 
       <EnvironmentSummary
@@ -67,7 +80,16 @@ export function CellSection({
 
       {/* Bottom Cards */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <CommoditiesCard trades={cellData.trades} />
+        <CommoditiesCard
+          trades={cellData.trades}
+          getCommodityDisplayName={(trade) => {
+            const commodityType = trade.commodity.commodityType;
+            if (commodityType?.id && resolveCommodityTypeName) {
+              return resolveCommodityTypeName(commodityType.id, 'name', commodityType.name);
+            }
+            return commodityType?.name || trade.commodity.name || 'Unknown';
+          }}
+        />
         <AlertsCard alerts={cellData.alerts} />
       </div>
     </div>

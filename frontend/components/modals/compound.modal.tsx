@@ -7,6 +7,8 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Compound, CreateCompoundDto, createCompoundSchema } from '@/schemas/sites.schema';
 import { useTranslations } from 'next-intl';
+import { useState } from 'react';
+import { LocaleTranslationsAccordion, type LocaleTranslations } from '@/components/shared/locale-translations-accordion';
 
 interface CompoundModalProps {
   siteName: string;
@@ -18,6 +20,9 @@ export function CompoundModal({ siteName, compound, onClose }: CompoundModalProp
   const t = useTranslations('modals.compound');
   const tCommon = useTranslations('common');
   const isEdit = !!(compound && compound.id);
+  const [localeValues, setLocaleValues] = useState<LocaleTranslations>(
+    compound?.locale ?? {}
+  );
 
   const {
     register,
@@ -32,7 +37,10 @@ export function CompoundModal({ siteName, compound, onClose }: CompoundModalProp
   });
 
   const onSubmit = (data: CreateCompoundDto) => {
-    onClose(data);
+    onClose({
+      ...data,
+      locale: localeValues,
+    });
   };
 
   console.log(errors, isValid)
@@ -61,6 +69,7 @@ export function CompoundModal({ siteName, compound, onClose }: CompoundModalProp
                 <p className="text-sm text-destructive">{errors.name.message}</p>
             )}
           </div>
+          <LocaleTranslationsAccordion value={localeValues} onChange={setLocaleValues} />
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => onClose()}>
               {tCommon('cancel')}

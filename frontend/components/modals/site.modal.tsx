@@ -7,6 +7,8 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Site, UpdateSiteDto, updateSiteSchema } from '@/schemas/sites.schema';
 import { useTranslations } from 'next-intl';
+import { useState } from 'react';
+import { LocaleTranslationsAccordion, type LocaleTranslations } from '@/components/shared/locale-translations-accordion';
 
 interface SiteModalProps {
   site?: Site | null;
@@ -17,6 +19,9 @@ export function SiteModal({ site, onClose }: SiteModalProps) {
   const t = useTranslations('modals.site');
   const tCommon = useTranslations('common');
   const isEdit = !!site?.id;
+  const [localeValues, setLocaleValues] = useState<LocaleTranslations>(
+    site?.locale ?? {}
+  );
 
   const {
     register,
@@ -35,6 +40,7 @@ export function SiteModal({ site, onClose }: SiteModalProps) {
     onClose({
       name: data.name,
       address: data.address || undefined,
+      locale: localeValues,
     });
   };
 
@@ -73,6 +79,7 @@ export function SiteModal({ site, onClose }: SiteModalProps) {
                 <p className="text-sm text-destructive">{errors.address.message}</p>
             )}
           </div>
+          <LocaleTranslationsAccordion value={localeValues} onChange={setLocaleValues} />
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => onClose()}>
               {tCommon('cancel')}

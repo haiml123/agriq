@@ -38,7 +38,8 @@ export function getCommodityAtTime(
   trades: Trade[],
   timestamp: string,
   noCommodityLabel: string,
-  unknownCommodityLabel: string
+  unknownCommodityLabel: string,
+  resolveCommodityTypeName?: (id: string, field: string, fallback: string) => string
 ): string {
   const time = new Date(timestamp).getTime();
   const sortedTrades = [...trades].sort((a, b) =>
@@ -48,8 +49,13 @@ export function getCommodityAtTime(
   // Find the most recent trade before or at this time
   for (let i = sortedTrades.length - 1; i >= 0; i--) {
     if (new Date(sortedTrades[i].tradedAt).getTime() <= time) {
+      const commodityType = sortedTrades[i].commodity.commodityType;
+      const commodityTypeName =
+        commodityType?.id && resolveCommodityTypeName
+          ? resolveCommodityTypeName(commodityType.id, 'name', commodityType.name)
+          : commodityType?.name;
       return (
-        sortedTrades[i].commodity.commodityType?.name ||
+        commodityTypeName ||
         sortedTrades[i].commodity.name ||
         unknownCommodityLabel
       );
@@ -98,15 +104,20 @@ export function getChartDomain(values: number[]): { min: number; max: number } {
 
 export function generateCommodityMarkers(
   trades: Trade[],
-  dateFormatter: Intl.DateTimeFormat
+  dateFormatter: Intl.DateTimeFormat,
+  resolveCommodityTypeName?: (id: string, field: string, fallback: string) => string
 ): CommodityMarker[] {
   const uniqueMarkers = new Map<string, CommodityMarker>();
 
   trades
     .sort((a, b) => new Date(a.tradedAt).getTime() - new Date(b.tradedAt).getTime())
     .forEach((trade, index) => {
-      const commodityName =
-        trade.commodity.commodityType?.name || trade.commodity.name || 'Unknown';
+      const commodityType = trade.commodity.commodityType;
+      const commodityTypeName =
+        commodityType?.id && resolveCommodityTypeName
+          ? resolveCommodityTypeName(commodityType.id, 'name', commodityType.name)
+          : commodityType?.name;
+      const commodityName = commodityTypeName || trade.commodity.name || 'Unknown';
       if (!uniqueMarkers.has(commodityName)) {
         uniqueMarkers.set(commodityName, {
           date: dateFormatter.format(new Date(trade.tradedAt)),

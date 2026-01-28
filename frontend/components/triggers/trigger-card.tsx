@@ -8,6 +8,8 @@ import { getCommodityLabel, type Trigger } from '@/schemas/trigger.schema';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { useLocale } from 'next-intl';
+import { useTranslationMap } from '@/hooks/use-translation-map';
 
 interface TriggerCardProps {
     trigger: Trigger;
@@ -17,6 +19,21 @@ interface TriggerCardProps {
 }
 
 export function TriggerCard({ trigger, onEdit, onDelete, onToggleActive }: TriggerCardProps) {
+    const locale = useLocale();
+    const resolveCommodityTypeName = useTranslationMap('commodity_type', locale);
+
+    const commodityType =
+        trigger.commodityType?.id
+            ? {
+                  ...trigger.commodityType,
+                  name: resolveCommodityTypeName(
+                      trigger.commodityType.id,
+                      'name',
+                      trigger.commodityType.name
+                  ),
+              }
+            : trigger.commodityType;
+
     return (
         <Card className={trigger.isActive ? '' : 'opacity-60'}>
             <CardContent className="p-5">
@@ -36,7 +53,7 @@ export function TriggerCard({ trigger, onEdit, onDelete, onToggleActive }: Trigg
                             <div className="flex items-center gap-2 mb-3">
                                 <span className="text-xs font-medium uppercase text-muted-foreground">Commodity:</span>
                                 <Badge variant="outline">
-                                    {getCommodityLabel(trigger.commodityTypeId, trigger.commodityType)}
+                                    {getCommodityLabel(trigger.commodityTypeId, commodityType)}
                                 </Badge>
                             </div>
                         )}

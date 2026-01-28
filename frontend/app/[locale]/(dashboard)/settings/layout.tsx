@@ -1,5 +1,5 @@
 "use client";
-import { Cpu, Info, Languages, Users, Warehouse } from 'lucide-react'
+import { Cpu, Info, Users, Warehouse } from 'lucide-react'
 import { AppSidebarLayout, NavItem } from '@/components/layout/app-sidebar-layout';
 import { ReactNode } from 'react';
 import { RoleTypeEnum } from '@/schemas/common.schema';
@@ -30,11 +30,6 @@ export default function SettingsLayout({ children }: SettingsLayoutProps) {
             icon: Cpu,
             roles: [RoleTypeEnum.SUPER_ADMIN, RoleTypeEnum.ADMIN]
         },
-        // {
-        //     label: t('languages'),
-        //     href: "/settings/languages",
-        //     icon: Languages,
-        // },
         {
             label: t('about'),
             href: "/settings/about",

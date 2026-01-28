@@ -1,8 +1,10 @@
 import { useCallback, useEffect, useState } from 'react';
+import { useLocale } from 'next-intl';
 import { useAlertApi } from '@/hooks/use-alert-api';
 import { useTradeApi } from '@/hooks/use-trade-api';
 import type { DashboardAlert } from '@/schemas/alert.schema';
 import type { DashboardTrade } from '@/schemas/trade.schema';
+import { resolveLocaleText } from '@/utils/locale';
 
 interface DashboardFilters {
   siteId?: string;
@@ -15,6 +17,7 @@ export function useDashboardData(filters?: DashboardFilters) {
   const [activeAlerts, setActiveAlerts] = useState<DashboardAlert[]>([]);
   const [recentCommodities, setRecentCommodities] = useState<DashboardTrade[]>([]);
   const [isLoadingAlerts, setIsLoadingAlerts] = useState(true);
+  const locale = useLocale();
 
   useEffect(() => {
     fetchAlerts();
@@ -32,9 +35,15 @@ export function useDashboardData(filters?: DashboardFilters) {
     if (response.data) {
       const formattedAlerts = response.data.map((alert) => {
         const locationParts = [];
-        if (alert.site?.name) locationParts.push(alert.site.name);
-        if (alert.compound?.name) locationParts.push(alert.compound.name);
-        if (alert.cell?.name) locationParts.push(alert.cell.name);
+        if (alert.site?.name) {
+          locationParts.push(resolveLocaleText(alert.site.locale, locale, alert.site.name));
+        }
+        if (alert.compound?.name) {
+          locationParts.push(resolveLocaleText(alert.compound.locale, locale, alert.compound.name));
+        }
+        if (alert.cell?.name) {
+          locationParts.push(resolveLocaleText(alert.cell.locale, locale, alert.cell.name));
+        }
 
         const startedAt = new Date(alert.startedAt);
         const now = new Date();
@@ -63,9 +72,15 @@ export function useDashboardData(filters?: DashboardFilters) {
     if (response.data) {
       const formattedTrades = response.data.map((trade) => {
         const locationParts = [];
-        if (trade.site?.name) locationParts.push(trade.site.name);
-        if (trade.compound?.name) locationParts.push(trade.compound.name);
-        if (trade.cell?.name) locationParts.push(trade.cell.name);
+        if (trade.site?.name) {
+          locationParts.push(resolveLocaleText(trade.site.locale, locale, trade.site.name));
+        }
+        if (trade.compound?.name) {
+          locationParts.push(resolveLocaleText(trade.compound.locale, locale, trade.compound.name));
+        }
+        if (trade.cell?.name) {
+          locationParts.push(resolveLocaleText(trade.cell.locale, locale, trade.cell.name));
+        }
 
         const tradedAt = new Date(trade.tradedAt);
         const formattedDate = tradedAt

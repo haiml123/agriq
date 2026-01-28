@@ -86,13 +86,13 @@ export class AlertService {
       orderBy: { startedAt: 'desc' },
       include: {
         site: {
-          select: { id: true, name: true },
+          select: { id: true, name: true, locale: true },
         },
         compound: {
-          select: { id: true, name: true },
+          select: { id: true, name: true, locale: true },
         },
         cell: {
-          select: { id: true, name: true },
+          select: { id: true, name: true, locale: true },
         },
         user: {
           select: { id: true, name: true },
@@ -124,13 +124,13 @@ export class AlertService {
       },
       include: {
         site: {
-          select: { id: true, name: true },
+          select: { id: true, name: true, locale: true },
         },
         compound: {
-          select: { id: true, name: true },
+          select: { id: true, name: true, locale: true },
         },
         cell: {
-          select: { id: true, name: true },
+          select: { id: true, name: true, locale: true },
         },
         user: {
           select: { id: true, name: true },
@@ -175,13 +175,13 @@ export class AlertService {
       },
       include: {
         site: {
-          select: { id: true, name: true },
+          select: { id: true, name: true, locale: true },
         },
         compound: {
-          select: { id: true, name: true },
+          select: { id: true, name: true, locale: true },
         },
         cell: {
-          select: { id: true, name: true },
+          select: { id: true, name: true, locale: true },
         },
         user: {
           select: { id: true, name: true },

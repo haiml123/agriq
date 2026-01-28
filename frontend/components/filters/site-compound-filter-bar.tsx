@@ -1,9 +1,10 @@
 'use client';
 
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import type { CellSelectSite } from '@/components/ui/cell-select';
 import type { ReactNode } from 'react';
+import { resolveLocaleText } from '@/utils/locale';
 
 interface SiteCompoundFilterBarProps {
   sites: CellSelectSite[];
@@ -25,6 +26,7 @@ export function SiteCompoundFilterBar({
   children,
 }: SiteCompoundFilterBarProps) {
   const t = useTranslations('sites');
+  const locale = useLocale();
   const selectedSite = sites.find((site) => site.id === selectedSiteId);
   const compounds = selectedSite?.compounds || [];
 
@@ -43,7 +45,7 @@ export function SiteCompoundFilterBar({
               )}
               {sites.map((site) => (
                 <SelectItem key={site.id} value={site.id}>
-                  {site.name}
+                  {resolveLocaleText(site.locale, locale, site.name)}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -64,7 +66,7 @@ export function SiteCompoundFilterBar({
               <SelectItem value="all">{t('allCompounds')}</SelectItem>
               {compounds.map((compound) => (
                 <SelectItem key={compound.id} value={compound.id}>
-                  {compound.name}
+                  {resolveLocaleText(compound.locale, locale, compound.name)}
                 </SelectItem>
               ))}
             </SelectContent>

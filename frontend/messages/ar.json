@@ -204,8 +204,68 @@
     "triggers": "المحفزات",
     "commodities": "السلع",
     "lookupTables": "جداول البحث",
+    "translations": "الترجمات",
     "simulator": "Simulator",
     "updates": "تحديثات البوابات"
+  },
+  "adminTranslations": {
+    "title": "الترجمات",
+    "description": "إدارة الترجمات للبيانات الديناميكية.",
+    "saveChanges": "حفظ التغييرات",
+    "entityLabel": "الكيان",
+    "entityPlaceholder": "اختر الكيان",
+    "entityCommodityTypes": "أنواع السلع",
+    "entitySites": "المواقع",
+    "entityOrganizations": "المؤسسات",
+    "fieldLabel": "الحقل",
+    "fieldPlaceholder": "اختر الحقل",
+    "fieldName": "الاسم",
+    "fieldDescription": "الوصف",
+    "entityItem": "العنصر",
+    "placeholder": "أدخل الترجمة",
+    "emptyState": "لا توجد سجلات.",
+    "noPermission": "ليس لديك إذن لإدارة الترجمات."
+  },
+  "alertDescription": {
+    "triggerMatched": "{conditions}.",
+    "triggerMatchedNoConditions": "تم تشغيل التنبيه."
+  },
+  "alertCondition": {
+    "threshold": "{metric} {operator} {value}{unit}",
+    "between": "{metric} بين {min}{unit} و {max}{unit}",
+    "changeThreshold": "{metric} {direction} {operator} {value}{unit}{window}",
+    "change": "{metric} {direction} بمقدار {amount}{unit}{window}",
+    "source": "{metric} من {source}{suffix}"
+  },
+  "alertWindow": {
+    "hours": " خلال {count, plural, one {# ساعة} other {# ساعات}}",
+    "days": " خلال {count, plural, one {# يوم} other {# أيام}}"
+  },
+  "alertMetric": {
+    "TEMPERATURE": "الحرارة",
+    "MEDIAN_TEMPERATURE": "الحرارة",
+    "HUMIDITY": "الرطوبة",
+    "MEDIAN_HUMIDITY": "الرطوبة",
+    "EMC": "EMC"
+  },
+  "alertOperator": {
+    "ABOVE": "أعلى من",
+    "BELOW": "أقل من",
+    "EQUALS": "يساوي",
+    "BETWEEN": "بين"
+  },
+  "alertDirection": {
+    "ANY": "تغير",
+    "INCREASE": "زاد",
+    "DECREASE": "انخفض"
+  },
+  "alertSource": {
+    "GATEWAY": "البوابة",
+    "OUTSIDE": "الخارج"
+  },
+  "alertConditionSuffix": {
+    "temperature": " الحرارة",
+    "humidity": " الرطوبة"
   },
   "simulator": {
     "title": "Simulator",

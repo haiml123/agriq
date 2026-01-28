@@ -1,8 +1,9 @@
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { Card, CardContent } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import type { StatusFilter, SeverityFilter, TimeFilter } from './types';
 import { AlertStatusEnum, SeverityEnum } from './types';
+import { resolveLocaleText } from '@/utils/locale';
 
 interface AlertsFiltersProps {
   isSuperAdmin: boolean;
@@ -45,6 +46,7 @@ export function AlertsFilters({
 }: AlertsFiltersProps) {
   const t = useTranslations('pages.alerts');
   const tSeverity = useTranslations('severity');
+  const locale = useLocale();
   const tStatus = useTranslations('alertStatus');
 
   return (
@@ -80,7 +82,7 @@ export function AlertsFilters({
                 <SelectItem value="all">{t('allSites')}</SelectItem>
                 {sites.map((site) => (
                   <SelectItem key={site.id} value={site.id}>
-                    {site.name}
+                    {resolveLocaleText(site.locale, locale, site.name)}
                   </SelectItem>
                 ))}
               </SelectContent>

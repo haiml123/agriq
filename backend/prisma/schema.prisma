@@ -209,6 +209,7 @@ model Invite {
 model Site {
   id   String @id @default(cuid())
   name String
+  locale Json?
 
   organizationId String       @map("organization_id")
   organization   Organization @relation(fields: [organizationId], references: [id])
@@ -254,6 +255,7 @@ model SiteUser {
 model Compound {
   id     String        @id @default(cuid())
   name   String
+  locale Json?
   status entity_status
 
   siteId String @map("site_id")
@@ -276,6 +278,7 @@ model Compound {
 model Cell {
   id       String        @id @default(cuid())
   name     String
+  locale   Json?
   status   entity_status
   height   Float
   length   Float
@@ -508,6 +511,8 @@ model Alert {
 
   title       String?
   description String
+  descriptionKey    String? @map("description_key")
+  descriptionParams Json?   @map("description_params")
 
   severity alert_severity
   status   alert_status   @default(OPEN)
@@ -636,6 +641,27 @@ model Commodity {
   @@index([commodityTypeId])
   @@index([organizationId])
   @@map("commodity")
+}
+
+//
+// TRANSLATIONS
+//
+
+model Translation {
+  id       String @id @default(cuid())
+  entity   String
+  entityId String @map("entity_id")
+  field    String
+  locale   String
+  text     String
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@unique([entity, entityId, field, locale])
+  @@index([entity, entityId])
+  @@index([entity, locale])
+  @@map("translation")
 }
 
 model Trade {

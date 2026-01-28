@@ -5,9 +5,10 @@ import type { Trade } from '../types';
 
 interface CommoditiesCardProps {
   trades: Trade[];
+  getCommodityDisplayName?: (trade: Trade) => string;
 }
 
-export function CommoditiesCard({ trades }: CommoditiesCardProps) {
+export function CommoditiesCard({ trades, getCommodityDisplayName }: CommoditiesCardProps) {
   const t = useTranslations('sites');
 
   return (
@@ -23,7 +24,8 @@ export function CommoditiesCard({ trades }: CommoditiesCardProps) {
             {trades.map((trade) => (
               <div key={trade.id} className="border-b border-border pb-4 last:border-0">
                 <h4 className="font-medium">
-                  {trade.commodity.commodityType?.name ||
+                  {getCommodityDisplayName?.(trade) ||
+                    trade.commodity.commodityType?.name ||
                     trade.commodity.name ||
                     'Unknown'}
                 </h4>

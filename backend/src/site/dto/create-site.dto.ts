@@ -4,6 +4,7 @@ import {
   MinLength,
   MaxLength,
   IsOptional,
+  IsObject,
 } from 'class-validator';
 
 export class CreateSiteDto {
@@ -21,4 +22,8 @@ export class CreateSiteDto {
   @IsOptional()
   @MaxLength(255)
   address?: string;
+
+  @IsObject()
+  @IsOptional()
+  locale?: Record<string, string>;
 }

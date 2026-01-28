@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import {
   Dialog,
   DialogContent,
@@ -23,10 +23,12 @@ import { useTradeApi } from '@/hooks/use-trade-api';
 import { useCommodityTypeApi } from '@/hooks/use-commodity-type-api';
 import { useSiteApi } from '@/hooks/use-site-api';
 import { useApi } from '@/hooks/use-api';
+import { useTranslationMap } from '@/hooks/use-translation-map';
 import type { CreateTradeDto } from '@/schemas/trade.schema';
 import type { CommodityType } from '@/schemas/commodity-type.schema';
 import { AlertTriangle } from 'lucide-react';
 import { toast } from 'sonner';
+import { resolveLocaleText } from '@/utils/locale';
 
 interface CommodityModalProps {
   open: boolean;
@@ -45,6 +47,8 @@ export function CommodityModal({
   const tCommon = useTranslations('common');
   const tSites = useTranslations('sites');
   const tToast = useTranslations('toast.commodity');
+  const locale = useLocale();
+  const resolveCommodityTypeName = useTranslationMap('commodity_type', locale);
 
   const { create } = useTradeApi();
   const { getList: getCommodityTypes } = useCommodityTypeApi();
@@ -75,6 +79,9 @@ export function CommodityModal({
   } | null>(null);
   const [showWarning, setShowWarning] = useState(false);
   const [userConfirmed, setUserConfirmed] = useState(false);
+
+  const getCommodityTypeName = (id: string, fallback: string) =>
+    resolveCommodityTypeName(id, 'name', fallback);
 
   // Load sites and commodity types when modal opens
   useEffect(() => {
@@ -213,7 +220,9 @@ export function CommodityModal({
 
       trades.forEach(trade => {
         const commodityTypeId = trade.commodity?.commodityType?.id;
-        const commodityTypeName = trade.commodity?.commodityType?.name || 'Unknown';
+        const commodityTypeName = commodityTypeId && trade.commodity?.commodityType?.name
+          ? getCommodityTypeName(commodityTypeId, trade.commodity.commodityType.name)
+          : 'Unknown';
 
         if (!commodityTypeId) return;
 
@@ -341,7 +350,7 @@ export function CommodityModal({
               <SelectContent>
                 {sites.map((site) => (
                   <SelectItem key={site.id} value={site.id}>
-                    {site.name}
+                    {resolveLocaleText(site.locale, locale, site.name)}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -365,7 +374,7 @@ export function CommodityModal({
                   .find((site) => site.id === formData.siteId)
                   ?.compounds?.map((compound) => (
                     <SelectItem key={compound.id} value={compound.id}>
-                      {compound.name}
+                      {resolveLocaleText(compound.locale, locale, compound.name)}
                     </SelectItem>
                   ))}
               </SelectContent>
@@ -466,7 +475,7 @@ export function CommodityModal({
               <SelectContent>
                 {commodityTypes.map((type) => (
                   <SelectItem key={type.id} value={type.id}>
-                    {type.name}
+                    {getCommodityTypeName(type.id, type.name)}
                   </SelectItem>
                 ))}
               </SelectContent>
