@@ -3,11 +3,13 @@
 import { FormEvent, useState } from 'react';
 import { signIn } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
+import { useLocale } from 'next-intl';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 
 export function LoginForm() {
     const router = useRouter();
+    const locale = useLocale();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [isLoading, setIsLoading] = useState(false);
@@ -31,7 +33,7 @@ export function LoginForm() {
                 return;
             }
 
-            router.push('/dashboard');
+            router.replace(`/${locale}/dashboard`);
             router.refresh();
         } catch (err) {
             setError(err instanceof Error ? err.message : 'An error occurred');
