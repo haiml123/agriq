@@ -21,7 +21,7 @@ export function RequireAuth({ children }: RequireAuthProps) {
   });
 
   // Show loading state while checking authentication
-  if (status === 'loading' || status === 'unauthenticated') {
+  if (status === 'loading') {
     return <AuthLoading />;
   }
 
