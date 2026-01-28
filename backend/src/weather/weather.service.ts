@@ -1,4 +1,10 @@
-import { BadRequestException, Injectable, Logger } from '@nestjs/common';
+import {
+  BadRequestException,
+  Inject,
+  Injectable,
+  Logger,
+  forwardRef,
+} from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { SiteAccessService } from '../site';
 import type { AppUser } from '../types/user.type';
@@ -31,6 +37,7 @@ export class WeatherService {
 
   constructor(
     private readonly prisma: PrismaService,
+    @Inject(forwardRef(() => SiteAccessService))
     private readonly siteAccess: SiteAccessService,
   ) {}
 

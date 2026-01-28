@@ -1,10 +1,24 @@
 import { useCallback, useEffect, useState } from 'react';
-import { useLocale } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { useAlertApi } from '@/hooks/use-alert-api';
 import { useTradeApi } from '@/hooks/use-trade-api';
 import type { DashboardAlert } from '@/schemas/alert.schema';
 import type { DashboardTrade } from '@/schemas/trade.schema';
 import { resolveLocaleText } from '@/utils/locale';
+
+type AlertCondition = {
+  type?: string;
+  metric?: string;
+  operator?: string;
+  value?: number;
+  secondaryValue?: number;
+  changeDirection?: string;
+  changeAmount?: number;
+  timeWindowHours?: number;
+  timeWindowDays?: number;
+  unit?: string;
+  valueSources?: string[];
+};
 
 interface DashboardFilters {
   siteId?: string;
@@ -18,6 +32,90 @@ export function useDashboardData(filters?: DashboardFilters) {
   const [recentCommodities, setRecentCommodities] = useState<DashboardTrade[]>([]);
   const [isLoadingAlerts, setIsLoadingAlerts] = useState(true);
   const locale = useLocale();
+  const tAlertDescription = useTranslations('alertDescription');
+  const tAlertCondition = useTranslations('alertCondition');
+  const tAlertWindow = useTranslations('alertWindow');
+  const tMetric = useTranslations('alertMetric');
+  const tOperator = useTranslations('alertOperator');
+  const tDirection = useTranslations('alertDirection');
+
+  const formatCondition = (condition: AlertCondition) => {
+    if (!condition.type || !condition.metric) return '';
+    const metricLabel = tMetric(condition.metric);
+    const unit = condition.unit || '';
+
+    if (condition.type === 'THRESHOLD') {
+      if (condition.operator === 'BETWEEN') {
+        return tAlertCondition('between', {
+          metric: metricLabel,
+          min: condition.value ?? '',
+          max: condition.secondaryValue ?? '',
+          unit,
+        });
+      }
+
+      return tAlertCondition('threshold', {
+        metric: metricLabel,
+        operator: condition.operator ? tOperator(condition.operator) : '',
+        value: condition.value ?? '',
+        unit,
+      });
+    }
+
+    if (condition.type === 'CHANGE') {
+      let windowText = '';
+      if (condition.timeWindowDays) {
+        windowText = tAlertWindow('days', { count: condition.timeWindowDays });
+      } else if (condition.timeWindowHours) {
+        windowText = tAlertWindow('hours', { count: condition.timeWindowHours });
+      }
+      if (condition.operator && condition.value !== undefined) {
+        return tAlertCondition('changeThreshold', {
+          metric: metricLabel,
+          direction: condition.changeDirection
+            ? tDirection(condition.changeDirection)
+            : '',
+          operator: condition.operator ? tOperator(condition.operator) : '',
+          value: condition.value ?? '',
+          unit,
+          window: windowText,
+        });
+      }
+      return tAlertCondition('change', {
+        metric: metricLabel,
+        direction: condition.changeDirection
+          ? tDirection(condition.changeDirection)
+          : '',
+        amount: condition.changeAmount ?? '',
+        unit,
+        window: windowText,
+      });
+    }
+
+    return '';
+  };
+
+  const resolveAlertDescription = (alert: any) => {
+    if (alert.descriptionKey && alert.descriptionParams) {
+      const params = alert.descriptionParams as {
+        triggerName?: string;
+        conditions?: AlertCondition[];
+      };
+      const conditionLines = Array.isArray(params.conditions)
+        ? params.conditions.map(formatCondition).filter(Boolean)
+        : [];
+      const conditions = conditionLines.join(', ');
+
+      if (!conditions) {
+        return tAlertDescription('triggerMatchedNoConditions');
+      }
+
+      return tAlertDescription('triggerMatched', { conditions });
+    }
+
+    const raw = alert.description || alert.title || 'No description';
+    return raw.replace(/^Trigger ".+?" matched:\s*/i, '');
+  };
 
   useEffect(() => {
     fetchAlerts();
@@ -51,7 +149,7 @@ export function useDashboardData(filters?: DashboardFilters) {
 
         return {
           id: alert.id,
-          description: alert.description || alert.title || 'No description',
+          description: resolveAlertDescription(alert),
           severity: alert.severity,
           status: alert.status,
           location: locationParts.join(' › ') || 'Unknown location',

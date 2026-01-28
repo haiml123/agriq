@@ -50,7 +50,7 @@ export function ActiveAlertsSection({ alerts, isLoading }: ActiveAlertsSectionPr
           alerts.map((alert) => (
             <div
               key={alert.id}
-              className="border border-border rounded-lg p-4 hover:bg-muted/30 transition-colors cursor-pointer"
+              className="border border-border rounded-lg p-4"
             >
               <div className="flex items-center gap-3 mb-2">
                 <Badge className={severityStyles[alert.severity]}>

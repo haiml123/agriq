@@ -1,7 +1,9 @@
 import {
   ForbiddenException,
+  Inject,
   Injectable,
   NotFoundException,
+  forwardRef,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import {
@@ -23,6 +25,7 @@ export class SiteService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly siteAccess: SiteAccessService,
+    @Inject(forwardRef(() => WeatherService))
     private readonly weatherService: WeatherService,
   ) {}
 
@@ -311,13 +314,18 @@ export class SiteService {
       },
     });
 
-    await this.weatherService.ensureWeatherObservationsForRange(
-      cell.compound.site.id,
-      cell.compound.site.latitude,
-      cell.compound.site.longitude,
-      effectiveStartDate,
-      effectiveEndDate,
-    );
+    if (
+      cell.compound.site.latitude != null &&
+      cell.compound.site.longitude != null
+    ) {
+      await this.weatherService.ensureWeatherObservationsForRange(
+        cell.compound.site.id,
+        cell.compound.site.latitude,
+        cell.compound.site.longitude,
+        effectiveStartDate,
+        effectiveEndDate,
+      );
+    }
 
     const gatewayReadings = await this.prisma.gatewayReading.findMany({
       where: {
