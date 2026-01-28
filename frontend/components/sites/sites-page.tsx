@@ -225,8 +225,6 @@ export function SitesPage() {
     <div className="min-h-screen bg-background p-6">
       <SitesHeader
         onAddCommodity={() => setCommodityModalOpen(true)}
-        onExportCsv={handleExportCsv}
-        onExportPdf={handleExportPdf}
       />
 
       <SitesFilters
@@ -243,6 +241,8 @@ export function SitesPage() {
         onDateRangeChange={filters.setDateRange}
         onCustomStartDateChange={filters.setCustomStartDate}
         onCustomEndDateChange={filters.setCustomEndDate}
+        onExportCsv={handleExportCsv}
+        onExportPdf={handleExportPdf}
       />
 
       {loading ? (

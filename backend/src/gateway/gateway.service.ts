@@ -2,6 +2,7 @@ import {
   BadRequestException,
   ForbiddenException,
   Injectable,
+  Logger,
   NotFoundException,
 } from '@nestjs/common';
 import { randomUUID } from 'crypto';
@@ -22,6 +23,7 @@ import { WeatherService } from '../weather';
 
 @Injectable()
 export class GatewayService {
+  private readonly logger = new Logger(GatewayService.name);
   constructor(
     private readonly prisma: PrismaService,
     private readonly siteAccess: SiteAccessService,
@@ -373,6 +375,15 @@ export class GatewayService {
           new Date(dto.recordedAt),
         )
       : null;
+    if (!outside) {
+      this.logger.warn(
+        `Outside weather missing for gateway=${gateway.id} site=${gateway.siteId ?? 'none'} recordedAt=${dto.recordedAt}`,
+      );
+    } else {
+      this.logger.debug(
+        `Outside weather ok for gateway=${gateway.id} site=${gateway.siteId ?? 'none'} recordedAt=${dto.recordedAt}`,
+      );
+    }
 
     // 1) Normalize and validate ball readings.
     const balls = this.normalizeBallReadings(dto);

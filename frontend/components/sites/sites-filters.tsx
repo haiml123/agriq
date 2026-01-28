@@ -1,8 +1,16 @@
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { CellSelect, type CellSelectSite } from '@/components/ui/cell-select';
 import { DateRangeSelector } from './date-range-selector';
 import { SiteCompoundFilterBar } from '@/components/filters/site-compound-filter-bar';
 import type { DateRange } from './types';
+import { Button } from '@/components/ui/button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { FileDown } from 'lucide-react';
 
 interface SitesFiltersProps {
   sites: CellSelectSite[];
@@ -18,6 +26,8 @@ interface SitesFiltersProps {
   onDateRangeChange: (range: DateRange) => void;
   onCustomStartDateChange: (date: string) => void;
   onCustomEndDateChange: (date: string) => void;
+  onExportCsv: () => void;
+  onExportPdf: () => void;
 }
 
 export function SitesFilters({
@@ -34,8 +44,12 @@ export function SitesFilters({
   onDateRangeChange,
   onCustomStartDateChange,
   onCustomEndDateChange,
+  onExportCsv,
+  onExportPdf,
 }: SitesFiltersProps) {
   const t = useTranslations('sites');
+  const locale = useLocale();
+  const isRTL = locale === 'he' || locale === 'ar';
 
   return (
     <SiteCompoundFilterBar
@@ -69,6 +83,28 @@ export function SitesFilters({
           onCustomStartDateChange={onCustomStartDateChange}
           onCustomEndDateChange={onCustomEndDateChange}
         />
+      </div>
+
+      <div
+        className={`w-full lg:w-auto flex ${
+          isRTL ? 'justify-start lg:mr-auto' : 'justify-end lg:ml-auto'
+        }`}
+      >
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="outline" className="gap-2" aria-label={t('exportButton')}>
+              <FileDown className="h-4 w-4" />
+              {t('exportButton')}
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent
+            align="end"
+            className="w-[var(--radix-dropdown-menu-trigger-width)]"
+          >
+            <DropdownMenuItem onClick={onExportCsv}>CSV</DropdownMenuItem>
+            <DropdownMenuItem onClick={onExportPdf}>PDF</DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
     </SiteCompoundFilterBar>
   );

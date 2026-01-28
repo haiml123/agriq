@@ -55,7 +55,7 @@ export function AlertsCard({ alerts }: AlertsCardProps) {
 
       return tAlertCondition('threshold', {
         metric: metricLabel,
-        operator: condition.operator ? tOperator(condition.operator) : condition.operator,
+        operator: condition.operator ? tOperator(condition.operator) : '',
         value: condition.value ?? '',
         unit,
       });
@@ -73,8 +73,8 @@ export function AlertsCard({ alerts }: AlertsCardProps) {
           metric: metricLabel,
           direction: condition.changeDirection
             ? tDirection(condition.changeDirection)
-            : condition.changeDirection,
-          operator: condition.operator ? tOperator(condition.operator) : condition.operator,
+            : '',
+          operator: condition.operator ? tOperator(condition.operator) : '',
           value: condition.value ?? '',
           unit,
           window: windowText,
@@ -84,7 +84,7 @@ export function AlertsCard({ alerts }: AlertsCardProps) {
         metric: metricLabel,
         direction: condition.changeDirection
           ? tDirection(condition.changeDirection)
-          : condition.changeDirection,
+          : '',
         amount: condition.changeAmount ?? '',
         unit,
         window: windowText,

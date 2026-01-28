@@ -40,6 +40,9 @@ export class WeatherService {
     startDate?: Date,
     endDate?: Date,
   ) {
+    this.logger.debug(
+      `listSiteWeather site=${siteId} start=${startDate?.toISOString() ?? 'none'} end=${endDate?.toISOString() ?? 'none'}`,
+    );
     await this.siteAccess.validateSiteAccess(user, siteId);
 
     const site = await this.prisma.site.findUnique({
@@ -48,10 +51,12 @@ export class WeatherService {
     });
 
     if (!site) {
+      this.logger.warn(`listSiteWeather: site ${siteId} not found`);
       throw new BadRequestException(`Site with ID "${siteId}" not found`);
     }
 
     if (site.latitude == null || site.longitude == null) {
+      this.logger.warn(`listSiteWeather: site ${siteId} missing lat/lng`);
       throw new BadRequestException('Site is missing latitude/longitude');
     }
 
@@ -59,7 +64,13 @@ export class WeatherService {
     const effectiveStartDate = startDate || new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
     const effectiveEndDate = endDate || now;
 
-    await this.refreshCurrentWeatherIfNeeded(siteId, site.latitude, site.longitude, effectiveEndDate);
+    await this.ensureWeatherObservationsForRange(
+      siteId,
+      site.latitude,
+      site.longitude,
+      effectiveStartDate,
+      effectiveEndDate,
+    );
 
     return this.prisma.weatherObservation.findMany({
       where: {
@@ -74,12 +85,16 @@ export class WeatherService {
   }
 
   async getCurrentObservationForSite(siteId: string, date?: Date) {
+    this.logger.debug(
+      `getCurrentObservationForSite site=${siteId} date=${date?.toISOString() ?? 'now'}`,
+    );
     const site = await this.prisma.site.findUnique({
       where: { id: siteId },
       select: { id: true, latitude: true, longitude: true },
     });
 
     if (!site || site.latitude == null || site.longitude == null) {
+      this.logger.warn(`getCurrentObservationForSite: site ${siteId} missing lat/lng`);
       return null;
     }
 
@@ -114,6 +129,7 @@ export class WeatherService {
       date,
     );
     if (!current) {
+      this.logger.warn(`getCurrentObservationForSite: no weather data for site ${siteId}`);
       return null;
     }
 
@@ -145,6 +161,84 @@ export class WeatherService {
     };
   }
 
+  async ensureWeatherObservationsForRange(
+    siteId: string,
+    latitude: number,
+    longitude: number,
+    startDate: Date,
+    endDate: Date,
+  ) {
+    if (!latitude || !longitude) {
+      return;
+    }
+
+    const msInDay = 24 * 60 * 60 * 1000;
+    const totalDays = Math.max(
+      1,
+      Math.ceil((endDate.getTime() - startDate.getTime()) / msInDay),
+    );
+    let stepDays = 1;
+    if (totalDays > 180) stepDays = 30;
+    else if (totalDays > 60) stepDays = 7;
+    else if (totalDays > 14) stepDays = 3;
+
+    const existing = await this.prisma.weatherObservation.findMany({
+      where: {
+        siteId,
+        recordedAt: {
+          gte: startDate,
+          lte: endDate,
+        },
+      },
+      select: { recordedAt: true },
+    });
+    const existingDays = new Set(
+      existing.map((obs) => obs.recordedAt.toISOString().slice(0, 10)),
+    );
+
+    const cursor = new Date(startDate);
+    cursor.setHours(12, 0, 0, 0);
+    const dates: Date[] = [];
+    while (cursor <= endDate) {
+      dates.push(new Date(cursor));
+      cursor.setDate(cursor.getDate() + stepDays);
+    }
+
+    for (const date of dates) {
+      const dayKey = date.toISOString().slice(0, 10);
+      if (existingDays.has(dayKey)) continue;
+      const current = await this.fetchCurrentWeather(latitude, longitude, date);
+      if (!current) continue;
+      const recordedAt = current.recordedAt || date;
+      try {
+        await this.prisma.weatherObservation.upsert({
+          where: {
+            siteId_recordedAt: {
+              siteId,
+              recordedAt,
+            },
+          },
+          update: {
+            temperature: current.temperature,
+            humidity: current.humidity,
+          },
+          create: {
+            siteId,
+            temperature: current.temperature,
+            humidity: current.humidity,
+            recordedAt,
+          },
+        });
+      } catch (error) {
+        this.logger.warn(
+          `ensureWeatherObservationsForRange: failed to store weather for site ${siteId}: ${error}`,
+        );
+      }
+    }
+
+    await this.refreshCurrentWeatherIfNeeded(siteId, latitude, longitude, endDate);
+  }
+
   private async refreshCurrentWeatherIfNeeded(
     siteId: string,
     latitude: number,
@@ -159,6 +253,9 @@ export class WeatherService {
     const now = new Date();
 
     if (effectiveEndDate.getTime() < now.getTime() - cacheMs) {
+      this.logger.debug(
+        `refreshCurrentWeatherIfNeeded: skip (endDate outside cache) site=${siteId}`,
+      );
       return;
     }
 
@@ -168,11 +265,15 @@ export class WeatherService {
     });
 
     if (latestObservation && now.getTime() - latestObservation.recordedAt.getTime() < cacheMs) {
+      this.logger.debug(
+        `refreshCurrentWeatherIfNeeded: cache hit site=${siteId}`,
+      );
       return;
     }
 
     const current = await this.fetchCurrentWeather(latitude, longitude);
     if (!current) {
+      this.logger.warn(`refreshCurrentWeatherIfNeeded: no weather data site=${siteId}`);
       return;
     }
 
@@ -253,6 +354,9 @@ export class WeatherService {
     if (date) {
       url.searchParams.set('dt', date.toISOString().slice(0, 10));
     }
+    const safeUrl = new URL(url.toString());
+    safeUrl.searchParams.set('key', 'REDACTED');
+    this.logger.debug(`fetchCurrentWeather url=${safeUrl.toString()}`);
 
     try {
       const controller = new AbortController();

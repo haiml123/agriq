@@ -16,12 +16,14 @@ import { entity_status, user_role } from '@prisma/client';
 import { isAdmin, isSuperAdmin } from '../user/user.utils';
 import { AppUser } from '../types/user.type';
 import { SiteAccessService } from './site-access.service';
+import { WeatherService } from '../weather';
 
 @Injectable()
 export class SiteService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly siteAccess: SiteAccessService,
+    private readonly weatherService: WeatherService,
   ) {}
 
   // ─────────────────────────────────────────────────────────────
@@ -309,9 +311,30 @@ export class SiteService {
       },
     });
 
+    await this.weatherService.ensureWeatherObservationsForRange(
+      cell.compound.site.id,
+      cell.compound.site.latitude,
+      cell.compound.site.longitude,
+      effectiveStartDate,
+      effectiveEndDate,
+    );
+
     const gatewayReadings = await this.prisma.gatewayReading.findMany({
       where: {
         cellId,
+        recordedAt: {
+          gte: effectiveStartDate,
+          lte: effectiveEndDate,
+        },
+      },
+      orderBy: {
+        recordedAt: 'asc',
+      },
+    });
+
+    const weatherObservations = await this.prisma.weatherObservation.findMany({
+      where: {
+        siteId: cell.compound.site.id,
         recordedAt: {
           gte: effectiveStartDate,
           lte: effectiveEndDate,
@@ -354,6 +377,7 @@ export class SiteService {
       cell,
       sensorReadings,
       gatewayReadings,
+      weatherObservations,
       trades,
       alerts,
     };
@@ -425,6 +449,49 @@ export class SiteService {
       },
     });
 
+    const siteCoords = Array.from(
+      new Map(
+        cells.map((cell) => [
+          cell.compound.site.id,
+          {
+            siteId: cell.compound.site.id,
+            latitude: cell.compound.site.latitude,
+            longitude: cell.compound.site.longitude,
+          },
+        ]),
+      ).values(),
+    );
+
+    await Promise.all(
+      siteCoords.map((site) =>
+        site.latitude != null && site.longitude != null
+          ? this.weatherService.ensureWeatherObservationsForRange(
+              site.siteId,
+              site.latitude,
+              site.longitude,
+              effectiveStartDate,
+              effectiveEndDate,
+            )
+          : Promise.resolve(),
+      ),
+    );
+
+    const siteIds = Array.from(
+      new Set(cells.map((cell) => cell.compound.site.id)),
+    );
+    const weatherObservations = await this.prisma.weatherObservation.findMany({
+      where: {
+        siteId: { in: siteIds },
+        recordedAt: {
+          gte: effectiveStartDate,
+          lte: effectiveEndDate,
+        },
+      },
+      orderBy: {
+        recordedAt: 'asc',
+      },
+    });
+
     // Fetch trades for all cells
     const trades = await this.prisma.trade.findMany({
       where: { cellId: { in: cellIds } },
@@ -457,6 +524,7 @@ export class SiteService {
       cells,
       sensorReadings,
       gatewayReadings,
+      weatherObservations,
       trades,
       alerts,
     };

@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { entityStatusSchema, severitySchema, alertStatusSchema } from '@/schemas/common.schema';
 import { tradeCommoditySchema } from '@/schemas/trade.schema';
+import { weatherObservationSchema } from '@/schemas/weather.schema';
 
 // ============ CELL SCHEMAS ============
 
@@ -195,12 +196,36 @@ export const gatewaySchema = z.object({
   cell: z.object({
     id: z.string(),
     name: z.string(),
+    locale: z
+      .object({
+        en: z.string().optional(),
+        he: z.string().optional(),
+        ar: z.string().optional(),
+        th: z.string().optional(),
+      })
+      .optional(),
     compound: z.object({
       id: z.string(),
       name: z.string(),
+      locale: z
+        .object({
+          en: z.string().optional(),
+          he: z.string().optional(),
+          ar: z.string().optional(),
+          th: z.string().optional(),
+        })
+        .optional(),
       site: z.object({
         id: z.string(),
         name: z.string(),
+        locale: z
+          .object({
+            en: z.string().optional(),
+            he: z.string().optional(),
+            ar: z.string().optional(),
+            th: z.string().optional(),
+          })
+          .optional(),
       }),
     }),
   }).optional(),
@@ -330,12 +355,36 @@ export const cellAlertSchema = z.object({
 export const cellWithDetailsSchema = z.object({
   id: z.string(),
   name: z.string(),
+  locale: z
+    .object({
+      en: z.string().optional(),
+      he: z.string().optional(),
+      ar: z.string().optional(),
+      th: z.string().optional(),
+    })
+    .optional(),
   compound: z.object({
     id: z.string(),
     name: z.string(),
+    locale: z
+      .object({
+        en: z.string().optional(),
+        he: z.string().optional(),
+        ar: z.string().optional(),
+        th: z.string().optional(),
+      })
+      .optional(),
     site: z.object({
       id: z.string(),
       name: z.string(),
+      locale: z
+        .object({
+          en: z.string().optional(),
+          he: z.string().optional(),
+          ar: z.string().optional(),
+          th: z.string().optional(),
+        })
+        .optional(),
     }),
   }),
 });
@@ -344,6 +393,7 @@ export const cellDetailsSchema = z.object({
   cell: cellWithDetailsSchema,
   sensorReadings: z.array(sensorReadingSchema),
   gatewayReadings: z.array(gatewayReadingSchema),
+  weatherObservations: z.array(weatherObservationSchema).optional(),
   trades: z.array(cellTradeSchema),
   alerts: z.array(cellAlertSchema),
 });
@@ -352,6 +402,7 @@ export const multipleCellsDetailsSchema = z.object({
   cells: z.array(cellWithDetailsSchema),
   sensorReadings: z.array(sensorReadingSchema),
   gatewayReadings: z.array(gatewayReadingSchema),
+  weatherObservations: z.array(weatherObservationSchema).optional(),
   trades: z.array(cellTradeSchema),
   alerts: z.array(cellAlertSchema),
 });

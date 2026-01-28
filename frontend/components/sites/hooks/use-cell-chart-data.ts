@@ -85,6 +85,7 @@ export function useCellChartData(
   const gatewayReadings = (cellsDetails.gatewayReadings || []).filter((r) => r.cellId === cellId);
   const trades = cellsDetails.trades.filter((t) => t.cellId === cellId);
   const alerts = cellsDetails.alerts.filter((a) => a.cellId === cellId);
+  const weatherObservations = cellsDetails.weatherObservations || [];
 
   const dateFormatter = getDateFormatter(dateRange, locale);
 
@@ -125,6 +126,18 @@ export function useCellChartData(
     (reading: GatewayReading) => reading.outsideTemperature as number
   ).map((d) => ({ date: d.date, fullDate: d.fullDate, value: d.value }));
 
+  const cellSiteId = cellsDetails.cells.find((cell) => cell.id === cellId)?.compound?.site?.id;
+  const weatherForSite = cellSiteId
+    ? weatherObservations.filter((obs) => obs.siteId === cellSiteId)
+    : [];
+
+  const outsideTempFallback = aggregateReadingsByDate(
+    weatherForSite,
+    dateFormatter,
+    () => t('noCommodity'),
+    (reading) => reading.temperature
+  ).map((d) => ({ date: d.date, fullDate: d.fullDate, value: d.value }));
+
   temperatureData = mergeSeriesByDate(
     temperatureData,
     ambientTemperature,
@@ -133,7 +146,7 @@ export function useCellChartData(
   );
   temperatureData = mergeSeriesByDate(
     temperatureData,
-    outsideTemperature,
+    outsideTemperature.length > 0 ? outsideTemperature : outsideTempFallback,
     'outsideTemperature',
     t('noCommodity'),
   );
@@ -165,6 +178,13 @@ export function useCellChartData(
     (reading: GatewayReading) => reading.outsideHumidity as number
   ).map((d) => ({ date: d.date, fullDate: d.fullDate, value: d.value }));
 
+  const outsideHumidityFallback = aggregateReadingsByDate(
+    weatherForSite,
+    dateFormatter,
+    () => t('noCommodity'),
+    (reading) => reading.humidity
+  ).map((d) => ({ date: d.date, fullDate: d.fullDate, value: d.value }));
+
   humidityData = mergeSeriesByDate(
     humidityData,
     ambientHumidity,
@@ -173,10 +193,25 @@ export function useCellChartData(
   );
   humidityData = mergeSeriesByDate(
     humidityData,
-    outsideHumidity,
+    outsideHumidity.length > 0 ? outsideHumidity : outsideHumidityFallback,
     'outsideHumidity',
     t('noCommodity'),
   );
+
+  if (process.env.NODE_ENV !== 'production') {
+    const outsideTempCount = gatewayReadings.filter((r) => r.outsideTemperature != null).length;
+    const outsideHumidityCount = gatewayReadings.filter((r) => r.outsideHumidity != null).length;
+    if (outsideTempCount === 0 || outsideHumidityCount === 0) {
+      // eslint-disable-next-line no-console
+      console.debug('[cell-chart] outside series missing', {
+        cellId,
+        gatewayReadings: gatewayReadings.length,
+        outsideTempCount,
+        outsideHumidityCount,
+        dateRange,
+      });
+    }
+  }
 
   // Calculate chart domains
   const tempValues = temperatureData.flatMap((d) =>
