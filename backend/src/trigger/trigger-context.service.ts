@@ -1,5 +1,10 @@
 import { Injectable } from '@nestjs/common';
-import { entity_status, EventTrigger, Prisma, trigger_scope } from '@prisma/client';
+import {
+  entity_status,
+  EventTrigger,
+  Prisma,
+  trigger_scope,
+} from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { ConditionType, MetricType } from './dto';
 
@@ -9,7 +14,7 @@ export interface TriggerContextScope {
   commodityTypeId?: string;
 }
 
-export type ReadingSource = 'GATEWAY' | 'SENSOR';
+export type ReadingSource = 'GATEWAY' | 'SENSOR' | 'OUTSIDE';
 
 export interface BaselineQuery {
   source: ReadingSource;
@@ -73,17 +78,6 @@ export class TriggerContextService {
     });
   }
 
-  getMaxChangeWindowHours(triggers: EventTrigger[]): number | null {
-    const windows = triggers.flatMap((trigger) =>
-      this.parseConditions(trigger.conditions)
-        .filter((condition) => condition.type === ConditionType.CHANGE)
-        .map((condition) => condition.timeWindowHours ?? 0),
-    );
-
-    const maxWindow = windows.length > 0 ? Math.max(...windows) : 0;
-    return maxWindow > 0 ? maxWindow : null;
-  }
-
   async loadBaselineMetrics(
     query: BaselineQuery,
   ): Promise<Partial<Record<MetricType, number>>> {
@@ -123,6 +117,43 @@ export class TriggerContextService {
           baseline,
           MetricType.MEDIAN_HUMIDITY,
           reading.humidity,
+        );
+      }
+    }
+
+    if (query.source === 'OUTSIDE') {
+      const observation = await this.prisma.weatherObservation.findFirst({
+        where: {
+          siteId: query.sourceId,
+          recordedAt: {
+            gte: query.since,
+            ...(query.before && { lt: query.before }),
+          },
+        },
+        orderBy: { recordedAt: 'asc' },
+        select: { temperature: true, humidity: true },
+      });
+
+      if (observation) {
+        this.assignMetricValue(
+          baseline,
+          MetricType.TEMPERATURE,
+          observation.temperature,
+        );
+        this.assignMetricValue(
+          baseline,
+          MetricType.MEDIAN_TEMPERATURE,
+          observation.temperature,
+        );
+        this.assignMetricValue(
+          baseline,
+          MetricType.HUMIDITY,
+          observation.humidity,
+        );
+        this.assignMetricValue(
+          baseline,
+          MetricType.MEDIAN_HUMIDITY,
+          observation.humidity,
         );
       }
     }
@@ -174,7 +205,9 @@ export class TriggerContextService {
     target[metric] = value;
   }
 
-  private parseConditions(conditions: EventTrigger['conditions']): TriggerCondition[] {
+  private parseConditions(
+    conditions: EventTrigger['conditions'],
+  ): TriggerCondition[] {
     if (!Array.isArray(conditions)) {
       return [];
     }

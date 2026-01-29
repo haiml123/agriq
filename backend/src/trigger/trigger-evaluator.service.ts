@@ -2,13 +2,13 @@ import { Injectable } from '@nestjs/common';
 import { EventTrigger } from '@prisma/client';
 import {
   ChangeDirection,
-  ConditionSourceType,
   ConditionLogic,
   ConditionType,
   MetricType,
   Operator,
-  ValueSource,
 } from './dto';
+import { TriggerCondition } from './trigger-condition.utils';
+import { parseTriggerConditions } from './trigger-condition.utils';
 
 export interface TriggerEvaluationContext {
   metrics: Partial<Record<MetricType, number>>;
@@ -21,27 +21,13 @@ export interface TriggerEvaluationResult {
   failedConditions: string[];
 }
 
-type TriggerCondition = {
-  id: string;
-  metric: MetricType;
-  type: ConditionType;
-  operator?: Operator;
-  value?: number;
-  secondaryValue?: number;
-  changeDirection?: ChangeDirection;
-  changeAmount?: number;
-  timeWindowHours?: number;
-  valueSources?: ValueSource[];
-  sourceType?: ConditionSourceType;
-};
-
 @Injectable()
 export class TriggerEvaluatorService {
   evaluateTrigger(
     trigger: Pick<EventTrigger, 'conditions' | 'conditionLogic'>,
     context: TriggerEvaluationContext,
   ): TriggerEvaluationResult {
-    const conditions = this.parseConditions(trigger.conditions);
+    const conditions = parseTriggerConditions(trigger.conditions);
 
     if (conditions.length === 0) {
       return { matches: false, matchedConditions: [], failedConditions: [] };
@@ -72,25 +58,6 @@ export class TriggerEvaluatorService {
     return { matches, matchedConditions, failedConditions };
   }
 
-  private parseConditions(conditions: EventTrigger['conditions']): TriggerCondition[] {
-    if (!Array.isArray(conditions)) {
-      return [];
-    }
-
-    return conditions.filter((condition): condition is TriggerCondition => {
-      if (!condition || typeof condition !== 'object') {
-        return false;
-      }
-
-      const candidate = condition as Record<string, unknown>;
-      return (
-        typeof candidate.id === 'string' &&
-        typeof candidate.metric === 'string' &&
-        typeof candidate.type === 'string'
-      );
-    });
-  }
-
   private evaluateCondition(
     condition: TriggerCondition,
     context: TriggerEvaluationContext,
@@ -100,12 +67,24 @@ export class TriggerEvaluatorService {
       return false;
     }
 
+    return this.evaluateConditionForValue(
+      condition,
+      current,
+      context.previousMetrics,
+    );
+  }
+
+  evaluateConditionForValue(
+    condition: TriggerCondition,
+    current: number,
+    previousMetrics?: Partial<Record<MetricType, number>>,
+  ): boolean {
     if (condition.type === ConditionType.THRESHOLD) {
       return this.evaluateThreshold(condition, current);
     }
 
     if (condition.type === ConditionType.CHANGE) {
-      return this.evaluateChange(condition, current, context.previousMetrics);
+      return this.evaluateChange(condition, current, previousMetrics);
     }
 
     return false;

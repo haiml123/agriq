@@ -14,22 +14,15 @@ import {
   TransferSensorDto,
 } from '../gateway/dto';
 import {
-  formatConditionSummary,
-  getMetricUnit,
-  parseTriggerConditions,
-  TriggerCondition,
-  TriggerContextService,
-  TriggerEvaluatorService,
+  TriggerEngineService,
 } from '../trigger';
-import { MetricType } from '../trigger/dto';
 
 @Injectable()
 export class SensorService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly siteAccess: SiteAccessService,
-    private readonly triggerContext: TriggerContextService,
-    private readonly triggerEvaluator: TriggerEvaluatorService,
+    private readonly triggerEngine: TriggerEngineService,
   ) {}
 
   private async validateGatewayAccess(user: AppUser, gatewayId: string) {
@@ -48,18 +41,6 @@ export class SensorService {
 
     await this.siteAccess.validateCellAccess(user, gateway.cellId);
     return gateway;
-  }
-
-  private buildMetricsFromSensorReading(reading: {
-    temperature: number;
-    humidity: number;
-  }): Partial<Record<MetricType, number>> {
-    return {
-      [MetricType.TEMPERATURE]: reading.temperature,
-      [MetricType.MEDIAN_TEMPERATURE]: reading.temperature,
-      [MetricType.HUMIDITY]: reading.humidity,
-      [MetricType.MEDIAN_HUMIDITY]: reading.humidity,
-    };
   }
 
   private async getCellCommodityTypeId(
@@ -81,133 +62,20 @@ export class SensorService {
     return latestTrade.commodity?.commodityTypeId ?? undefined;
   }
 
-  private buildAlertDescriptionPayload(
-    triggerName: string,
-    matchedConditions: TriggerCondition[],
+  async listSensors(
+    user: AppUser,
+    gatewayId?: string,
+    cellId?: string,
+    organizationId?: string,
   ) {
-    const conditionParams = matchedConditions.map((condition) => {
-      const raw = condition as any;
-      return {
-        type: condition.type ?? raw.type,
-        metric: condition.metric ?? raw.metric,
-        operator: condition.operator ?? raw.operator,
-        value: condition.value ?? raw.value,
-        secondaryValue: condition.secondaryValue ?? raw.secondaryValue ?? raw.secondary_value,
-        changeDirection:
-          condition.changeDirection ?? raw.changeDirection ?? raw.change_direction,
-        changeAmount: condition.changeAmount ?? raw.changeAmount ?? raw.change_amount,
-        timeWindowHours:
-          condition.timeWindowHours ?? raw.timeWindowHours ?? raw.time_window_hours,
-        timeWindowDays: raw.time_window_days,
-        unit: getMetricUnit((condition.metric ?? raw.metric) as any),
-        valueSources: condition.valueSources ?? raw.valueSources ?? raw.value_sources,
-        sourceType: condition.sourceType ?? raw.sourceType ?? raw.source_type,
-      };
-    });
-
-    if (matchedConditions.length === 0) {
-      return {
-        description: `Trigger "${triggerName}" matched.`,
-        descriptionKey: 'alert.description.triggerMatched',
-        descriptionParams: {
-          triggerName,
-          conditions: [],
-        },
-      };
-    }
-
-    const summaries = matchedConditions.map(formatConditionSummary);
-    return {
-      description: `Trigger "${triggerName}" matched: ${summaries.join(', ')}.`,
-      descriptionKey: 'alert.description.triggerMatched',
-      descriptionParams: {
-        triggerName,
-        conditions: conditionParams,
-      },
-    };
-  }
-
-  private getAlertThreshold(
-    matchedConditions: TriggerCondition[],
-  ): { value?: number; unit?: string } {
-    const threshold = matchedConditions.find(
-      (condition) =>
-        condition.type === 'THRESHOLD' && condition.value !== undefined,
-    );
-
-    if (!threshold) {
-      return {};
-    }
-
-    return {
-      value: threshold.value,
-      unit: getMetricUnit(threshold.metric),
-    };
-  }
-
-  private async ensureAlertForTrigger(params: {
-    trigger: { id: string; name: string; severity: string; conditions: any };
-    siteId: string;
-    compoundId?: string | null;
-    cellId?: string | null;
-    sensorId?: string | null;
-    organizationId?: string | null;
-    matchedConditionIds: string[];
-  }) {
-    const existing = await this.prisma.alert.findFirst({
-      where: {
-        triggerId: params.trigger.id,
-        cellId: params.cellId ?? null,
-        sensorId: params.sensorId ?? null,
-        status: {
-          in: ['OPEN', 'ACKNOWLEDGED', 'IN_PROGRESS'],
-        },
-      },
-      select: { id: true },
-    });
-
-    if (existing) {
-      return existing;
-    }
-
-    const conditions = parseTriggerConditions(params.trigger.conditions);
-    const matchedConditions = conditions.filter((condition) =>
-      params.matchedConditionIds.includes(condition.id),
-    );
-
-    const { description, descriptionKey, descriptionParams } =
-      this.buildAlertDescriptionPayload(
-      params.trigger.name,
-      matchedConditions,
-    );
-    const threshold = this.getAlertThreshold(matchedConditions);
-
-    return this.prisma.alert.create({
-      data: {
-        triggerId: params.trigger.id,
-        siteId: params.siteId,
-        compoundId: params.compoundId ?? undefined,
-        cellId: params.cellId ?? undefined,
-        sensorId: params.sensorId ?? undefined,
-        organizationId: params.organizationId ?? undefined,
-        title: params.trigger.name,
-        description,
-        descriptionKey,
-        descriptionParams: descriptionParams as any,
-        severity: params.trigger.severity as any,
-        thresholdValue: threshold.value,
-        unit: threshold.unit,
-      },
-    });
-  }
-
-  async listSensors(user: AppUser, gatewayId?: string, cellId?: string) {
     this.siteAccess.ensureSuperAdmin(user);
 
     if (gatewayId) {
       await this.validateGatewayAccess(user, gatewayId);
     } else if (cellId) {
       await this.siteAccess.validateCellAccess(user, cellId);
+    } else if (organizationId) {
+      this.siteAccess.validateOrganizationAccess(user, organizationId);
     }
 
     return this.prisma.sensor.findMany({
@@ -215,7 +83,9 @@ export class SensorService {
         ? { gatewayId }
         : cellId
           ? { gateway: { cellId } }
-          : undefined,
+          : organizationId
+            ? { gateway: { organizationId } }
+            : undefined,
       include: {
         gateway: {
           select: {
@@ -422,63 +292,21 @@ export class SensorService {
     if (sensor.gateway.cell?.compound?.site?.id) {
       const commodityTypeId = await this.getCellCommodityTypeId(cellId);
 
-      const triggers = await this.triggerContext.findMatchingTriggers(
+      await this.triggerEngine.evaluateSensorReading(
         {
           organizationId: sensor.gateway.organizationId ?? undefined,
           commodityTypeId,
           sensorId: sensor.id,
-        },
-        { sensorMatch: 'specific' },
-      );
-
-      const latestMetrics = this.buildMetricsFromSensorReading({
-        temperature: latestReading.temperature,
-        humidity: latestReading.humidity,
-      });
-
-      for (const trigger of triggers) {
-        const changeWindows = this.triggerContext.getChangeMetricWindows(trigger);
-        const previousMetrics: Partial<Record<MetricType, number>> = {};
-
-        for (const [metric, windowHours] of changeWindows.entries()) {
-          const baseline = await this.triggerContext.loadBaselineMetrics({
-            source: 'SENSOR',
-            sourceId: sensor.id,
-            since: new Date(
-              new Date(latestReading.recordedAt).getTime() -
-                windowHours * 60 * 60 * 1000,
-            ),
-            before: new Date(latestReading.recordedAt),
-            metrics: [metric],
-          });
-
-          if (baseline[metric] !== undefined) {
-            previousMetrics[metric] = baseline[metric] as number;
-          }
-        }
-
-        const evaluation = this.triggerEvaluator.evaluateTrigger(trigger, {
-          metrics: latestMetrics,
-          previousMetrics:
-            Object.keys(previousMetrics).length > 0
-              ? previousMetrics
-              : undefined,
-        });
-
-        if (!evaluation.matches) {
-          continue;
-        }
-
-        await this.ensureAlertForTrigger({
-          trigger,
           siteId: sensor.gateway.cell.compound.site.id,
           compoundId: sensor.gateway.cell.compound.id,
           cellId,
-          sensorId: sensor.id,
-          organizationId: sensor.gateway.organizationId ?? undefined,
-          matchedConditionIds: evaluation.matchedConditions,
-        });
-      }
+        },
+        {
+          temperature: latestReading.temperature,
+          humidity: latestReading.humidity,
+          recordedAt: new Date(latestReading.recordedAt),
+        },
+      );
     }
 
     return result;

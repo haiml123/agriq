@@ -3,11 +3,13 @@ import {
   IsArray,
   IsDateString,
   IsNumber,
+  IsOptional,
   Max,
   Min,
   ValidateNested,
 } from 'class-validator';
 import { Type } from 'class-transformer';
+import { GatewayBallReadingDto } from './gateway-payload.dto';
 
 export class CreateGatewayReadingDto {
   @IsNumber()
@@ -26,6 +28,12 @@ export class CreateGatewayReadingDto {
 
   @IsDateString()
   recordedAt: string;
+
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => GatewayBallReadingDto)
+  balls?: GatewayBallReadingDto[];
 }
 
 export class BatchGatewayReadingsDto {

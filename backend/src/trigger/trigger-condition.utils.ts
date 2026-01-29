@@ -7,6 +7,7 @@ import {
   Operator,
   ValueSource,
 } from './dto';
+import { getMetricUnit } from './trigger-metrics.util';
 
 export type TriggerCondition = {
   id: string;
@@ -41,20 +42,6 @@ export function parseTriggerConditions(
       typeof candidate.type === 'string'
     );
   });
-}
-
-export function getMetricUnit(metric: MetricType): string {
-  switch (metric) {
-    case MetricType.TEMPERATURE:
-    case MetricType.MEDIAN_TEMPERATURE:
-      return '°C';
-    case MetricType.HUMIDITY:
-    case MetricType.EMC:
-    case MetricType.MEDIAN_HUMIDITY:
-      return '%';
-    default:
-      return '';
-  }
 }
 
 export function formatConditionSummary(condition: TriggerCondition): string {

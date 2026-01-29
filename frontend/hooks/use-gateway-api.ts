@@ -6,6 +6,8 @@ import {
     CreateGatewayDto,
     CreateSensorDto,
     CreateSensorReadingsBatchDto,
+    CreateGatewayReadingsBatchDto,
+    SimulatedAlert,
     Gateway,
     Sensor,
     SensorReading,
@@ -24,7 +26,7 @@ export function useGatewayApi() {
     // ============ SENSORS (SIMULATOR) ============
 
     const getSensors = useCallback(
-        async (params?: { gatewayId?: string; cellId?: string }) => {
+        async (params?: { gatewayId?: string; cellId?: string; organizationId?: string }) => {
             setIsLoading(true);
             try {
                 return await get<Sensor[]>('/gateways/simulator/sensors', params);
@@ -71,6 +73,30 @@ export function useGatewayApi() {
         [post]
     );
 
+    const createGatewayReadingsBatch = useCallback(
+        async (id: string, data: CreateGatewayReadingsBatchDto) => {
+            setIsCreating(true);
+            try {
+                return await post<{ success: boolean }>(`/gateways/simulator/${id}/readings/batch`, data);
+            } finally {
+                setIsCreating(false);
+            }
+        },
+        [post]
+    );
+
+    const simulateGatewayReadingsBatch = useCallback(
+        async (id: string, data: CreateGatewayReadingsBatchDto) => {
+            setIsCreating(true);
+            try {
+                return await post<{ alerts: SimulatedAlert[] }>(`/gateways/simulator/${id}/readings/simulate`, data);
+            } finally {
+                setIsCreating(false);
+            }
+        },
+        [post]
+    );
+
     const getSensorReadings = useCallback(
         async (id: string, params?: { limit?: number }) => {
             setIsLoading(true);
@@ -81,6 +107,49 @@ export function useGatewayApi() {
             }
         },
         [get]
+    );
+
+    const getGatewayReadingsRange = useCallback(
+        async (id: string, params?: { start?: string; end?: string }) => {
+            setIsLoading(true);
+            try {
+                return await get<{
+                    gatewayReadings: {
+                        temperature: number;
+                        humidity: number;
+                        batteryPercent: number;
+                        recordedAt: string;
+                    }[];
+                    sensorReadings: {
+                        sensorId: string;
+                        sensorLabel: string;
+                        temperature: number;
+                        humidity: number;
+                        batteryPercent: number;
+                        recordedAt: string;
+                    }[];
+                }>(`/gateways/simulator/${id}/readings/range`, params);
+            } finally {
+                setIsLoading(false);
+            }
+        },
+        [get]
+    );
+
+    const clearGatewayReadingsRange = useCallback(
+        async (id: string, params?: { start?: string; end?: string }) => {
+            setIsDeleting(true);
+            try {
+                return await post<{ gatewayDeleted: number; sensorDeleted: number }>(
+                    `/gateways/simulator/${id}/readings/range/clear`,
+                    {},
+                    params
+                );
+            } finally {
+                setIsDeleting(false);
+            }
+        },
+        [post]
     );
 
     // ============ GATEWAYS ============
@@ -174,7 +243,11 @@ export function useGatewayApi() {
         createSensor,
         transferSensor,
         createSensorReadingsBatch,
+        createGatewayReadingsBatch,
+        simulateGatewayReadingsBatch,
         getSensorReadings,
+        getGatewayReadingsRange,
+        clearGatewayReadingsRange,
         getGateways,
         createGateway,
         updateGateway,

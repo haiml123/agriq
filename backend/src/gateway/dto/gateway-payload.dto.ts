@@ -68,3 +68,11 @@ export class CreateGatewayPayloadDto {
   @Type(() => GatewayBallReadingDto)
   balls?: GatewayBallReadingDto[];
 }
+
+export class BatchGatewayPayloadDto {
+  @IsArray()
+  @ArrayMinSize(1)
+  @ValidateNested({ each: true })
+  @Type(() => CreateGatewayPayloadDto)
+  readings: CreateGatewayPayloadDto[];
+}

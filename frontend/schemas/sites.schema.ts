@@ -276,6 +276,45 @@ export const createSensorReadingsBatchSchema = z.object({
   readings: z.array(createSensorReadingSchema).min(1),
 });
 
+export const gatewayBallReadingSchema = z.object({
+  id: z.string(),
+  macId: z.string().optional(),
+  temperature: z.number(),
+  humidity: z.number(),
+  batteryPercent: z.number().min(0).max(100).optional(),
+  recordedAt: z.string().optional(),
+});
+
+export const createGatewayReadingSchema = z.object({
+  temperature: z.number(),
+  humidity: z.number(),
+  batteryPercent: z.number().min(0).max(100),
+  recordedAt: z.string(),
+  balls: z.array(gatewayBallReadingSchema).optional(),
+});
+
+export const createGatewayReadingsBatchSchema = z.object({
+  readings: z.array(createGatewayReadingSchema).min(1),
+});
+
+export const simulatedAlertSchema = z.object({
+  triggerId: z.string(),
+  triggerName: z.string(),
+  severity: z.string(),
+  description: z.string(),
+  descriptionKey: z.string().optional(),
+  descriptionParams: z.record(z.string(), z.any()).optional(),
+  thresholdValue: z.number().optional(),
+  unit: z.string().optional(),
+  recordedAt: z.string(),
+  scope: z.object({
+    siteId: z.string(),
+    compoundId: z.string().nullable().optional(),
+    cellId: z.string().nullable().optional(),
+    gatewayId: z.string().nullable().optional(),
+  }),
+});
+
 // ============ TYPES ============
 export type Cell = z.infer<typeof cellSchema>;
 export type CreateCellDto = z.infer<typeof createCellSchema>;
@@ -297,6 +336,10 @@ export type CreateSensorDto = z.infer<typeof createSensorSchema>;
 export type TransferSensorDto = z.infer<typeof transferSensorSchema>;
 export type CreateSensorReadingDto = z.infer<typeof createSensorReadingSchema>;
 export type CreateSensorReadingsBatchDto = z.infer<typeof createSensorReadingsBatchSchema>;
+export type GatewayBallReadingDto = z.infer<typeof gatewayBallReadingSchema>;
+export type CreateGatewayReadingDto = z.infer<typeof createGatewayReadingSchema>;
+export type CreateGatewayReadingsBatchDto = z.infer<typeof createGatewayReadingsBatchSchema>;
+export type SimulatedAlert = z.infer<typeof simulatedAlertSchema>;
 
 // ============ SENSOR READING SCHEMAS ============
 

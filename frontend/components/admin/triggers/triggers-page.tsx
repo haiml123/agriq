@@ -22,7 +22,7 @@ export function TriggersPage() {
     const [organizations, setOrganizations] = useState<Organization[]>([]);
 
     const refreshList = async () => {
-        const response = await getList();
+        const response = await getList({ page: 1, limit: 100 });
         if (response?.data?.items) {
             setTriggers(response.data.items as Trigger[]);
         }

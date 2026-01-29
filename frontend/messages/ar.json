@@ -121,7 +121,9 @@
       "transferSensorSuccess": "Sensor transferred successfully",
       "transferSensorError": "Failed to transfer sensor",
       "batchReadingsSuccess": "Sensor readings created",
-      "batchReadingsError": "Failed to create sensor readings"
+      "batchReadingsError": "Failed to create sensor readings",
+      "clearReadingsSuccess": "Readings deleted",
+      "clearReadingsError": "Failed to delete readings"
     }
   },
   "commodityModal": {
@@ -270,12 +272,16 @@
   "simulator": {
     "title": "Simulator",
     "subtitle": "Create sensors, move them between gateways, and generate readings.",
+    "organizationLabel": "Organization",
+    "allOrganizations": "All organizations",
     "createSensorTitle": "Create sensor",
     "createSensorDesc": "Add a sensor under a specific gateway.",
     "transferSensorTitle": "Transfer sensor",
     "transferSensorDesc": "Move a sensor to another gateway.",
     "batchReadingsTitle": "Batch readings",
     "batchReadingsDesc": "Generate a sequence of readings for a sensor.",
+    "gatewayBatchTitle": "Gateway batch readings",
+    "gatewayBatchDesc": "Generate gateway readings (optionally including balls).",
     "sensorsTitle": "Sensors",
     "sensorsDesc": "Latest sensors available for simulation.",
     "cellLabel": "Cell",
@@ -288,7 +294,7 @@
     "metricLabel": "Metric",
     "countLabel": "Count",
     "startAtLabel": "Start at",
-    "intervalLabel": "Interval (minutes)",
+    "intervalLabel": "Interval (hours)",
     "temperatureLabel": "Temperature (°C)",
     "temperatureVarianceLabel": "Temperature variance",
     "humidityLabel": "Humidity (%)",
@@ -298,6 +304,12 @@
     "createSensorButton": "Create sensor",
     "transferSensorButton": "Transfer sensor",
     "batchReadingsButton": "Generate readings",
+    "gatewayBatchButton": "Generate gateway readings",
+    "gatewayIncludeBallsLabel": "Include balls",
+    "gatewayIncludeBallsYes": "Yes",
+    "gatewayIncludeBallsNo": "No",
+    "gatewayPreviewTitle": "Gateway batch preview",
+    "gatewayPreviewDesc": "The gateway readings that will be sent in the batch.",
     "noSensors": "No sensors yet.",
     "noCells": "No cells available.",
     "noGateways": "No gateways available.",
@@ -315,9 +327,24 @@
     "previewTemperature": "Temperature",
     "previewHumidity": "Humidity",
     "previewBattery": "Battery",
+    "gatewayTab": "Gateway",
+    "sensorTab": "Sensors",
+    "sendReadingsButton": "Send readings",
+    "simulationAlertsTitle": "Simulated alerts",
+    "simulationAlertsDesc": "Alerts that would be created for this batch (no DB writes).",
+    "simulationAlertsEmpty": "No alerts generated for this batch.",
+    "simulationTriggerFilterLabel": "Filter by trigger",
+    "simulationTriggerFilterAll": "All triggers",
+    "simulationTriggerSearchPlaceholder": "Search triggers",
+    "severityLabel": "Severity",
+    "triggerLabel": "Trigger",
+    "descriptionLabel": "Description",
     "readingsTitle": "Recent readings",
-    "readingsDesc": "Latest readings for the selected sensor.",
-    "readingsEmpty": "Select a sensor to view readings."
+    "readingsDesc": "Readings for the selected gateway and date range.",
+    "readingsEmpty": "Select a gateway to view readings.",
+    "clearReadingsAction": "Delete readings in range",
+    "clearReadingsConfirm": "Delete all readings in the selected range?",
+    "endAtLabel": "End at"
   },
   "roles": {
     "SUPER_ADMIN": "مشرف أعلى",
@@ -490,8 +517,8 @@
     "uploadTitle": "رفع حزمة tar",
     "uploadDescription": "اختر أرشيف tar لنشره لتنزيل البوابات.",
     "fileLabel": "ملف tar",
-    "fileHelper": "يتم دعم ملفات ‎.tar فقط.",
-    "uploadButton": "رفع (قريبًا)"
+    "fileHelper": "الصيغ المدعومة: ‎.tar، ‎.tar.gz",
+    "uploadButton": "رفع"
   },
   "modals": {
     "site": {

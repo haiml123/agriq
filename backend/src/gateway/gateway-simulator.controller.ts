@@ -29,8 +29,14 @@ export class GatewaySimulatorController {
     @CurrentUser() user: userType.AppUser,
     @Query('gatewayId') gatewayId?: string,
     @Query('cellId') cellId?: string,
+    @Query('organizationId') organizationId?: string,
   ) {
-    return this.simulatorService.listSensors(user, gatewayId, cellId);
+    return this.simulatorService.listSensors(
+      user,
+      gatewayId,
+      cellId,
+      organizationId,
+    );
   }
 
   @Post('sensors')
@@ -82,6 +88,15 @@ export class GatewaySimulatorController {
     return this.simulatorService.createGatewayReadingsBatch(user, id, dto);
   }
 
+  @Post(':id/readings/simulate')
+  simulateGatewayReadingsBatch(
+    @Param('id') id: string,
+    @Body() dto: BatchGatewayReadingsDto,
+    @CurrentUser() user: userType.AppUser,
+  ) {
+    return this.simulatorService.simulateGatewayReadingsBatch(user, id, dto);
+  }
+
   @Get(':id/readings')
   listGatewayReadings(
     @Param('id') id: string,
@@ -94,5 +109,25 @@ export class GatewaySimulatorController {
       id,
       Number.isFinite(parsedLimit) ? parsedLimit : undefined,
     );
+  }
+
+  @Get(':id/readings/range')
+  listGatewayReadingsRange(
+    @Param('id') id: string,
+    @Query('start') start: string | undefined,
+    @Query('end') end: string | undefined,
+    @CurrentUser() user: userType.AppUser,
+  ) {
+    return this.simulatorService.listGatewayReadingsRange(user, id, start, end);
+  }
+
+  @Post(':id/readings/range/clear')
+  clearGatewayReadingsRange(
+    @Param('id') id: string,
+    @Query('start') start: string | undefined,
+    @Query('end') end: string | undefined,
+    @CurrentUser() user: userType.AppUser,
+  ) {
+    return this.simulatorService.clearGatewayReadingsRange(user, id, start, end);
   }
 }

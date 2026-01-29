@@ -14,12 +14,20 @@ import {
   BatchGatewayReadingsDto,
   CreateGatewayDto,
   CreateGatewayPayloadDto,
+  BatchGatewayPayloadDto,
   AssignGatewayDto,
   RegisterGatewayDto,
   UpdateGatewayDto,
 } from './dto';
 import { isSuperAdmin } from '../user/user.utils';
 import { WeatherService } from '../weather';
+import { TriggerEngineService } from '../trigger';
+import { createHash } from 'crypto';
+import { promises as fs } from 'fs';
+import path from 'path';
+import type { File as MulterFile } from 'multer';
+import * as tar from 'tar';
+import { BlobServiceClient } from '@azure/storage-blob';
 
 @Injectable()
 export class GatewayService {
@@ -28,6 +36,7 @@ export class GatewayService {
     private readonly prisma: PrismaService,
     private readonly siteAccess: SiteAccessService,
     private readonly weatherService: WeatherService,
+    private readonly triggerEngine: TriggerEngineService,
   ) {}
 
   private async findGatewayByIdentifier(identifier: string) {
@@ -80,6 +89,225 @@ export class GatewayService {
 
     await this.siteAccess.validateCellAccess(user, gateway.cellId);
     return gateway;
+  }
+
+  private getGatewayStorageDir() {
+    return path.join(process.cwd(), 'storage', 'gateways');
+  }
+
+  private getStorageConnectionString() {
+    return process.env.AZURE_STORAGE_CONNECTION_STRING;
+  }
+
+  private getStorageContainerName() {
+    return process.env.GATEWAY_STORAGE_CONTAINER || 'gateway-updates';
+  }
+
+  private async getContainerClient() {
+    const connectionString = this.getStorageConnectionString();
+    if (!connectionString) {
+      throw new BadRequestException(
+        'AZURE_STORAGE_CONNECTION_STRING is not configured',
+      );
+    }
+
+    const service = BlobServiceClient.fromConnectionString(connectionString);
+    const container = service.getContainerClient(
+      this.getStorageContainerName(),
+    );
+    await container.createIfNotExists();
+    return container;
+  }
+
+  private async readBlobJson(blobClient: {
+    download: () => Promise<{
+      readableStreamBody?: NodeJS.ReadableStream | null;
+    }>;
+  }) {
+    const download = await blobClient.download();
+    const stream = download.readableStreamBody;
+    if (!stream) {
+      throw new NotFoundException('Gateway manifest not found');
+    }
+    const chunks: Buffer[] = [];
+    for await (const chunk of stream) {
+      chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
+    }
+    const raw = Buffer.concat(chunks).toString('utf8');
+    return JSON.parse(raw);
+  }
+
+  async getLatestVersionManifest() {
+    const container = await this.getContainerClient();
+    try {
+      const blob = container.getBlockBlobClient('latest.json');
+      const manifest = await this.readBlobJson(blob);
+      return { ok: true, manifest };
+    } catch {
+      throw new NotFoundException('Gateway manifest not found');
+    }
+  }
+
+  async listVersions() {
+    const container = await this.getContainerClient();
+    const manifests: any[] = [];
+
+    for await (const blob of container.listBlobsFlat({
+      prefix: 'versions/',
+    })) {
+      if (!blob.name.endsWith('/manifest.json')) {
+        continue;
+      }
+
+      try {
+        const manifest = await this.readBlobJson(
+          container.getBlockBlobClient(blob.name),
+        );
+        if (manifest && typeof manifest.version === 'string') {
+          manifests.push(manifest);
+        }
+      } catch {
+        continue;
+      }
+    }
+
+    manifests.sort((a, b) => {
+      const aDate = a?.uploadedAt ? Date.parse(a.uploadedAt) : 0;
+      const bDate = b?.uploadedAt ? Date.parse(b.uploadedAt) : 0;
+      return bDate - aDate;
+    });
+
+    return { ok: true, versions: manifests };
+  }
+
+  async getVersionFile(version: string) {
+    const container = await this.getContainerClient();
+    try {
+      const manifest = await this.readBlobJson(
+        container.getBlockBlobClient(`versions/${version}/manifest.json`),
+      );
+      const filename = manifest?.filename;
+      if (!filename || typeof filename !== 'string') {
+        throw new NotFoundException('Gateway bundle not found');
+      }
+      const bundleBlob = container.getBlockBlobClient(
+        `versions/${version}/${filename}`,
+      );
+      const download = await bundleBlob.download();
+      const stream = download.readableStreamBody;
+      if (!stream) {
+        throw new NotFoundException('Gateway bundle not found');
+      }
+      return { filename, stream };
+    } catch {
+      throw new NotFoundException('Gateway version not found');
+    }
+  }
+
+  private async extractManifestFromTar(
+    filePath: string,
+    gzip: boolean,
+  ): Promise<Record<string, unknown>> {
+    let manifestRaw = '';
+    let found = false;
+
+    await tar.t({
+      file: filePath,
+      gzip,
+      onentry: (entry) => {
+        const entryPath = entry.path.replace(/^\.\/+/, '');
+        if (entryPath.endsWith('manifest.json')) {
+          found = true;
+          entry.on('data', (chunk) => {
+            manifestRaw += chunk.toString('utf8');
+          });
+        } else {
+          entry.resume();
+        }
+      },
+    });
+
+    if (!found) {
+      throw new BadRequestException('manifest.json not found in tar');
+    }
+
+    try {
+      return JSON.parse(manifestRaw);
+    } catch {
+      throw new BadRequestException('manifest.json is not valid JSON');
+    }
+  }
+
+  async uploadLatestVersion(user: AppUser, file?: MulterFile) {
+    this.siteAccess.ensureSuperAdmin(user);
+
+    if (!file || !file.buffer) {
+      throw new BadRequestException('file is required');
+    }
+
+    const md5 = createHash('md5').update(file.buffer).digest('hex');
+    const originalName = file.originalname?.trim() || 'gateway-bundle.tar';
+    const isTarGz = originalName.endsWith('.tar.gz');
+    const extension = isTarGz ? '.tar.gz' : path.extname(originalName) || '.tar';
+
+    const storageDir = this.getGatewayStorageDir();
+    const tempDir = path.join(storageDir, 'tmp');
+    await fs.mkdir(tempDir, { recursive: true });
+    const tempPath = path.join(
+      tempDir,
+      `${randomUUID()}${extension}`,
+    );
+    await fs.writeFile(tempPath, file.buffer);
+
+    const manifestFromTar = await this.extractManifestFromTar(
+      tempPath,
+      isTarGz,
+    );
+    const version = manifestFromTar?.version;
+    if (!version || typeof version !== 'string') {
+      await fs.rm(tempPath, { force: true });
+      throw new BadRequestException('manifest.json must include version');
+    }
+
+    const manifestFilename =
+      typeof manifestFromTar?.filename === 'string' &&
+      manifestFromTar.filename.trim().length
+        ? manifestFromTar.filename.trim()
+        : originalName;
+    const safeFilename = manifestFilename.replace(/[^a-zA-Z0-9._-]/g, '_');
+    const bundleName = safeFilename.endsWith(extension)
+      ? safeFilename
+      : `${safeFilename}${extension}`;
+
+    const payload = {
+      ...manifestFromTar,
+      version,
+      filename: bundleName,
+      size: file.size,
+      md5,
+      uploadedAt: new Date().toISOString(),
+    };
+
+    const container = await this.getContainerClient();
+    const contentType = isTarGz ? 'application/gzip' : 'application/x-tar';
+    await container
+      .getBlockBlobClient(`versions/${version}/${bundleName}`)
+      .uploadData(file.buffer, {
+        blobHTTPHeaders: { blobContentType: contentType },
+      });
+    await container
+      .getBlockBlobClient(`versions/${version}/manifest.json`)
+      .uploadData(Buffer.from(JSON.stringify(payload, null, 2)), {
+        blobHTTPHeaders: { blobContentType: 'application/json' },
+      });
+    await container
+      .getBlockBlobClient('latest.json')
+      .uploadData(Buffer.from(JSON.stringify(payload, null, 2)), {
+        blobHTTPHeaders: { blobContentType: 'application/json' },
+      });
+
+    await fs.rm(tempPath, { force: true });
+    return { ok: true, manifest: payload };
   }
 
 
@@ -366,42 +594,107 @@ export class GatewayService {
 
   async ingestGatewayPayloadFromDevice(
     gatewayIdentifier: string,
-    dto: CreateGatewayPayloadDto,
+    dto: BatchGatewayPayloadDto,
   ) {
     const gateway = await this.resolveDeviceGateway(gatewayIdentifier);
-    const outside = gateway.siteId
-      ? await this.weatherService.getCurrentObservationForSite(
-          gateway.siteId,
-          new Date(dto.recordedAt),
-        )
-      : null;
-    if (!outside) {
-      this.logger.warn(
-        `Outside weather missing for gateway=${gateway.id} site=${gateway.siteId ?? 'none'} recordedAt=${dto.recordedAt}`,
-      );
-    } else {
-      this.logger.debug(
-        `Outside weather ok for gateway=${gateway.id} site=${gateway.siteId ?? 'none'} recordedAt=${dto.recordedAt}`,
-      );
+    const readings = dto.readings ?? [];
+    if (readings.length === 0) {
+      throw new BadRequestException('At least one reading is required');
     }
 
-    // 1) Normalize and validate ball readings.
-    const balls = this.normalizeBallReadings(dto);
+    const uniqueBalls = new Map<string, { id: string; macId?: string }>();
+    readings.forEach((reading) => {
+      (reading.balls || []).forEach((ball) => {
+        const trimmedId = ball.id.trim();
+        if (!uniqueBalls.has(trimmedId)) {
+          uniqueBalls.set(trimmedId, { id: trimmedId, macId: ball.macId });
+        }
+      });
+    });
 
-    // 2) Ensure sensors exist for all balls (outside transaction).
     const sensorIdByExternal = await this.ensureSensorsForBalls(
       gateway.id,
-      balls,
+      Array.from(uniqueBalls.values()),
     );
 
-    // 3) Persist gateway reading + sensor readings in one transaction.
-    await this.persistGatewayAndSensorReadings(
-      gateway,
-      dto,
-      balls,
-      sensorIdByExternal,
-      outside,
-    );
+    const cell = await this.prisma.cell.findUnique({
+      where: { id: gateway.cellId ?? '' },
+      select: {
+        id: true,
+        compoundId: true,
+        compound: { select: { siteId: true } },
+      },
+    });
+
+    const commodityTypeId = gateway.cellId
+      ? await this.getCellCommodityTypeId(gateway.cellId)
+      : undefined;
+
+    for (const reading of readings) {
+      const outside = gateway.siteId
+        ? await this.weatherService.getCurrentObservationForSite(
+            gateway.siteId,
+            new Date(reading.recordedAt),
+          )
+        : null;
+      if (!outside) {
+        this.logger.warn(
+          `Outside weather missing for gateway=${gateway.id} site=${gateway.siteId ?? 'none'} recordedAt=${reading.recordedAt}`,
+        );
+      } else {
+        this.logger.debug(
+          `Outside weather ok for gateway=${gateway.id} site=${gateway.siteId ?? 'none'} recordedAt=${reading.recordedAt}`,
+        );
+      }
+
+      // 1) Normalize and validate ball readings.
+      const balls = this.normalizeBallReadings(reading);
+
+      // 2) Persist gateway reading + sensor readings in one transaction.
+      await this.persistGatewayAndSensorReadings(
+        gateway,
+        reading,
+        balls,
+        sensorIdByExternal,
+        outside,
+      );
+
+      if (cell?.id && cell.compound.siteId) {
+        await this.triggerEngine.evaluateGatewayPayload(
+          {
+            organizationId: gateway.organizationId ?? undefined,
+            commodityTypeId,
+            siteId: cell.compound.siteId,
+            compoundId: cell.compoundId,
+            cellId: cell.id,
+            gatewayId: gateway.id,
+          },
+          {
+            gateway: {
+              temperature: reading.temperature,
+              humidity: reading.humidity,
+              recordedAt: new Date(reading.recordedAt),
+            },
+            outside: outside
+              ? {
+                  temperature: outside.temperature,
+                  humidity: outside.humidity,
+                  recordedAt: new Date(reading.recordedAt),
+                }
+              : undefined,
+            balls: balls.map((ball) => ({
+              id: ball.id,
+              macId: ball.macId,
+              temperature: ball.temperature,
+              humidity: ball.humidity,
+              recordedAt: new Date(ball.recordedAt ?? reading.recordedAt),
+            })),
+            sensorIdByExternal,
+            recordedAt: new Date(reading.recordedAt),
+          },
+        );
+      }
+    }
 
     return { success: true };
   }
@@ -525,6 +818,25 @@ export class GatewayService {
         await tx.sensorReading.createMany({ data: sensorReadings });
       }
     });
+  }
+
+  private async getCellCommodityTypeId(
+    cellId: string,
+  ): Promise<string | undefined> {
+    const latestTrade = await this.prisma.trade.findFirst({
+      where: { cellId },
+      orderBy: { tradedAt: 'desc' },
+      select: {
+        direction: true,
+        commodity: { select: { commodityTypeId: true } },
+      },
+    });
+
+    if (!latestTrade || latestTrade.direction === 'OUT') {
+      return undefined;
+    }
+
+    return latestTrade.commodity?.commodityTypeId ?? undefined;
   }
 
   async listGatewayReadings(user: AppUser, gatewayId: string, limit = 100) {
