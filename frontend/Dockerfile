@@ -5,10 +5,11 @@ RUN npm ci
 
 FROM node:20-bookworm-slim AS build
 WORKDIR /app
+ARG SKIP_BUILD=0
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 ENV NEXT_TELEMETRY_DISABLED=1
-RUN npm run build
+RUN if [ "$SKIP_BUILD" != "1" ]; then npm run build; fi
 
 FROM node:20-bookworm-slim AS runner
 WORKDIR /app
