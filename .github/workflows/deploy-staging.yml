@@ -38,6 +38,23 @@ jobs:
           username: ${{ secrets.ACR_USERNAME }}
           password: ${{ secrets.ACR_PASSWORD }}
 
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: |
+            backend/package-lock.json
+            frontend/package-lock.json
+
+      - name: Build Backend
+        working-directory: ./backend
+        env:
+          DATABASE_URL: ${{ secrets.BACKEND_DATABASE_URL }}
+        run: |
+          npm ci
+          npm run build
+
       - name: Build & Push Backend Image
         uses: docker/build-push-action@v6
         with:
@@ -47,6 +64,7 @@ jobs:
           tags: ${{ secrets.ACR_LOGIN_SERVER }}/${{ env.BACKEND_IMAGE }}:latest
           build-args: |
             DATABASE_URL=${{ secrets.BACKEND_DATABASE_URL }}
+            SKIP_BUILD=1
 
       - name: Build & Push Frontend Image
         uses: docker/build-push-action@v6

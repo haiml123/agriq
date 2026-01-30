@@ -6,11 +6,12 @@ RUN npm ci
 FROM node:20-bookworm-slim AS build
 WORKDIR /app
 ARG DATABASE_URL
+ARG SKIP_BUILD=0
 ENV DATABASE_URL=$DATABASE_URL
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 RUN npx prisma generate
-RUN npm run build
+RUN if [ "$SKIP_BUILD" != "1" ]; then npm run build; fi
 
 FROM node:20-bookworm-slim AS runner
 WORKDIR /app
