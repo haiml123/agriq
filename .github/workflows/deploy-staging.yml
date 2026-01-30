@@ -12,6 +12,7 @@ env:
   FRONTEND_APP: agriq-frontend-staging
   BACKEND_IMAGE: agriq-backend
   FRONTEND_IMAGE: agriq-frontend
+  AZURE_SUBSCRIPTION_ID: b97ff88a-e9b9-436d-bb79-c9e4113b9588
 
 jobs:
   build-and-deploy:
@@ -25,6 +26,10 @@ jobs:
         uses: azure/login@v2
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
+          allow-no-subscriptions: true
+
+      - name: Set Azure Subscription
+        run: az account set --subscription "$AZURE_SUBSCRIPTION_ID"
 
       - name: Docker Login (ACR)
         uses: docker/login-action@v3
