@@ -93,17 +93,37 @@ jobs:
 
       - name: Deploy Backend
         run: |
-          az containerapp update \
-            -g "$RESOURCE_GROUP" \
-            -n "$BACKEND_APP" \
-            --image "${{ secrets.ACR_LOGIN_SERVER }}/${{ env.BACKEND_IMAGE }}:latest" \
-            --set-env-vars \
-              PORT=3000 \
-              DATABASE_URL="${{ secrets.BACKEND_DATABASE_URL }}" \
-              JWT_SECRET="${{ secrets.BACKEND_JWT_SECRET }}" \
-              WEATHER_API_KEY="${{ secrets.BACKEND_WEATHER_API_KEY }}" \
-              AZURE_STORAGE_CONNECTION_STRING="${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}" \
-              GATEWAY_STORAGE_CONTAINER="gateway-updates"
+          if az containerapp show -g "$RESOURCE_GROUP" -n "$BACKEND_APP" > /dev/null 2>&1; then
+            az containerapp update \
+              -g "$RESOURCE_GROUP" \
+              -n "$BACKEND_APP" \
+              --image "${{ secrets.ACR_LOGIN_SERVER }}/${{ env.BACKEND_IMAGE }}:latest" \
+              --set-env-vars \
+                PORT=3000 \
+                DATABASE_URL="${{ secrets.BACKEND_DATABASE_URL }}" \
+                JWT_SECRET="${{ secrets.BACKEND_JWT_SECRET }}" \
+                WEATHER_API_KEY="${{ secrets.BACKEND_WEATHER_API_KEY }}" \
+                AZURE_STORAGE_CONNECTION_STRING="${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}" \
+                GATEWAY_STORAGE_CONTAINER="gateway-updates"
+          else
+            az containerapp create \
+              -g "$RESOURCE_GROUP" \
+              -n "$BACKEND_APP" \
+              --environment "$CONTAINERAPPS_ENV" \
+              --image "${{ secrets.ACR_LOGIN_SERVER }}/${{ env.BACKEND_IMAGE }}:latest" \
+              --ingress external \
+              --target-port 3000 \
+              --registry-server "${{ secrets.ACR_LOGIN_SERVER }}" \
+              --registry-username "${{ secrets.ACR_USERNAME }}" \
+              --registry-password "${{ secrets.ACR_PASSWORD }}" \
+              --env-vars \
+                PORT=3000 \
+                DATABASE_URL="${{ secrets.BACKEND_DATABASE_URL }}" \
+                JWT_SECRET="${{ secrets.BACKEND_JWT_SECRET }}" \
+                WEATHER_API_KEY="${{ secrets.BACKEND_WEATHER_API_KEY }}" \
+                AZURE_STORAGE_CONNECTION_STRING="${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}" \
+                GATEWAY_STORAGE_CONTAINER="gateway-updates"
+          fi
 
       - name: Get Backend URL
         id: backend_url
@@ -113,12 +133,27 @@ jobs:
 
       - name: Deploy Frontend
         run: |
-          az containerapp update \
-            -g "$RESOURCE_GROUP" \
-            -n "$FRONTEND_APP" \
-            --image "${{ secrets.ACR_LOGIN_SERVER }}/${{ env.FRONTEND_IMAGE }}:latest" \
-            --set-env-vars \
-              NEXT_PUBLIC_API_URL="https://${{ steps.backend_url.outputs.backend_fqdn }}"
+          if az containerapp show -g "$RESOURCE_GROUP" -n "$FRONTEND_APP" > /dev/null 2>&1; then
+            az containerapp update \
+              -g "$RESOURCE_GROUP" \
+              -n "$FRONTEND_APP" \
+              --image "${{ secrets.ACR_LOGIN_SERVER }}/${{ env.FRONTEND_IMAGE }}:latest" \
+              --set-env-vars \
+                NEXT_PUBLIC_API_URL="https://${{ steps.backend_url.outputs.backend_fqdn }}"
+          else
+            az containerapp create \
+              -g "$RESOURCE_GROUP" \
+              -n "$FRONTEND_APP" \
+              --environment "$CONTAINERAPPS_ENV" \
+              --image "${{ secrets.ACR_LOGIN_SERVER }}/${{ env.FRONTEND_IMAGE }}:latest" \
+              --ingress external \
+              --target-port 3000 \
+              --registry-server "${{ secrets.ACR_LOGIN_SERVER }}" \
+              --registry-username "${{ secrets.ACR_USERNAME }}" \
+              --registry-password "${{ secrets.ACR_PASSWORD }}" \
+              --env-vars \
+                NEXT_PUBLIC_API_URL="https://${{ steps.backend_url.outputs.backend_fqdn }}"
+          fi
 
       - name: Get Frontend URL
         id: frontend_url
