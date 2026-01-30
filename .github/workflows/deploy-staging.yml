@@ -94,6 +94,12 @@ jobs:
       - name: Deploy Backend
         run: |
           if az containerapp show -g "$RESOURCE_GROUP" -n "$BACKEND_APP" > /dev/null 2>&1; then
+            az containerapp registry set \
+              -g "$RESOURCE_GROUP" \
+              -n "$BACKEND_APP" \
+              --server "${{ secrets.ACR_LOGIN_SERVER }}" \
+              --username "${{ secrets.ACR_USERNAME }}" \
+              --password "${{ secrets.ACR_PASSWORD }}"
             az containerapp update \
               -g "$RESOURCE_GROUP" \
               -n "$BACKEND_APP" \
@@ -134,6 +140,12 @@ jobs:
       - name: Deploy Frontend
         run: |
           if az containerapp show -g "$RESOURCE_GROUP" -n "$FRONTEND_APP" > /dev/null 2>&1; then
+            az containerapp registry set \
+              -g "$RESOURCE_GROUP" \
+              -n "$FRONTEND_APP" \
+              --server "${{ secrets.ACR_LOGIN_SERVER }}" \
+              --username "${{ secrets.ACR_USERNAME }}" \
+              --password "${{ secrets.ACR_PASSWORD }}"
             az containerapp update \
               -g "$RESOURCE_GROUP" \
               -n "$FRONTEND_APP" \
