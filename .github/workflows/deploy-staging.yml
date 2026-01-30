@@ -67,7 +67,7 @@ jobs:
           NEXT_PUBLIC_API_URL: https://${{ steps.backend_url_build.outputs.backend_fqdn }}
           NEXT_TELEMETRY_DISABLED: 1
         run: |
-          npm ci
+          npm install --no-audit --no-fund
           npm run build
 
       - name: Build & Push Backend Image
