@@ -45,6 +45,8 @@ jobs:
           file: ./backend/Dockerfile
           push: true
           tags: ${{ secrets.ACR_LOGIN_SERVER }}/${{ env.BACKEND_IMAGE }}:latest
+          build-args: |
+            DATABASE_URL=${{ secrets.BACKEND_DATABASE_URL }}
 
       - name: Build & Push Frontend Image
         uses: docker/build-push-action@v6
