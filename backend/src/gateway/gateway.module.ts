@@ -8,10 +8,21 @@ import { GatewayService } from './gateway.service';
 import { GatewaySimulatorController } from './gateway-simulator.controller';
 import { GatewaySimulatorService } from './gateway-simulator.service';
 import { SensorService } from '../sensor/sensor.service';
+import { GatewayVersionController } from './gateway-version.controller';
+import { GatewayVersionService } from './gateway-version.service';
 
 @Module({
   imports: [PrismaModule, SiteModule, WeatherModule, TriggerModule],
-  controllers: [GatewayController, GatewaySimulatorController],
-  providers: [GatewayService, SensorService, GatewaySimulatorService],
+  controllers: [
+    GatewayController,
+    GatewaySimulatorController,
+    GatewayVersionController,
+  ],
+  providers: [
+    GatewayService,
+    SensorService,
+    GatewaySimulatorService,
+    GatewayVersionService,
+  ],
 })
 export class GatewayModule {}
