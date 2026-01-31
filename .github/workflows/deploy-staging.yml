@@ -155,7 +155,9 @@ jobs:
               -n "$FRONTEND_APP" \
               --image "${{ secrets.ACR_LOGIN_SERVER }}/${{ env.FRONTEND_IMAGE }}:latest" \
               --set-env-vars \
-                NEXT_PUBLIC_API_URL="https://${{ steps.backend_url.outputs.backend_fqdn }}"
+                NEXT_PUBLIC_API_URL="https://${{ steps.backend_url.outputs.backend_fqdn }}" \
+                NEXTAUTH_URL="${{ secrets.FRONTEND_NEXTAUTH_URL }}" \
+                NEXTAUTH_SECRET="${{ secrets.FRONTEND_NEXTAUTH_SECRET }}"
             az containerapp ingress update \
               -g "$RESOURCE_GROUP" \
               -n "$FRONTEND_APP" \
@@ -172,7 +174,9 @@ jobs:
               --registry-username "${{ secrets.ACR_USERNAME }}" \
               --registry-password "${{ secrets.ACR_PASSWORD }}" \
               --env-vars \
-                NEXT_PUBLIC_API_URL="https://${{ steps.backend_url.outputs.backend_fqdn }}"
+                NEXT_PUBLIC_API_URL="https://${{ steps.backend_url.outputs.backend_fqdn }}" \
+                NEXTAUTH_URL="${{ secrets.FRONTEND_NEXTAUTH_URL }}" \
+                NEXTAUTH_SECRET="${{ secrets.FRONTEND_NEXTAUTH_SECRET }}"
           fi
 
       - name: Get Frontend URL
