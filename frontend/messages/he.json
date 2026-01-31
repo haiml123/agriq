@@ -114,6 +114,15 @@
       "deleteSuccess": "טבלת החיפוש נמחקה בהצלחה",
       "deleteError": "מחיקת טבלת החיפוש נכשלה"
     },
+    "adminUpdates": {
+      "authRequired": "יש להתחבר כדי לנהל עדכוני שערים",
+      "fileRequired": "נא לבחור חבילת tar תחילה",
+      "uploadSuccess": "ההעלאה הושלמה",
+      "uploadSuccessWithFile": "הועלה {filename}",
+      "uploadError": "ההעלאה נכשלה",
+      "setActiveSuccess": "הגרסה הפעילה עודכנה",
+      "setActiveError": "הגדרת הגרסה הפעילה נכשלה"
+    },
     "simulator": {
       "loadError": "Failed to load simulator data",
       "createSensorSuccess": "Sensor created successfully",
@@ -496,9 +505,27 @@
     "description": "ניהול חבילות עדכון למכשירי שער",
     "uploadTitle": "העלאת חבילת tar",
     "uploadDescription": "בחר ארכיון tar לפרסום להורדה על ידי שערים.",
-    "fileLabel": "קובץ tar",
     "fileHelper": "פורמטים נתמכים: ‎.tar, ‎.tar.gz",
-    "uploadButton": "העלה"
+    "uploadButton": "העלה",
+    "uploadSuccess": "ההעלאה הושלמה",
+    "dropTitle": "גרור ושחרר חבילת tar כאן",
+    "selectedFile": "קובץ שנבחר",
+    "browseButton": "בחר קובץ",
+    "versionsTitle": "גרסאות שהועלו",
+    "versionsDescription": "גרסאות הזמינות להורדה על ידי שערים.",
+    "loadingVersions": "טוען גרסאות...",
+    "noVersions": "אין גרסאות שהועלו עדיין.",
+    "versionLabel": "גרסה",
+    "statusLabel": "סטטוס",
+    "filenameLabel": "קובץ",
+    "uploadedAtLabel": "הועלה",
+    "sizeLabel": "גודל",
+    "actionsLabel": "פעולות",
+    "loadingActive": "טוען",
+    "activeBadge": "פעיל",
+    "activeButton": "פעיל",
+    "setActive": "הגדר כפעיל",
+    "settingActive": "מגדיר..."
   },
   "modals": {
     "site": {

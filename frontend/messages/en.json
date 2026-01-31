@@ -114,6 +114,15 @@
       "deleteSuccess": "Lookup table deleted successfully",
       "deleteError": "Failed to delete lookup table"
     },
+    "adminUpdates": {
+      "authRequired": "Please sign in to manage gateway updates",
+      "fileRequired": "Please select a tar bundle first",
+      "uploadSuccess": "Upload completed",
+      "uploadSuccessWithFile": "Uploaded {filename}",
+      "uploadError": "Upload failed",
+      "setActiveSuccess": "Active version updated",
+      "setActiveError": "Failed to set active version"
+    },
     "simulator": {
       "loadError": "Failed to load simulator data",
       "createSensorSuccess": "Sensor created successfully",
@@ -615,9 +624,27 @@
     "description": "Manage update bundles for gateway devices",
     "uploadTitle": "Upload tar bundle",
     "uploadDescription": "Select a tar archive to publish for gateway downloads.",
-    "fileLabel": "Tar file",
     "fileHelper": "Supported formats: .tar, .tar.gz",
-    "uploadButton": "Upload"
+    "uploadButton": "Upload",
+    "uploadSuccess": "Upload complete",
+    "dropTitle": "Drag and drop a tar bundle here",
+    "selectedFile": "Selected file",
+    "browseButton": "Browse files",
+    "versionsTitle": "Uploaded versions",
+    "versionsDescription": "Versions already available for gateway downloads.",
+    "loadingVersions": "Loading versions...",
+    "noVersions": "No versions uploaded yet.",
+    "versionLabel": "Version",
+    "statusLabel": "Status",
+    "filenameLabel": "File",
+    "uploadedAtLabel": "Uploaded",
+    "sizeLabel": "Size",
+    "actionsLabel": "Actions",
+    "loadingActive": "Loading",
+    "activeBadge": "Active",
+    "activeButton": "Active",
+    "setActive": "Set active",
+    "settingActive": "Setting..."
   },
   "modals": {
     "site": {

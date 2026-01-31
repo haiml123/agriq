@@ -114,6 +114,15 @@
       "deleteSuccess": "ลบตารางค้นหาสำเร็จ",
       "deleteError": "ลบตารางค้นหาล้มเหลว"
     },
+    "adminUpdates": {
+      "authRequired": "กรุณาเข้าสู่ระบบเพื่อจัดการอัปเดตเกตเวย์",
+      "fileRequired": "กรุณาเลือกชุด tar ก่อน",
+      "uploadSuccess": "อัปโหลดสำเร็จ",
+      "uploadSuccessWithFile": "อัปโหลด {filename} แล้ว",
+      "uploadError": "อัปโหลดล้มเหลว",
+      "setActiveSuccess": "อัปเดตเวอร์ชันที่ใช้งานแล้ว",
+      "setActiveError": "ตั้งค่าเวอร์ชันที่ใช้งานไม่สำเร็จ"
+    },
     "simulator": {
       "loadError": "Failed to load simulator data",
       "createSensorSuccess": "Sensor created successfully",
@@ -516,9 +525,27 @@
     "description": "จัดการแพ็กเกจอัปเดตสำหรับอุปกรณ์เกตเวย์",
     "uploadTitle": "อัปโหลดชุด tar",
     "uploadDescription": "เลือกไฟล์ tar สำหรับเผยแพร่ให้เกตเวย์ดาวน์โหลด",
-    "fileLabel": "ไฟล์ tar",
     "fileHelper": "รองรับ: ‎.tar, ‎.tar.gz",
-    "uploadButton": "อัปโหลด"
+    "uploadButton": "อัปโหลด",
+    "uploadSuccess": "อัปโหลดสำเร็จ",
+    "dropTitle": "ลากแล้ววางชุด tar ที่นี่",
+    "selectedFile": "ไฟล์ที่เลือก",
+    "browseButton": "เลือกไฟล์",
+    "versionsTitle": "เวอร์ชันที่อัปโหลด",
+    "versionsDescription": "เวอร์ชันที่พร้อมให้เกตเวย์ดาวน์โหลด",
+    "loadingVersions": "กำลังโหลดเวอร์ชัน...",
+    "noVersions": "ยังไม่มีเวอร์ชันที่อัปโหลด",
+    "versionLabel": "เวอร์ชัน",
+    "statusLabel": "สถานะ",
+    "filenameLabel": "ไฟล์",
+    "uploadedAtLabel": "อัปโหลดเมื่อ",
+    "sizeLabel": "ขนาด",
+    "actionsLabel": "การทำงาน",
+    "loadingActive": "กำลังโหลด",
+    "activeBadge": "ใช้งานอยู่",
+    "activeButton": "ใช้งานอยู่",
+    "setActive": "ตั้งเป็นใช้งาน",
+    "settingActive": "กำลังตั้งค่า..."
   },
   "modals": {
     "site": {

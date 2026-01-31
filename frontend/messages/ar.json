@@ -114,6 +114,15 @@
       "deleteSuccess": "تم حذف جدول البحث بنجاح",
       "deleteError": "فشل حذف جدول البحث"
     },
+    "adminUpdates": {
+      "authRequired": "يرجى تسجيل الدخول لإدارة تحديثات البوابة",
+      "fileRequired": "يرجى اختيار حزمة tar أولاً",
+      "uploadSuccess": "تم الرفع بنجاح",
+      "uploadSuccessWithFile": "تم رفع {filename}",
+      "uploadError": "فشل الرفع",
+      "setActiveSuccess": "تم تحديث الإصدار النشط",
+      "setActiveError": "فشل تعيين الإصدار النشط"
+    },
     "simulator": {
       "loadError": "Failed to load simulator data",
       "createSensorSuccess": "Sensor created successfully",
@@ -516,9 +525,27 @@
     "description": "إدارة حزم التحديث لأجهزة البوابة",
     "uploadTitle": "رفع حزمة tar",
     "uploadDescription": "اختر أرشيف tar لنشره لتنزيل البوابات.",
-    "fileLabel": "ملف tar",
     "fileHelper": "الصيغ المدعومة: ‎.tar، ‎.tar.gz",
-    "uploadButton": "رفع"
+    "uploadButton": "رفع",
+    "uploadSuccess": "اكتمل الرفع",
+    "dropTitle": "اسحب وأفلت حزمة tar هنا",
+    "selectedFile": "الملف المحدد",
+    "browseButton": "استعراض الملفات",
+    "versionsTitle": "الإصدارات المرفوعة",
+    "versionsDescription": "الإصدارات المتاحة لتنزيل البوابات.",
+    "loadingVersions": "جارٍ تحميل الإصدارات...",
+    "noVersions": "لا توجد إصدارات مرفوعة بعد.",
+    "versionLabel": "الإصدار",
+    "statusLabel": "الحالة",
+    "filenameLabel": "الملف",
+    "uploadedAtLabel": "تاريخ الرفع",
+    "sizeLabel": "الحجم",
+    "actionsLabel": "إجراءات",
+    "loadingActive": "جارٍ التحميل",
+    "activeBadge": "نشط",
+    "activeButton": "نشط",
+    "setActive": "تعيين كنشط",
+    "settingActive": "جارٍ التعيين..."
   },
   "modals": {
     "site": {

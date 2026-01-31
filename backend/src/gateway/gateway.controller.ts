@@ -3,21 +3,16 @@ import {
   Controller,
   Delete,
   Get,
-  Header,
-  StreamableFile,
-  UploadedFile,
   Param,
   Patch,
   Post,
   Query,
-  UseInterceptors,
   UseGuards,
 } from '@nestjs/common';
 import { GatewayService } from './gateway.service';
 import { JwtAuthGuard } from '../auth/guards';
 import { CurrentUser, Public } from '../auth/decorators';
 import * as userType from '../types/user.type';
-import { FileInterceptor } from '@nestjs/platform-express';
 import {
   AssignGatewayDto,
   CreateGatewayDto,
@@ -25,8 +20,6 @@ import {
   RegisterGatewayDto,
   UpdateGatewayDto,
 } from './dto';
-import type { File as MulterFile } from 'multer';
-import { Readable } from 'stream';
 
 @Controller('gateways')
 @UseGuards(JwtAuthGuard)
@@ -44,29 +37,6 @@ export class GatewayController {
       cellId,
       organizationId,
       unpaired: unpaired === 'true',
-    });
-  }
-
-  @Get('manifest/latest')
-  @Public()
-  getLatestManifest() {
-    return this.gatewayService.getLatestVersionManifest();
-  }
-
-  @Get('versions')
-  @Public()
-  listVersions() {
-    return this.gatewayService.listVersions();
-  }
-
-  @Get('versions/:version/file')
-  @Public()
-  @Header('Content-Type', 'application/octet-stream')
-  async getVersionFile(@Param('version') version: string) {
-    const { filename, stream } =
-      await this.gatewayService.getVersionFile(version);
-    return new StreamableFile(Readable.from(stream as any), {
-      disposition: `attachment; filename="${filename}"`,
     });
   }
 
@@ -135,18 +105,5 @@ export class GatewayController {
     @Body() dto: BatchGatewayPayloadDto,
   ) {
     return this.gatewayService.ingestGatewayPayloadFromDevice(id, dto);
-  }
-
-  @Post('upload-version')
-  @UseInterceptors(
-    FileInterceptor('file', {
-      limits: { fileSize: 200 * 1024 * 1024 },
-    }),
-  )
-  uploadLatestVersion(
-    @CurrentUser() user: userType.AppUser,
-    @UploadedFile() file?: MulterFile,
-  ) {
-    return this.gatewayService.uploadLatestVersion(user, file);
   }
 }
