@@ -156,6 +156,10 @@ jobs:
               --image "${{ secrets.ACR_LOGIN_SERVER }}/${{ env.FRONTEND_IMAGE }}:latest" \
               --set-env-vars \
                 NEXT_PUBLIC_API_URL="https://${{ steps.backend_url.outputs.backend_fqdn }}"
+            az containerapp ingress update \
+              -g "$RESOURCE_GROUP" \
+              -n "$FRONTEND_APP" \
+              --target-port 3000
           else
             az containerapp create \
               -g "$RESOURCE_GROUP" \
