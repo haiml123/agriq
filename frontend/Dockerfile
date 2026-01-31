@@ -20,6 +20,7 @@ COPY --from=build /app/package.json /app/package-lock.json ./
 COPY --from=build /app/node_modules ./node_modules
 COPY --from=build /app/.next ./.next
 COPY --from=build /app/public ./public
+RUN chown -R nextjs:nextjs /app
 USER nextjs
 EXPOSE 3000
 CMD ["npm", "run", "start"]

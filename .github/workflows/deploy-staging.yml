@@ -157,7 +157,8 @@ jobs:
               --set-env-vars \
                 NEXT_PUBLIC_API_URL="https://${{ steps.backend_url.outputs.backend_fqdn }}" \
                 NEXTAUTH_URL="${{ secrets.FRONTEND_NEXTAUTH_URL }}" \
-                NEXTAUTH_SECRET="${{ secrets.FRONTEND_NEXTAUTH_SECRET }}"
+                NEXTAUTH_SECRET="${{ secrets.FRONTEND_NEXTAUTH_SECRET }}" \
+                AUTH_TRUST_HOST="true"
             az containerapp ingress update \
               -g "$RESOURCE_GROUP" \
               -n "$FRONTEND_APP" \
@@ -176,7 +177,8 @@ jobs:
               --env-vars \
                 NEXT_PUBLIC_API_URL="https://${{ steps.backend_url.outputs.backend_fqdn }}" \
                 NEXTAUTH_URL="${{ secrets.FRONTEND_NEXTAUTH_URL }}" \
-                NEXTAUTH_SECRET="${{ secrets.FRONTEND_NEXTAUTH_SECRET }}"
+                NEXTAUTH_SECRET="${{ secrets.FRONTEND_NEXTAUTH_SECRET }}" \
+                AUTH_TRUST_HOST="true"
           fi
 
       - name: Get Frontend URL
