@@ -1,7 +1,7 @@
 import { Body, Controller, Get, Patch, Post, UseGuards } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/guards';
 import { CurrentUser } from '../auth/decorators';
-import { AppUser } from '../types/user.type';
+import type { AppUser } from '../types/user.type';
 import {
   CreateGatewayVersionDto,
   SetActiveGatewayVersionDto,
