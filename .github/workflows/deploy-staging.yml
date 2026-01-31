@@ -104,6 +104,8 @@ jobs:
               -g "$RESOURCE_GROUP" \
               -n "$BACKEND_APP" \
               --image "${{ secrets.ACR_LOGIN_SERVER }}/${{ env.BACKEND_IMAGE }}:latest" \
+              --command "node" \
+              --args "dist/src/main.js" \
               --set-env-vars \
                 PORT=3000 \
                 DATABASE_URL="${{ secrets.BACKEND_DATABASE_URL }}" \
@@ -117,6 +119,8 @@ jobs:
               -n "$BACKEND_APP" \
               --environment "$CONTAINERAPPS_ENV" \
               --image "${{ secrets.ACR_LOGIN_SERVER }}/${{ env.BACKEND_IMAGE }}:latest" \
+              --command "node" \
+              --args "dist/src/main.js" \
               --ingress external \
               --target-port 3000 \
               --registry-server "${{ secrets.ACR_LOGIN_SERVER }}" \
