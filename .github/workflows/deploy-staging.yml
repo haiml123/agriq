@@ -158,7 +158,8 @@ jobs:
                 NEXT_PUBLIC_API_URL="https://${{ steps.backend_url.outputs.backend_fqdn }}" \
                 NEXTAUTH_URL="${{ secrets.FRONTEND_NEXTAUTH_URL }}" \
                 NEXTAUTH_SECRET="${{ secrets.FRONTEND_NEXTAUTH_SECRET }}" \
-                AUTH_TRUST_HOST="true"
+                AUTH_TRUST_HOST="true" \
+                AUTH_URL="${{ secrets.FRONTEND_NEXTAUTH_URL }}"
             az containerapp ingress update \
               -g "$RESOURCE_GROUP" \
               -n "$FRONTEND_APP" \
@@ -178,7 +179,8 @@ jobs:
                 NEXT_PUBLIC_API_URL="https://${{ steps.backend_url.outputs.backend_fqdn }}" \
                 NEXTAUTH_URL="${{ secrets.FRONTEND_NEXTAUTH_URL }}" \
                 NEXTAUTH_SECRET="${{ secrets.FRONTEND_NEXTAUTH_SECRET }}" \
-                AUTH_TRUST_HOST="true"
+                AUTH_TRUST_HOST="true" \
+                AUTH_URL="${{ secrets.FRONTEND_NEXTAUTH_URL }}"
           fi
 
       - name: Get Frontend URL
