@@ -33,7 +33,7 @@ export function TemplateEditor({
     const smsBodyRef = useRef<HTMLTextAreaElement>(null);
     const currentLocale = useLocale();
     const availableLocales = routing.locales;
-    const defaultLocale = availableLocales.includes(currentLocale) ? currentLocale : 'en';
+    const defaultLocale = (availableLocales as readonly string[]).includes(currentLocale) ? currentLocale : 'en';
     const [activeLocale, setActiveLocale] = useState<string>(defaultLocale);
 
     const emailSubjectValue = useMemo(

@@ -191,12 +191,14 @@ function SelectScrollDownButton({
   )
 }
 
-function useResolvedDir(dirProp?: "ltr" | "rtl") {
-  const [resolvedDir, setResolvedDir] = React.useState<"ltr" | "rtl" | undefined>(dirProp);
+function useResolvedDir(dirProp?: string) {
+  const [resolvedDir, setResolvedDir] = React.useState<"ltr" | "rtl" | undefined>(
+    dirProp === "rtl" ? "rtl" : dirProp === "ltr" ? "ltr" : undefined
+  );
 
   React.useEffect(() => {
     if (dirProp) {
-      setResolvedDir(dirProp);
+      setResolvedDir(dirProp === "rtl" ? "rtl" : "ltr");
       return;
     }
     if (typeof document === "undefined") {
