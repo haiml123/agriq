@@ -6,8 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { SeverityEnum, type Severity } from '@/schemas/common.schema';
 import { ScopeSelector } from '@/components/triggers';
 import type { Organization } from '@/schemas/organization.schema';
-import { useLocale } from 'next-intl';
-import { useTranslationMap } from '@/hooks/use-translation-map';
+import { CommodityTypeSelect } from '@/components/select/commodity-type-select';
 
 interface BasicInfoSectionProps {
     formData: Trigger;
@@ -67,11 +66,13 @@ export function BasicInfoSection({
                     onChange={(v) => onUpdate('severity', v)}
                 />
 
-                <CommoditySelect
+                <CommodityTypeSelect
                     value={formData.commodityTypeId}
                     onChange={(v) => onUpdate('commodityTypeId', v)}
                     commodityTypes={commodityTypes}
                     isLoading={isCommodityTypesLoading}
+                    placeholder="Select commodity type"
+                    triggerClassName="w-[180px]"
                 />
 
                 <ScopeSelector
@@ -108,52 +109,6 @@ function SeveritySelect({
                             </div>
                         </SelectItem>
                     ))}
-                </SelectContent>
-            </Select>
-        </div>
-    );
-}
-
-function CommoditySelect({
-    value,
-    onChange,
-    commodityTypes,
-    isLoading,
-}: {
-    value: string | undefined;
-    onChange: (value: string) => void;
-    commodityTypes: TriggerCommodityType[];
-    isLoading?: boolean;
-}) {
-    const locale = useLocale();
-    const resolveCommodityTypeName = useTranslationMap('commodity_type', locale);
-    return (
-        <div className="space-y-2">
-            <Label>Commodity Type *</Label>
-            <Select
-                value={value || undefined}
-                onValueChange={(v) => onChange(v)}
-                disabled={isLoading || commodityTypes.length === 0}
-            >
-                <SelectTrigger className="w-[180px]">
-                    <SelectValue placeholder="Select commodity type" />
-                </SelectTrigger>
-                <SelectContent>
-                    {isLoading ? (
-                        <SelectItem value="loading" disabled>
-                            Loading commodity types...
-                        </SelectItem>
-                    ) : commodityTypes.length === 0 ? (
-                        <SelectItem value="no-types" disabled>
-                            No commodity types available
-                        </SelectItem>
-                    ) : (
-                        commodityTypes.map((option) => (
-                            <SelectItem key={option.id} value={option.id}>
-                                {resolveCommodityTypeName(option.id, 'name', option.name)}
-                            </SelectItem>
-                        ))
-                    )}
                 </SelectContent>
             </Select>
         </div>

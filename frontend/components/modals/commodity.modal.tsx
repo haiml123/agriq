@@ -19,6 +19,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { CellSelect, type CellSelectSite } from '@/components/ui/cell-select';
+import { CommodityTypeSelect } from '@/components/select/commodity-type-select';
 import { useTradeApi } from '@/hooks/use-trade-api';
 import { useCommodityTypeApi } from '@/hooks/use-commodity-type-api';
 import { useSiteApi } from '@/hooks/use-site-api';
@@ -463,23 +464,15 @@ export function CommodityModal({
             <Label htmlFor="commodityTypeId">
               {t('commodityType')} <span className="text-red-500">*</span>
             </Label>
-            <Select
+            <CommodityTypeSelect
               value={formData.commodityTypeId || ''}
-              onValueChange={(value) =>
+              onChange={(value) =>
                 setFormData({ ...formData, commodityTypeId: value })
               }
-            >
-              <SelectTrigger id="commodityTypeId" className="w-full">
-                <SelectValue placeholder={t('selectCommodityType')} />
-              </SelectTrigger>
-              <SelectContent>
-                {commodityTypes.map((type) => (
-                  <SelectItem key={type.id} value={type.id}>
-                    {getCommodityTypeName(type.id, type.name)}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+              commodityTypes={commodityTypes}
+              placeholder={t('selectCommodityType')}
+              triggerClassName="w-full"
+            />
           </div>
 
           {/* Origin/Source */}

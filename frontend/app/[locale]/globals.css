@@ -1,4 +1,11 @@
 @import "tailwindcss";
+
+/* RTL select value alignment */
+[dir="rtl"] [data-slot="select-trigger"] [data-slot="select-value"] > div {
+  flex-direction: row-reverse;
+  justify-content: flex-end;
+  text-align: right;
+}
 @import "tw-animate-css";
 
 @custom-variant dark (&:is(.dark *));

@@ -21,7 +21,7 @@ export default function AlertsLayout({ children }: AlertsLayoutProps) {
 
     const alertsMenuItems: NavItem[] = [
         {
-            label: t('organizations'),
+            label: t('organizations.title'),
             href: "/admin/organizations",
             icon: Building2,
             roles: [RoleTypeEnum.SUPER_ADMIN],
