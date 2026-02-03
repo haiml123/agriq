@@ -32,9 +32,22 @@ type Scenario = {
     outside: { temperature: number; humidity: number };
     balls: Array<{ id: string; temperature: number; humidity: number }>;
     histories?: {
-      sensor?: Array<{ sensorId: string; temperature: number; humidity: number; recordedAt: Date }>;
-      gateway?: Array<{ temperature: number; humidity: number; recordedAt: Date }>;
-      outside?: Array<{ temperature: number; humidity: number; recordedAt: Date }>;
+      sensor?: Array<{
+        sensorId: string;
+        temperature: number;
+        humidity: number;
+        recordedAt: Date;
+      }>;
+      gateway?: Array<{
+        temperature: number;
+        humidity: number;
+        recordedAt: Date;
+      }>;
+      outside?: Array<{
+        temperature: number;
+        humidity: number;
+        recordedAt: Date;
+      }>;
     };
   }>;
   triggers: TriggerShape[];
@@ -332,9 +345,15 @@ describe('TriggerEngineService matrix scenarios', () => {
 
     for (let i = 0; i < scenario.readings.length; i += 1) {
       const reading = scenario.readings[i];
-      prisma.sensorReading.findMany.mockResolvedValue(reading.histories?.sensor ?? []);
-      prisma.gatewayReading.findMany.mockResolvedValue(reading.histories?.gateway ?? []);
-      prisma.weatherObservation.findMany.mockResolvedValue(reading.histories?.outside ?? []);
+      prisma.sensorReading.findMany.mockResolvedValue(
+        reading.histories?.sensor ?? [],
+      );
+      prisma.gatewayReading.findMany.mockResolvedValue(
+        reading.histories?.gateway ?? [],
+      );
+      prisma.weatherObservation.findMany.mockResolvedValue(
+        reading.histories?.outside ?? [],
+      );
 
       await engine.evaluateGatewayPayload(
         {

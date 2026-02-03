@@ -1,35 +1,18 @@
 import { EventTrigger } from '@prisma/client';
-import {
-  ChangeDirection,
-  ConditionSourceType,
-  ConditionType,
-  MetricType,
-  Operator,
-  ValueSource,
-} from './dto';
-import { getMetricUnit } from './trigger-metrics.util';
+import type { TriggerCondition } from './trigger.type';
 
-export type TriggerCondition = {
-  id: string;
-  metric: MetricType;
-  type: ConditionType;
-  operator?: Operator;
-  value?: number;
-  secondaryValue?: number;
-  changeDirection?: ChangeDirection;
-  changeAmount?: number;
-  timeWindowHours?: number;
-  valueSources?: ValueSource[];
-  sourceType?: ConditionSourceType;
-};
-
+/**
+ * Normalize conditions JSON to a safe array of TriggerCondition objects.
+ */
 export function parseTriggerConditions(
   conditions: EventTrigger['conditions'],
 ): TriggerCondition[] {
+  // Guard against malformed JSON from DB.
   if (!Array.isArray(conditions)) {
     return [];
   }
 
+  // Keep only objects that look like valid conditions.
   return conditions.filter((condition): condition is TriggerCondition => {
     if (!condition || typeof condition !== 'object') {
       return false;
@@ -42,39 +25,4 @@ export function parseTriggerConditions(
       typeof candidate.type === 'string'
     );
   });
-}
-
-export function formatConditionSummary(condition: TriggerCondition): string {
-  if (condition.type === ConditionType.THRESHOLD) {
-    if (condition.valueSources && condition.valueSources.length > 0) {
-      const formattedSources = condition.valueSources.map((source) => {
-        if (source === ValueSource.GATEWAY) return 'Gateway';
-        if (source === ValueSource.OUTSIDE) return 'Outside';
-        return source;
-      });
-      const sourceText =
-        formattedSources.length === 1
-          ? formattedSources[0]
-          : formattedSources.join(' & ');
-      const suffixMap: Partial<Record<MetricType, string>> = {
-        [MetricType.TEMPERATURE]: 'temperature',
-        [MetricType.MEDIAN_TEMPERATURE]: 'temperature',
-        [MetricType.HUMIDITY]: 'humidity',
-        [MetricType.MEDIAN_HUMIDITY]: 'humidity',
-      };
-      const suffix = suffixMap[condition.metric];
-      return suffix
-        ? `${condition.metric} from ${sourceText} ${suffix}`
-        : `${condition.metric} from ${sourceText}`;
-    }
-    const unit = getMetricUnit(condition.metric);
-    if (condition.operator === Operator.BETWEEN) {
-      return `${condition.metric} between ${condition.value ?? ''}${unit} and ${condition.secondaryValue ?? ''}${unit}`;
-    }
-    return `${condition.metric} ${condition.operator ?? ''} ${condition.value ?? ''}${unit}`;
-  }
-
-  const unit = getMetricUnit(condition.metric);
-  const direction = condition.changeDirection ?? ChangeDirection.ANY;
-  return `${condition.metric} ${direction} by ${condition.changeAmount ?? ''}${unit}`;
 }

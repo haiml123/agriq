@@ -14,10 +14,7 @@ import {
 import { JwtAuthGuard } from '../auth/guards';
 import { CurrentUser, Public } from '../auth/decorators';
 import type { AppUser } from '../types/user.type';
-import {
-  CreateGatewayVersionDto,
-  SetActiveGatewayVersionDto,
-} from './dto';
+import { CreateGatewayVersionDto, SetActiveGatewayVersionDto } from './dto';
 import { GatewayVersionService } from './gateway-version.service';
 import { FileInterceptor } from '@nestjs/platform-express';
 import type { File as MulterFile } from 'multer';

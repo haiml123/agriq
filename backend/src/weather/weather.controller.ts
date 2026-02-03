@@ -1,4 +1,11 @@
-import { Controller, Get, Logger, Param, Query, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Logger,
+  Param,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/guards';
 import { CurrentUser } from '../auth/decorators';
 import type { AppUser } from '../types/user.type';
@@ -22,6 +29,11 @@ export class WeatherController {
     this.logger.debug(
       `Weather request site=${siteId} start=${parsedStartDate?.toISOString() ?? 'none'} end=${parsedEndDate?.toISOString() ?? 'none'}`,
     );
-    return this.weatherService.listSiteWeather(user, siteId, parsedStartDate, parsedEndDate);
+    return this.weatherService.listSiteWeather(
+      user,
+      siteId,
+      parsedStartDate,
+      parsedEndDate,
+    );
   }
 }

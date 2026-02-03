@@ -97,6 +97,7 @@ export function useGatewayApi() {
         [post]
     );
 
+
     const getSensorReadings = useCallback(
         async (id: string, params?: { limit?: number }) => {
             setIsLoading(true);

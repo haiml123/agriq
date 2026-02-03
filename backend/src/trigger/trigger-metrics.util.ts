@@ -1,12 +1,11 @@
 import { MetricType } from './dto';
+import type { LookupTableData } from './trigger.type';
 
-type LookupTableData = {
-  tempRanges: number[];
-  humidityRanges: number[];
-  values: number[][];
-};
-
+/**
+ * Compute the median of a list of numbers.
+ */
 export function calculateMedian(values: number[]): number | undefined {
+  // Median for an empty set is undefined.
   if (values.length === 0) {
     return undefined;
   }
@@ -18,7 +17,11 @@ export function calculateMedian(values: number[]): number | undefined {
   return sorted[mid];
 }
 
+/**
+ * Return display units for a metric.
+ */
 export function getMetricUnit(metric: MetricType): string {
+  // Map metrics to display units.
   switch (metric) {
     case MetricType.TEMPERATURE:
     case MetricType.MEDIAN_TEMPERATURE:
@@ -32,11 +35,15 @@ export function getMetricUnit(metric: MetricType): string {
   }
 }
 
+/**
+ * Calculate EMC based on lookup table ranges.
+ */
 export function calculateEmc(
   table: LookupTableData,
   temperature: number,
   humidity: number,
 ): number | undefined {
+  // Lookup EMC value by nearest ranges.
   const tempIndex = findRangeIndex(table.tempRanges, temperature);
   const humidityIndex = findRangeIndex(table.humidityRanges, humidity);
   const row = table.values[humidityIndex];
@@ -47,10 +54,14 @@ export function calculateEmc(
   return value;
 }
 
+/**
+ * Extract a metric value from a reading payload.
+ */
 export function getMetricValueFromReading(
   metric: MetricType,
   reading: { temperature: number; humidity: number; emc?: number },
 ): number | undefined {
+  // Extract metric values from a reading.
   switch (metric) {
     case MetricType.TEMPERATURE:
     case MetricType.MEDIAN_TEMPERATURE:
@@ -65,7 +76,11 @@ export function getMetricValueFromReading(
   }
 }
 
+/**
+ * Find the nearest range index for a numeric value.
+ */
 function findRangeIndex(ranges: number[], value: number): number {
+  // Find the last range index that is <= value.
   if (ranges.length === 0) {
     return 0;
   }

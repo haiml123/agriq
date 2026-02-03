@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { Info } from 'lucide-react';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
@@ -8,6 +8,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent } from '@/components/ui/card';
 import { TEMPLATE_VARIABLES, type NotificationTemplate } from '@/schemas/trigger.schema';
+import { useLocale } from 'next-intl';
+import { routing } from '@/i18n/routing';
 
 interface TemplateEditorProps {
     emailTemplate?: NotificationTemplate;
@@ -19,8 +21,8 @@ interface TemplateEditorProps {
 }
 
 export function TemplateEditor({
-    emailTemplate = { subject: '', body: '' },
-    smsTemplate = { body: '' },
+    emailTemplate = { subject: { en: '' }, body: { en: '' } },
+    smsTemplate = { body: { en: '' } },
     showEmail,
     showSms,
     onEmailChange,
@@ -29,6 +31,32 @@ export function TemplateEditor({
     const emailSubjectRef = useRef<HTMLInputElement>(null);
     const emailBodyRef = useRef<HTMLTextAreaElement>(null);
     const smsBodyRef = useRef<HTMLTextAreaElement>(null);
+    const currentLocale = useLocale();
+    const availableLocales = routing.locales;
+    const defaultLocale = availableLocales.includes(currentLocale) ? currentLocale : 'en';
+    const [activeLocale, setActiveLocale] = useState<string>(defaultLocale);
+
+    const emailSubjectValue = useMemo(
+        () => emailTemplate.subject?.[activeLocale] ?? '',
+        [emailTemplate.subject, activeLocale],
+    );
+    const emailBodyValue = useMemo(
+        () => emailTemplate.body?.[activeLocale] ?? '',
+        [emailTemplate.body, activeLocale],
+    );
+    const smsBodyValue = useMemo(
+        () => smsTemplate.body?.[activeLocale] ?? '',
+        [smsTemplate.body, activeLocale],
+    );
+
+    const setLocaleValue = (
+        map: Record<string, string> | undefined,
+        locale: string,
+        value: string,
+    ) => ({
+        ...(map ?? {}),
+        [locale]: value,
+    });
 
     const insertVariable = (
         ref: React.RefObject<HTMLInputElement | HTMLTextAreaElement | null>,
@@ -62,16 +90,24 @@ export function TemplateEditor({
                         onInsert={(v) => insertVariable(
                             emailBodyRef, 
                             v, 
-                            emailTemplate.body, 
-                            (body) => onEmailChange({ ...emailTemplate, body })
+                            emailBodyValue, 
+                            (body) => onEmailChange({ ...emailTemplate, body: setLocaleValue(emailTemplate.body, activeLocale, body) })
                         )} 
                     />
                     <div className="space-y-2">
-                        <Label>Subject</Label>
+                        <div className="flex items-center justify-between gap-3">
+                            <Label>Subject</Label>
+                            <LanguageToggle value={activeLocale} onChange={setActiveLocale} />
+                        </div>
                         <Input
                             ref={emailSubjectRef}
-                            value={emailTemplate.subject || ''}
-                            onChange={(e) => onEmailChange({ ...emailTemplate, subject: e.target.value })}
+                            value={emailSubjectValue}
+                            onChange={(e) =>
+                                onEmailChange({
+                                    ...emailTemplate,
+                                    subject: setLocaleValue(emailTemplate.subject, activeLocale, e.target.value),
+                                })
+                            }
                             placeholder="e.g., Alert: {trigger_name} - {severity}"
                             className="font-mono text-sm"
                         />
@@ -80,14 +116,19 @@ export function TemplateEditor({
                         <Label>Body</Label>
                         <Textarea
                             ref={emailBodyRef}
-                            value={emailTemplate.body}
-                            onChange={(e) => onEmailChange({ ...emailTemplate, body: e.target.value })}
+                            value={emailBodyValue}
+                            onChange={(e) =>
+                                onEmailChange({
+                                    ...emailTemplate,
+                                    body: setLocaleValue(emailTemplate.body, activeLocale, e.target.value),
+                                })
+                            }
                             placeholder="Enter your email message template..."
                             rows={4}
                             className="font-mono text-sm resize-none"
                         />
                     </div>
-                    <EmailPreview template={emailTemplate} />
+                    <EmailPreview template={emailTemplate} locale={activeLocale} />
                 </CardContent>
             </Card>
         );
@@ -103,27 +144,35 @@ export function TemplateEditor({
                         onInsert={(v) => insertVariable(
                             smsBodyRef, 
                             v, 
-                            smsTemplate.body, 
-                            (body) => onSmsChange({ ...smsTemplate, body })
+                            smsBodyValue, 
+                            (body) => onSmsChange({ ...smsTemplate, body: setLocaleValue(smsTemplate.body, activeLocale, body) })
                         )} 
                     />
                     <div className="space-y-2">
-                        <Label>
-                            Message <span className="text-muted-foreground font-normal">(max 160 characters recommended)</span>
-                        </Label>
+                        <div className="flex items-center justify-between gap-3">
+                            <Label>
+                                Message <span className="text-muted-foreground font-normal">(max 160 characters recommended)</span>
+                            </Label>
+                            <LanguageToggle value={activeLocale} onChange={setActiveLocale} />
+                        </div>
                         <Textarea
                             ref={smsBodyRef}
-                            value={smsTemplate.body}
-                            onChange={(e) => onSmsChange({ ...smsTemplate, body: e.target.value })}
+                            value={smsBodyValue}
+                            onChange={(e) =>
+                                onSmsChange({
+                                    ...smsTemplate,
+                                    body: setLocaleValue(smsTemplate.body, activeLocale, e.target.value),
+                                })
+                            }
                             placeholder="e.g., Alert: {trigger_name} at {site_name}. {metric}: {value}{unit}"
                             rows={3}
                             className="font-mono text-sm resize-none"
                         />
-                        <p className={`text-xs ${smsTemplate.body.length > 160 ? 'text-amber-500' : 'text-muted-foreground'}`}>
-                            {smsTemplate.body.length}/160 characters
+                        <p className={`text-xs ${smsBodyValue.length > 160 ? 'text-amber-500' : 'text-muted-foreground'}`}>
+                            {smsBodyValue.length}/160 characters
                         </p>
                     </div>
-                    <SmsPreview template={smsTemplate} />
+                    <SmsPreview template={smsTemplate} locale={activeLocale} />
                 </CardContent>
             </Card>
         );
@@ -144,16 +193,24 @@ export function TemplateEditor({
                             onInsert={(v) => insertVariable(
                                 emailBodyRef, 
                                 v, 
-                                emailTemplate.body, 
-                                (body) => onEmailChange({ ...emailTemplate, body })
+                                emailBodyValue, 
+                                (body) => onEmailChange({ ...emailTemplate, body: setLocaleValue(emailTemplate.body, activeLocale, body) })
                             )} 
                         />
                         <div className="space-y-2">
-                            <Label>Subject</Label>
+                            <div className="flex items-center justify-between gap-3">
+                                <Label>Subject</Label>
+                                <LanguageToggle value={activeLocale} onChange={setActiveLocale} />
+                            </div>
                             <Input
                                 ref={emailSubjectRef}
-                                value={emailTemplate.subject || ''}
-                                onChange={(e) => onEmailChange({ ...emailTemplate, subject: e.target.value })}
+                                value={emailSubjectValue}
+                                onChange={(e) =>
+                                    onEmailChange({
+                                        ...emailTemplate,
+                                        subject: setLocaleValue(emailTemplate.subject, activeLocale, e.target.value),
+                                    })
+                                }
                                 placeholder="e.g., Alert: {trigger_name} - {severity}"
                                 className="font-mono text-sm"
                             />
@@ -162,14 +219,19 @@ export function TemplateEditor({
                             <Label>Body</Label>
                             <Textarea
                                 ref={emailBodyRef}
-                                value={emailTemplate.body}
-                                onChange={(e) => onEmailChange({ ...emailTemplate, body: e.target.value })}
+                                value={emailBodyValue}
+                                onChange={(e) =>
+                                    onEmailChange({
+                                        ...emailTemplate,
+                                        body: setLocaleValue(emailTemplate.body, activeLocale, e.target.value),
+                                    })
+                                }
                                 placeholder="Enter your email message template..."
                                 rows={4}
                                 className="font-mono text-sm resize-none"
                             />
                         </div>
-                        <EmailPreview template={emailTemplate} />
+                        <EmailPreview template={emailTemplate} locale={activeLocale} />
                     </CardContent>
                 </Card>
             </TabsContent>
@@ -181,27 +243,35 @@ export function TemplateEditor({
                             onInsert={(v) => insertVariable(
                                 smsBodyRef, 
                                 v, 
-                                smsTemplate.body, 
-                                (body) => onSmsChange({ ...smsTemplate, body })
+                                smsBodyValue, 
+                                (body) => onSmsChange({ ...smsTemplate, body: setLocaleValue(smsTemplate.body, activeLocale, body) })
                             )} 
                         />
                         <div className="space-y-2">
-                            <Label>
-                                Message <span className="text-muted-foreground font-normal">(max 160 characters recommended)</span>
-                            </Label>
+                            <div className="flex items-center justify-between gap-3">
+                                <Label>
+                                    Message <span className="text-muted-foreground font-normal">(max 160 characters recommended)</span>
+                                </Label>
+                                <LanguageToggle value={activeLocale} onChange={setActiveLocale} />
+                            </div>
                             <Textarea
                                 ref={smsBodyRef}
-                                value={smsTemplate.body}
-                                onChange={(e) => onSmsChange({ ...smsTemplate, body: e.target.value })}
+                                value={smsBodyValue}
+                                onChange={(e) =>
+                                    onSmsChange({
+                                        ...smsTemplate,
+                                        body: setLocaleValue(smsTemplate.body, activeLocale, e.target.value),
+                                    })
+                                }
                                 placeholder="e.g., Alert: {trigger_name} at {site_name}. {metric}: {value}{unit}"
                                 rows={3}
                                 className="font-mono text-sm resize-none"
                             />
-                            <p className={`text-xs ${smsTemplate.body.length > 160 ? 'text-amber-500' : 'text-muted-foreground'}`}>
-                                {smsTemplate.body.length}/160 characters
+                            <p className={`text-xs ${smsBodyValue.length > 160 ? 'text-amber-500' : 'text-muted-foreground'}`}>
+                                {smsBodyValue.length}/160 characters
                             </p>
                         </div>
-                        <SmsPreview template={smsTemplate} />
+                        <SmsPreview template={smsTemplate} locale={activeLocale} />
                     </CardContent>
                 </Card>
             </TabsContent>
@@ -248,19 +318,21 @@ function replaceVariables(text: string): string {
         .replace(/{timestamp}/g, new Date().toLocaleString());
 }
 
-function EmailPreview({ template }: { template: NotificationTemplate }) {
+function EmailPreview({ template, locale }: { template: NotificationTemplate; locale: string }) {
+    const subject = template.subject?.[locale] ?? '';
+    const body = template.body?.[locale] ?? '';
     return (
         <div className="space-y-2">
             <Label className="text-muted-foreground">Preview</Label>
             <div className="rounded-lg p-4 border bg-background">
-                {template.subject && (
+                {subject && (
                     <div className="mb-3 pb-3 border-b">
                         <span className="text-xs text-muted-foreground">Subject: </span>
-                        <span className="font-medium">{replaceVariables(template.subject)}</span>
+                        <span className="font-medium">{replaceVariables(subject)}</span>
                     </div>
                 )}
                 <div className="prose prose-sm dark:prose-invert max-w-none whitespace-pre-wrap">
-                    {template.body ? replaceVariables(template.body) : (
+                    {body ? replaceVariables(body) : (
                         <span className="text-muted-foreground">No content</span>
                     )}
                 </div>
@@ -269,15 +341,37 @@ function EmailPreview({ template }: { template: NotificationTemplate }) {
     );
 }
 
-function SmsPreview({ template }: { template: NotificationTemplate }) {
+function SmsPreview({ template, locale }: { template: NotificationTemplate; locale: string }) {
+    const body = template.body?.[locale] ?? '';
     return (
         <div className="space-y-2">
             <Label className="text-muted-foreground">Preview</Label>
             <div className="rounded-lg p-4 border bg-background text-sm">
-                {template.body ? replaceVariables(template.body) : (
+                {body ? replaceVariables(body) : (
                     <span className="text-muted-foreground">No content</span>
                 )}
             </div>
+        </div>
+    );
+}
+
+function LanguageToggle({ value, onChange }: { value: string; onChange: (value: string) => void }) {
+    return (
+        <div className="flex items-center gap-1 rounded-lg p-1 bg-muted">
+            {routing.locales.map((locale) => (
+                <button
+                    key={locale}
+                    type="button"
+                    onClick={() => onChange(locale)}
+                    className={`px-2 py-1 text-xs font-medium uppercase rounded-md transition-colors ${
+                        value === locale
+                            ? 'bg-background text-emerald-600 shadow-sm dark:text-emerald-400'
+                            : 'text-muted-foreground hover:text-foreground'
+                    }`}
+                >
+                    {locale}
+                </button>
+            ))}
         </div>
     );
 }

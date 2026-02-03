@@ -1,7 +1,6 @@
 import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { InvitesModule } from './invites/invites.module';
 import { EmailModule } from './email/email.module';
 import { ConfigModule } from '@nestjs/config';
 import configuration from './config/configuration';
@@ -13,7 +12,6 @@ import { TriggerModule } from './trigger';
 import { CommodityTypeModule } from './commodity-type';
 import { CommodityModule } from './commodity';
 import { SiteModule } from './site';
-import { EventsModule } from './events';
 import { AlertModule } from './alert';
 import { TradeModule } from './trade';
 import { GatewayModule } from './gateway';
@@ -23,7 +21,6 @@ import { TranslationModule } from './translation';
 @Module({
   imports: [
     AuthModule,
-    InvitesModule,
     EmailModule,
     PrismaModule,
     ConfigModule.forRoot({
@@ -39,7 +36,6 @@ import { TranslationModule } from './translation';
     TriggerModule,
     CommodityTypeModule,
     CommodityModule,
-    EventsModule,
     AlertModule,
     TradeModule,
     TranslationModule,

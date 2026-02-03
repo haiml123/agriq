@@ -14,13 +14,13 @@ import {
   CreateCommodityDto,
   UpdateCommodityDto,
   ListCommoditiesQueryDto,
-  CreateTradeDto,
 } from './dto';
 import { JwtAuthGuard } from '../auth/guards';
-import { CurrentUser, Public } from '../auth/decorators';
+import { CurrentUser } from '../auth/decorators';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { user_role } from '@prisma/client';
+import type { AppUser } from '../types/user.type';
 
 @Controller('commodities')
 @UseGuards(JwtAuthGuard, RolesGuard)
@@ -48,14 +48,14 @@ export class CommodityController {
   update(
     @Param('id') id: string,
     @Body() dto: UpdateCommodityDto,
-    @CurrentUser('id') userId: string,
+    @CurrentUser() user: AppUser,
   ) {
-    return this.commodityService.update(id, dto, userId);
+    return this.commodityService.update(id, dto, user);
   }
 
   @Delete(':id')
   @Roles(user_role.SUPER_ADMIN, user_role.ADMIN)
-  remove(@Param('id') id: string) {
-    return this.commodityService.remove(id);
+  remove(@Param('id') id: string, @CurrentUser() user: AppUser) {
+    return this.commodityService.remove(id, user);
   }
 }

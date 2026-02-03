@@ -1,6 +1,7 @@
 import {
   ArrayMinSize,
   IsArray,
+  IsBoolean,
   IsDateString,
   IsNumber,
   IsOptional,
@@ -42,4 +43,19 @@ export class BatchGatewayReadingsDto {
   @ValidateNested({ each: true })
   @Type(() => CreateGatewayReadingDto)
   readings: CreateGatewayReadingDto[];
+
+  @IsOptional()
+  @IsBoolean()
+  @Type(() => Boolean)
+  saveReadings?: boolean;
+
+  @IsOptional()
+  @IsBoolean()
+  @Type(() => Boolean)
+  saveAlerts?: boolean;
+
+  @IsOptional()
+  @IsBoolean()
+  @Type(() => Boolean)
+  sendAlerts?: boolean;
 }

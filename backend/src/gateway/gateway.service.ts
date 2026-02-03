@@ -5,10 +5,9 @@ import {
   Logger,
   NotFoundException,
 } from '@nestjs/common';
-import { randomUUID } from 'crypto';
 import { PrismaService } from '../prisma/prisma.service';
 import { SiteAccessService } from '../site';
-import { entity_status, type Prisma } from '@prisma/client';
+import { entity_status, Prisma } from '@prisma/client';
 import { AppUser } from '../types/user.type';
 import {
   BatchGatewayReadingsDto,
@@ -23,6 +22,33 @@ import { isSuperAdmin } from '../user/user.utils';
 import { WeatherService } from '../weather';
 import { TriggerEngineService } from '../trigger';
 
+const gatewayWithCellArgs = Prisma.validator<Prisma.GatewayDefaultArgs>()({
+  include: {
+    cell: {
+      select: {
+        id: true,
+        name: true,
+        compound: {
+          select: {
+            id: true,
+            name: true,
+            site: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
+          },
+        },
+      },
+    },
+  },
+});
+
+export type GatewayWithCell = Prisma.GatewayGetPayload<
+  typeof gatewayWithCellArgs
+>;
+
 @Injectable()
 export class GatewayService {
   private readonly logger = new Logger(GatewayService.name);
@@ -32,6 +58,10 @@ export class GatewayService {
     private readonly weatherService: WeatherService,
     private readonly triggerEngine: TriggerEngineService,
   ) {}
+
+  private getGatewayCellInclude(): Prisma.GatewayInclude {
+    return gatewayWithCellArgs.include ?? {};
+  }
 
   private async findGatewayByIdentifier(identifier: string) {
     return this.prisma.gateway.findFirst({
@@ -85,7 +115,6 @@ export class GatewayService {
     return gateway;
   }
 
-
   async listGateways(
     user: AppUser,
     params?: { cellId?: string; organizationId?: string; unpaired?: boolean },
@@ -117,24 +146,7 @@ export class GatewayService {
             name: true,
           },
         },
-        cell: {
-          select: {
-            id: true,
-            name: true,
-            compound: {
-              select: {
-                id: true,
-                name: true,
-                site: {
-                  select: {
-                    id: true,
-                    name: true,
-                  },
-                },
-              },
-            },
-          },
-        },
+        ...this.getGatewayCellInclude(),
       },
       orderBy: {
         createdAt: 'desc',
@@ -142,31 +154,12 @@ export class GatewayService {
     });
   }
 
-  async findGatewayById(user: AppUser, id: string) {
+  async findGatewayById(user: AppUser, id: string): Promise<GatewayWithCell> {
     await this.validateGatewayAccess(user, id);
 
-    return this.prisma.gateway.findUnique({
+    return this.prisma.gateway.findUniqueOrThrow({
       where: { id },
-      include: {
-        cell: {
-          select: {
-            id: true,
-            name: true,
-            compound: {
-              select: {
-                id: true,
-                name: true,
-                site: {
-                  select: {
-                    id: true,
-                    name: true,
-                  },
-                },
-              },
-            },
-          },
-        },
-      },
+      ...gatewayWithCellArgs,
     });
   }
 
@@ -177,6 +170,11 @@ export class GatewayService {
 
     const trimmedExternalId = dto.externalId?.trim();
     const trimmedName = dto.name?.trim();
+
+    if (!trimmedExternalId) {
+      this.logger.warn('Gateway creation failed: externalId is required');
+      throw new BadRequestException('Gateway externalId is required');
+    }
 
     let organizationId: string | undefined;
     let siteId: string | undefined;
@@ -193,32 +191,13 @@ export class GatewayService {
       data: {
         cellId: dto.cellId ?? null,
         name: trimmedName || null,
-        externalId: trimmedExternalId || `gw-${randomUUID()}`,
+        externalId: trimmedExternalId,
         status: dto.status || entity_status.ACTIVE,
         organizationId: organizationId ?? null,
         siteId: siteId ?? null,
         createdBy: user.id,
       },
-      include: {
-        cell: {
-          select: {
-            id: true,
-            name: true,
-            compound: {
-              select: {
-                id: true,
-                name: true,
-                site: {
-                  select: {
-                    id: true,
-                    name: true,
-                  },
-                },
-              },
-            },
-          },
-        },
-      },
+      include: this.getGatewayCellInclude(),
     });
   }
 
@@ -231,26 +210,7 @@ export class GatewayService {
         ...(dto.name && { name: dto.name }),
         ...(dto.status && { status: dto.status }),
       },
-      include: {
-        cell: {
-          select: {
-            id: true,
-            name: true,
-            compound: {
-              select: {
-                id: true,
-                name: true,
-                site: {
-                  select: {
-                    id: true,
-                    name: true,
-                  },
-                },
-              },
-            },
-          },
-        },
-      },
+      include: this.getGatewayCellInclude(),
     });
   }
 
@@ -370,6 +330,9 @@ export class GatewayService {
   async ingestGatewayPayloadFromDevice(
     gatewayIdentifier: string,
     dto: BatchGatewayPayloadDto,
+    options?: {
+      saveAlerts?: boolean;
+    },
   ) {
     const gateway = await this.resolveDeviceGateway(gatewayIdentifier);
     const readings = dto.readings ?? [];
@@ -434,7 +397,8 @@ export class GatewayService {
         outside,
       );
 
-      if (cell?.id && cell.compound.siteId) {
+      const shouldSaveAlerts = options?.saveAlerts ?? true;
+      if (cell?.id && cell.compound.siteId && shouldSaveAlerts) {
         await this.triggerEngine.evaluateGatewayPayload(
           {
             organizationId: gateway.organizationId ?? undefined,
@@ -549,6 +513,10 @@ export class GatewayService {
     return sensorIdByExternal;
   }
 
+  /**
+   * Persist a gateway reading and its associated ball/sensor readings
+   * in a single transaction.
+   */
   private async persistGatewayAndSensorReadings(
     gateway: { id: string; cellId: string | null; siteId?: string | null },
     dto: CreateGatewayPayloadDto,

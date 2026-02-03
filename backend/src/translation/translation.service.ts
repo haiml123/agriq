@@ -14,9 +14,10 @@ export class TranslationService {
         entity,
         ...(field && { field }),
         ...(locale && { locale }),
-        ...(entityIds && entityIds.length > 0 && {
-          entityId: { in: entityIds },
-        }),
+        ...(entityIds &&
+          entityIds.length > 0 && {
+            entityId: { in: entityIds },
+          }),
       },
       orderBy: [{ entityId: 'asc' }, { field: 'asc' }, { locale: 'asc' }],
     });

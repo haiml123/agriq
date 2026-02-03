@@ -1,30 +1,51 @@
-import { BadRequestException, Injectable, Logger } from '@nestjs/common';
-import { SensorService } from '../sensor/sensor.service';
+import {
+  BadRequestException,
+  Injectable,
+  Logger,
+  NotFoundException,
+} from '@nestjs/common';
 import { GatewayService } from './gateway.service';
 import {
   BatchGatewayReadingsDto,
-  BatchSensorReadingsDto,
   CreateGatewayPayloadDto,
   BatchGatewayPayloadDto,
-  CreateSensorDto,
-  TransferSensorDto,
 } from './dto';
 import { AppUser } from '../types/user.type';
 import { PrismaService } from '../prisma/prisma.service';
-import { TriggerEngineService } from '../trigger/trigger-engine.service';
+import { TriggerEngineService } from '../trigger';
+import type { LocalHistory } from '../trigger';
 import { WeatherService } from '../weather';
+import { SiteAccessService } from '../site';
 
 @Injectable()
 export class GatewaySimulatorService {
   private readonly logger = new Logger(GatewaySimulatorService.name);
 
   constructor(
-    private readonly sensorService: SensorService,
     private readonly gatewayService: GatewayService,
     private readonly prisma: PrismaService,
     private readonly triggerEngine: TriggerEngineService,
     private readonly weatherService: WeatherService,
+    private readonly siteAccess: SiteAccessService,
   ) {}
+
+  private async validateGatewayAccess(user: AppUser, gatewayId: string) {
+    const gateway = await this.prisma.gateway.findUnique({
+      where: { id: gatewayId },
+      select: { id: true, cellId: true },
+    });
+
+    if (!gateway) {
+      throw new NotFoundException(`Gateway with ID "${gatewayId}" not found`);
+    }
+
+    if (!gateway.cellId) {
+      throw new BadRequestException('Gateway is not paired to a cell');
+    }
+
+    await this.siteAccess.validateCellAccess(user, gateway.cellId);
+    return gateway;
+  }
 
   listSensors(
     user: AppUser,
@@ -32,27 +53,87 @@ export class GatewaySimulatorService {
     cellId?: string,
     organizationId?: string,
   ) {
-    return this.sensorService.listSensors(user, gatewayId, cellId, organizationId);
-  }
+    this.siteAccess.ensureSuperAdmin(user);
 
-  createSensor(user: AppUser, dto: CreateSensorDto) {
-    return this.sensorService.createSensor(user, dto);
-  }
+    if (gatewayId) {
+      return this.validateGatewayAccess(user, gatewayId).then(() =>
+        this.prisma.sensor.findMany({
+          where: { gatewayId },
+          include: {
+            gateway: {
+              select: {
+                id: true,
+                name: true,
+                cell: {
+                  select: {
+                    id: true,
+                    name: true,
+                    compound: {
+                      select: {
+                        id: true,
+                        name: true,
+                        site: {
+                          select: {
+                            id: true,
+                            name: true,
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+          orderBy: {
+            createdAt: 'desc',
+          },
+        }),
+      );
+    }
 
-  transferSensor(user: AppUser, sensorId: string, dto: TransferSensorDto) {
-    return this.sensorService.transferSensor(user, sensorId, dto);
-  }
+    if (cellId) {
+      this.siteAccess.validateCellAccess(user, cellId);
+    } else if (organizationId) {
+      this.siteAccess.validateOrganizationAccess(user, organizationId);
+    }
 
-  createSensorReadingsBatch(
-    user: AppUser,
-    sensorId: string,
-    dto: BatchSensorReadingsDto,
-  ) {
-    return this.sensorService.createSensorReadingsBatch(user, sensorId, dto);
-  }
-
-  listSensorReadings(user: AppUser, sensorId: string, limit?: number) {
-    return this.sensorService.listSensorReadings(user, sensorId, limit);
+    return this.prisma.sensor.findMany({
+      where: cellId
+        ? { gateway: { cellId } }
+        : organizationId
+          ? { gateway: { organizationId } }
+          : undefined,
+      include: {
+        gateway: {
+          select: {
+            id: true,
+            name: true,
+            cell: {
+              select: {
+                id: true,
+                name: true,
+                compound: {
+                  select: {
+                    id: true,
+                    name: true,
+                    site: {
+                      select: {
+                        id: true,
+                        name: true,
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+    });
   }
 
   createGatewayReadingsBatch(
@@ -112,7 +193,20 @@ export class GatewaySimulatorService {
       `simulate: gateway=${gateway.id} site=${siteId} cell=${gateway.cellId} commodityType=${commodityTypeId ?? 'none'} readings=${readings.length}`,
     );
 
+    const saveReadings = Boolean(dto.saveReadings);
+    const saveAlerts = Boolean(dto.saveAlerts);
+    const sendAlerts = Boolean(dto.sendAlerts);
     const alerts: Array<Record<string, unknown>> = [];
+    const localHistory: LocalHistory | undefined = saveReadings
+      ? undefined
+      : {
+          sensorHistoryById: new Map<
+            string,
+            { temperature: number; humidity: number; recordedAt: Date }[]
+          >(),
+          gatewayHistory: [],
+          outsideHistory: [],
+        };
 
     for (const reading of readings) {
       const recordedAt = new Date(reading.recordedAt);
@@ -125,6 +219,31 @@ export class GatewaySimulatorService {
         recordedAt: new Date(ball.recordedAt ?? reading.recordedAt),
       }));
 
+      // 1) Persist readings if requested (alerts are handled separately).
+      if (saveReadings) {
+        const payload: BatchGatewayPayloadDto = {
+          readings: [
+            {
+              temperature: reading.temperature,
+              humidity: reading.humidity,
+              batteryPercent: reading.batteryPercent,
+              recordedAt: reading.recordedAt,
+              balls: reading.balls,
+            },
+          ],
+        };
+        // Persist readings only; alerts are handled by the simulator flow below.
+        await this.gatewayService.ingestGatewayPayloadFromDevice(
+          gateway.id,
+          payload,
+          {
+            saveAlerts: false,
+          },
+        );
+      }
+
+      // 2) Always evaluate alerts for the current reading.
+      const persistAlerts = saveAlerts;
       await this.triggerEngine.evaluateGatewayPayload(
         {
           organizationId: gateway.organizationId ?? undefined,
@@ -146,7 +265,9 @@ export class GatewaySimulatorService {
           recordedAt,
         },
         {
-          skipExistingCheck: true,
+          skipExistingCheck: !persistAlerts,
+          persistAlerts,
+          localHistory,
           alertWriter: (candidate) => {
             alerts.push({
               ...candidate,
@@ -156,9 +277,42 @@ export class GatewaySimulatorService {
           },
         },
       );
+
+      // 3) When not saving readings, keep an in-batch history buffer for change conditions.
+      if (localHistory) {
+        localHistory.gatewayHistory?.push({
+          temperature: reading.temperature,
+          humidity: reading.humidity,
+          recordedAt,
+        });
+
+        if (outside) {
+          localHistory.outsideHistory?.push({
+            temperature: outside.temperature,
+            humidity: outside.humidity,
+            recordedAt,
+          });
+        }
+
+        for (const ball of balls) {
+          const sensorId = sensorIdByExternal?.get(ball.id);
+          if (!sensorId) {
+            continue;
+          }
+          const list = localHistory.sensorHistoryById?.get(sensorId) ?? [];
+          list.push({
+            temperature: ball.temperature,
+            humidity: ball.humidity,
+            recordedAt: new Date(ball.recordedAt ?? reading.recordedAt),
+          });
+          localHistory.sensorHistoryById?.set(sensorId, list);
+        }
+      }
     }
 
-    this.logger.debug(`simulate: alerts=${alerts.length}`);
+    if (sendAlerts) {
+      this.logger.debug(`simulate: send alerts (count=${alerts.length})`);
+    }
     return { alerts };
   }
 
@@ -236,7 +390,9 @@ export class GatewaySimulatorService {
     const endDate = end ? new Date(end) : undefined;
 
     const recordedAtFilter = {
-      ...(startDate && !Number.isNaN(startDate.getTime()) ? { gte: startDate } : {}),
+      ...(startDate && !Number.isNaN(startDate.getTime())
+        ? { gte: startDate }
+        : {}),
       ...(endDate && !Number.isNaN(endDate.getTime()) ? { lte: endDate } : {}),
     };
 
@@ -318,7 +474,11 @@ export class GatewaySimulatorService {
   private async getOutsideObservation(
     siteId: string,
     recordedAt: Date,
-  ): Promise<{ temperature: number; humidity: number; recordedAt: Date } | null> {
+  ): Promise<{
+    temperature: number;
+    humidity: number;
+    recordedAt: Date;
+  } | null> {
     const observation = await this.prisma.weatherObservation.findFirst({
       where: {
         siteId,

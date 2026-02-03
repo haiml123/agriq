@@ -7,34 +7,16 @@ import {
 } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { ConditionType, MetricType } from './dto';
-
-export interface TriggerContextScope {
-  organizationId?: string;
-  sensorId?: string;
-  commodityTypeId?: string;
-}
-
-export type ReadingSource = 'GATEWAY' | 'SENSOR' | 'OUTSIDE';
-
-export interface BaselineQuery {
-  source: ReadingSource;
-  sourceId: string;
-  since: Date;
-  before?: Date;
-  metrics: MetricType[];
-}
-
-type TriggerCondition = {
-  id: string;
-  metric: MetricType;
-  type: ConditionType;
-  timeWindowHours?: number;
-};
+import { parseTriggerConditions } from './trigger-condition.utils';
+import type { BaselineQuery, TriggerContextScope } from './trigger.type';
 
 @Injectable()
 export class TriggerContextService {
   constructor(private readonly prisma: PrismaService) {}
 
+  /**
+   * Load active triggers that match scope + sensor specificity.
+   */
   async findMatchingTriggers(
     scope: TriggerContextScope,
     options?: { sensorMatch?: 'any' | 'specific' | 'generic' },
@@ -72,12 +54,16 @@ export class TriggerContextService {
       where.sensorId = null;
     }
 
+    // Query only matching, active triggers.
     return this.prisma.eventTrigger.findMany({
       where,
       orderBy: { createdAt: 'desc' },
     });
   }
 
+  /**
+   * Build baseline metrics for change-over-time conditions.
+   */
   async loadBaselineMetrics(
     query: BaselineQuery,
   ): Promise<Partial<Record<MetricType, number>>> {
@@ -88,6 +74,7 @@ export class TriggerContextService {
       return baseline;
     }
 
+    // Pull the earliest reading within the window for the requested source.
     if (query.source === 'GATEWAY') {
       const reading = await this.prisma.gatewayReading.findFirst({
         where: {
@@ -194,6 +181,9 @@ export class TriggerContextService {
     return baseline;
   }
 
+  /**
+   * Assign a metric when the value is valid.
+   */
   private assignMetricValue(
     target: Partial<Record<MetricType, number>>,
     metric: MetricType,
@@ -205,31 +195,14 @@ export class TriggerContextService {
     target[metric] = value;
   }
 
-  private parseConditions(
-    conditions: EventTrigger['conditions'],
-  ): TriggerCondition[] {
-    if (!Array.isArray(conditions)) {
-      return [];
-    }
-
-    return conditions.filter((condition): condition is TriggerCondition => {
-      if (!condition || typeof condition !== 'object') {
-        return false;
-      }
-
-      const candidate = condition as Record<string, unknown>;
-      return (
-        typeof candidate.id === 'string' &&
-        typeof candidate.metric === 'string' &&
-        typeof candidate.type === 'string'
-      );
-    });
-  }
-
+  /**
+   * Compute the max time window needed per metric for a trigger.
+   */
   getChangeMetricWindows(trigger: EventTrigger): Map<MetricType, number> {
     const windows = new Map<MetricType, number>();
 
-    this.parseConditions(trigger.conditions)
+    // Consider only change-type conditions.
+    parseTriggerConditions(trigger.conditions)
       .filter((condition) => condition.type === ConditionType.CHANGE)
       .forEach((condition) => {
         const windowHours = condition.timeWindowHours ?? 1;

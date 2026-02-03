@@ -14,6 +14,7 @@ import { Roles } from '../auth/decorators/roles.decorator';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { user_role } from '@prisma/client';
 import { CreateTradeDto } from './dto';
+import { parsePagination } from '../utils/pagination';
 
 @Controller('trades')
 @UseGuards(JwtAuthGuard, RolesGuard)
@@ -42,11 +43,16 @@ export class TradeController {
     @Query('compoundId') compoundId?: string,
     @Query('limit') limit?: string,
   ) {
+    const { limit: parsedLimit } = parsePagination({
+      limit,
+      defaultLimit: 10,
+    });
+
     return this.tradeService.findRecent(
       organizationId,
       siteId,
       compoundId,
-      limit ? parseInt(limit) : 10,
+      parsedLimit,
     );
   }
 }

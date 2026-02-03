@@ -1,7 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import * as nodemailer from 'nodemailer';
-import { Transporter } from 'nodemailer';
+import * as sgMail from '@sendgrid/mail';
 
 export interface SendEmailOptions {
   to: string;
@@ -22,11 +21,11 @@ export interface InviteEmailData {
 
 @Injectable()
 export class EmailService {
-  private transporter: Transporter;
   private readonly logger = new Logger(EmailService.name);
   private readonly fromEmail: string;
   private readonly fromName: string;
   private readonly frontendUrl: string;
+  private readonly sendgridApiKey: string;
 
   constructor(private configService: ConfigService) {
     this.fromEmail =
@@ -35,77 +34,15 @@ export class EmailService {
       this.configService.get<string>('EMAIL_FROM_NAME') || 'AgriQ';
     this.frontendUrl =
       this.configService.get<string>('FRONTEND_URL') || 'http://localhost:3000';
+    this.sendgridApiKey =
+      this.configService.get<string>('SENDGRID_API_KEY') || '';
 
-    // Initialize transporter based on environment
-    // this.initializeTransporter();
-  }
-
-  private initializeTransporter() {
-    const emailProvider =
-      this.configService.get<string>('EMAIL_PROVIDER') || 'smtp';
-
-    switch (emailProvider) {
-      case 'sendgrid':
-        this.transporter = nodemailer.createTransport({
-          host: 'smtp.sendgrid.net',
-          port: 587,
-          secure: false,
-          auth: {
-            user: 'apikey',
-            pass: this.configService.get<string>('SENDGRID_API_KEY'),
-          },
-        });
-        break;
-
-      case 'resend':
-        this.transporter = nodemailer.createTransport({
-          host: 'smtp.resend.com',
-          port: 465,
-          secure: true,
-          auth: {
-            user: 'resend',
-            pass: this.configService.get<string>('RESEND_API_KEY'),
-          },
-        });
-        break;
-
-      case 'mailgun':
-        this.transporter = nodemailer.createTransport({
-          host: 'smtp.mailgun.org',
-          port: 587,
-          secure: false,
-          auth: {
-            user: this.configService.get<string>('MAILGUN_USER'),
-            pass: this.configService.get<string>('MAILGUN_PASSWORD'),
-          },
-        });
-        break;
-
-      case 'smtp':
-      default:
-        this.transporter = nodemailer.createTransport({
-          host: this.configService.get<string>('SMTP_HOST') || 'localhost',
-          port: this.configService.get<number>('SMTP_PORT') || 587,
-          secure: this.configService.get<boolean>('SMTP_SECURE') || false,
-          auth: {
-            user: this.configService.get<string>('SMTP_USER'),
-            pass: this.configService.get<string>('SMTP_PASSWORD'),
-          },
-        });
-        break;
-    }
-
-    // Verify connection on startup (non-blocking)
-    this.verifyConnection();
-  }
-
-  private async verifyConnection() {
-    try {
-      await this.transporter.verify();
-      this.logger.log('Email service connected successfully');
-    } catch (error) {
-      this.logger.warn(`Email service connection failed: ${error.message}`);
-      this.logger.warn('Emails will be logged to console instead');
+    if (this.sendgridApiKey) {
+      sgMail.setApiKey(this.sendgridApiKey);
+    } else {
+      this.logger.warn(
+        'SENDGRID_API_KEY is not set. Emails will be logged only.',
+      );
     }
   }
 
@@ -116,27 +53,28 @@ export class EmailService {
     const { to, subject, html, text } = options;
 
     try {
-      const info = await this.transporter.sendMail({
-        from: `"${this.fromName}" <${this.fromEmail}>`,
+      if (!this.sendgridApiKey) {
+        this.logEmailPreview({ to, subject, html, text });
+        return false;
+      }
+
+      await sgMail.send({
         to,
+        from: {
+          email: this.fromEmail,
+          name: this.fromName,
+        },
         subject,
         html,
         text: text || this.htmlToText(html),
       });
 
-      this.logger.log(`Email sent to ${to}: ${info.messageId}`);
+      this.logger.log(`Email sent to ${to}`);
       return true;
     } catch (error) {
-      this.logger.error(`Failed to send email to ${to}: ${error.message}`);
-
-      // In development, log the email content
-      if (this.configService.get<string>('NODE_ENV') !== 'production') {
-        this.logger.debug('Email content that would have been sent:');
-        this.logger.debug(`To: ${to}`);
-        this.logger.debug(`Subject: ${subject}`);
-        this.logger.debug(`HTML: ${html}`);
-      }
-
+      const message = error instanceof Error ? error.message : String(error);
+      this.logger.error(`Failed to send email to ${to}: ${message}`);
+      this.logEmailPreview({ to, subject, html, text });
       return false;
     }
   }
@@ -179,6 +117,19 @@ export class EmailService {
       subject,
       html,
     });
+  }
+
+  private logEmailPreview(options: SendEmailOptions) {
+    const { to, subject, html, text } = options;
+    if (this.configService.get<string>('NODE_ENV') !== 'production') {
+      this.logger.debug('Email content that would have been sent:');
+      this.logger.debug(`To: ${to}`);
+      this.logger.debug(`Subject: ${subject}`);
+      this.logger.debug(`HTML: ${html}`);
+      if (text) {
+        this.logger.debug(`Text: ${text}`);
+      }
+    }
   }
 
   /**

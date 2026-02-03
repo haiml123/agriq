@@ -15,8 +15,8 @@ export function MessageTemplatesSection({ actions, onUpdateTemplate }: MessageTe
         return null;
     }
 
-    const emailTemplate = getActionByType(actions, 'EMAIL')?.template || { subject: '', body: '' };
-    const smsTemplate = getActionByType(actions, 'SMS')?.template || { body: '' };
+    const emailTemplate = getActionByType(actions, 'EMAIL')?.template || { subject: { en: '' }, body: { en: '' } };
+    const smsTemplate = getActionByType(actions, 'SMS')?.template || { body: { en: '' } };
 
     return (
         <div className="space-y-4">

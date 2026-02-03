@@ -1,22 +1,8 @@
-import {
-  Body,
-  Controller,
-  Get,
-  Param,
-  Patch,
-  Post,
-  Query,
-  UseGuards,
-} from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Query, UseGuards } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/guards';
 import { CurrentUser } from '../auth/decorators';
 import * as userType from '../types/user.type';
-import {
-  BatchGatewayReadingsDto,
-  BatchSensorReadingsDto,
-  CreateSensorDto,
-  TransferSensorDto,
-} from './dto';
+import { BatchGatewayReadingsDto } from './dto';
 import { GatewaySimulatorService } from './gateway-simulator.service';
 
 @Controller('gateways/simulator')
@@ -36,46 +22,6 @@ export class GatewaySimulatorController {
       gatewayId,
       cellId,
       organizationId,
-    );
-  }
-
-  @Post('sensors')
-  createSensor(
-    @Body() dto: CreateSensorDto,
-    @CurrentUser() user: userType.AppUser,
-  ) {
-    return this.simulatorService.createSensor(user, dto);
-  }
-
-  @Patch('sensors/:id/transfer')
-  transferSensor(
-    @Param('id') id: string,
-    @Body() dto: TransferSensorDto,
-    @CurrentUser() user: userType.AppUser,
-  ) {
-    return this.simulatorService.transferSensor(user, id, dto);
-  }
-
-  @Post('sensors/:id/readings/batch')
-  createSensorReadingsBatch(
-    @Param('id') id: string,
-    @Body() dto: BatchSensorReadingsDto,
-    @CurrentUser() user: userType.AppUser,
-  ) {
-    return this.simulatorService.createSensorReadingsBatch(user, id, dto);
-  }
-
-  @Get('sensors/:id/readings')
-  listSensorReadings(
-    @Param('id') id: string,
-    @Query('limit') limit: string | undefined,
-    @CurrentUser() user: userType.AppUser,
-  ) {
-    const parsedLimit = limit ? Number(limit) : undefined;
-    return this.simulatorService.listSensorReadings(
-      user,
-      id,
-      Number.isFinite(parsedLimit) ? parsedLimit : undefined,
     );
   }
 
@@ -128,6 +74,11 @@ export class GatewaySimulatorController {
     @Query('end') end: string | undefined,
     @CurrentUser() user: userType.AppUser,
   ) {
-    return this.simulatorService.clearGatewayReadingsRange(user, id, start, end);
+    return this.simulatorService.clearGatewayReadingsRange(
+      user,
+      id,
+      start,
+      end,
+    );
   }
 }

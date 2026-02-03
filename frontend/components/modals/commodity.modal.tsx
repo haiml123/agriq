@@ -129,7 +129,7 @@ export function CommodityModal({
   const loadCommodityTypes = async () => {
     try {
       const response = await getCommodityTypes();
-      setCommodityTypes(response?.data?.items || []);
+      setCommodityTypes(response?.data ?? []);
     } catch (err) {
       console.error('Failed to load commodity types:', err);
     }

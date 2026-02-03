@@ -18,9 +18,7 @@ import { AppUser } from '../types/user.type';
 
 @Injectable()
 export class UserService {
-  constructor(private readonly prisma: PrismaService) {
-    console.log('UserService created');
-  }
+  constructor(private readonly prisma: PrismaService) {}
 
   async create(currentUser: AppUser, dto: CreateUserDto) {
     const { siteIds, role, organizationId, password, ...userData } = dto;

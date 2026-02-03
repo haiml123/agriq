@@ -1,10 +1,17 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { Prisma, entity_status } from '@prisma/client';
 import {
   CreateOrganizationDto,
   UpdateOrganizationDto,
   ChangeStatusDto,
 } from './dto';
+import type { AppUser } from '../types/user.type';
+import { canAccessOrganization } from '../user/user.utils';
 
 @Injectable()
 export class OrganizationService {
@@ -23,7 +30,7 @@ export class OrganizationService {
     page?: number;
     limit?: number;
     search?: string;
-    status?: string;
+    status?: entity_status;
   }) {
     const page = params?.page || 1;
     const limit = params?.limit || 10;
@@ -33,16 +40,16 @@ export class OrganizationService {
       ...(params?.search && {
         name: {
           contains: params.search,
-          mode: 'insensitive' as const,
+          mode: Prisma.QueryMode.insensitive,
         },
       }),
       ...(params?.status && {
-        status: params.status as any,
+        status: params.status,
       }),
       // By default, exclude DELETED unless explicitly requested
       ...(!params?.status && {
         status: {
-          not: 'DELETED' as any,
+          not: entity_status.DELETED,
         },
       }),
     };
@@ -82,8 +89,21 @@ export class OrganizationService {
     return organization;
   }
 
-  async update(id: string, dto: UpdateOrganizationDto, userId: string) {
-    await this.findOne(id);
+  async update(id: string, dto: UpdateOrganizationDto, user: AppUser) {
+    const organization = await this.prisma.organization.findUnique({
+      where: { id },
+      select: { id: true },
+    });
+
+    if (!organization) {
+      throw new NotFoundException(`Organization with ID ${id} not found`);
+    }
+
+    if (!canAccessOrganization(user, organization.id)) {
+      throw new ForbiddenException(
+        'You do not have permission to update this organization',
+      );
+    }
 
     return this.prisma.organization.update({
       where: { id },
@@ -93,8 +113,21 @@ export class OrganizationService {
     });
   }
 
-  async changeStatus(id: string, dto: ChangeStatusDto, userId: string) {
-    await this.findOne(id);
+  async changeStatus(id: string, dto: ChangeStatusDto, user: AppUser) {
+    const organization = await this.prisma.organization.findUnique({
+      where: { id },
+      select: { id: true },
+    });
+
+    if (!organization) {
+      throw new NotFoundException(`Organization with ID ${id} not found`);
+    }
+
+    if (!canAccessOrganization(user, organization.id)) {
+      throw new ForbiddenException(
+        'You do not have permission to update this organization',
+      );
+    }
 
     return this.prisma.organization.update({
       where: { id },

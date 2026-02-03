@@ -14,9 +14,7 @@ import * as client from '@prisma/client';
 
 @Controller('auth')
 export class AuthController {
-  constructor(private authService: AuthService) {
-    console.log('auth controller');
-  }
+  constructor(private authService: AuthService) {}
 
   /**
    * Login with email and password

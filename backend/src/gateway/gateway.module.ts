@@ -7,7 +7,6 @@ import { GatewayController } from './gateway.controller';
 import { GatewayService } from './gateway.service';
 import { GatewaySimulatorController } from './gateway-simulator.controller';
 import { GatewaySimulatorService } from './gateway-simulator.service';
-import { SensorService } from '../sensor/sensor.service';
 import { GatewayVersionController } from './gateway-version.controller';
 import { GatewayVersionService } from './gateway-version.service';
 
@@ -20,7 +19,6 @@ import { GatewayVersionService } from './gateway-version.service';
   ],
   providers: [
     GatewayService,
-    SensorService,
     GatewaySimulatorService,
     GatewayVersionService,
   ],

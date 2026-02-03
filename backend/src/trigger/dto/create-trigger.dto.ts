@@ -5,6 +5,7 @@ import {
   IsEnum,
   IsNotEmpty,
   IsNumber,
+  IsObject,
   IsOptional,
   IsString,
   MaxLength,
@@ -80,13 +81,13 @@ export enum ConditionLogic {
 
 // Nested DTOs
 export class NotificationTemplateDto {
-  @IsString()
+  @IsObject()
   @IsOptional()
-  subject?: string;
+  subject?: Record<string, string>;
 
-  @IsString()
+  @IsObject()
   @IsNotEmpty()
-  body: string;
+  body: Record<string, string>;
 }
 
 export class ConditionDto {
@@ -159,7 +160,7 @@ export class CreateTriggerDto {
   description?: string;
 
   @IsEnum(trigger_scope)
-  scopeType: ScopeType;
+  scopeType: trigger_scope;
 
   @IsString()
   @IsNotEmpty()

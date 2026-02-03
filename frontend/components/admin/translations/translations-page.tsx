@@ -85,8 +85,8 @@ export function TranslationsPage() {
     const loadEntities = useCallback(async (): Promise<EntityItem[]> => {
         switch (entity) {
             case 'commodity_type': {
-                const response = await getCommodityTypes({ limit: DEFAULT_PAGE_SIZE, page: 1 });
-                const items = response?.data?.items ?? [];
+                const response = await getCommodityTypes();
+                const items = response?.data ?? [];
                 return items.map((type: CommodityType) => ({
                     id: type.id,
                     name: type.name,

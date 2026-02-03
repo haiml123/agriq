@@ -23,14 +23,6 @@ export const UpdateCommodityTypeSchema = z.object({
     status: entityStatusSchema.optional(),
 });
 
-export const CommodityTypeListParamsSchema = z.object({
-    page: z.number().optional(),
-    limit: z.number().optional(),
-    search: z.string().optional(),
-    status: entityStatusSchema.optional(),
-});
-
 export type CommodityType = z.infer<typeof CommodityTypeSchema>;
 export type CreateCommodityTypeDto = z.infer<typeof CreateCommodityTypeSchema>;
 export type UpdateCommodityTypeDto = z.infer<typeof UpdateCommodityTypeSchema>;
-export type CommodityTypeListParams = z.infer<typeof CommodityTypeListParamsSchema>;

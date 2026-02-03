@@ -35,8 +35,8 @@ export const conditionSchema = z.object({
 })
 
 export const notificationTemplateSchema = z.object({
-    subject: z.string().optional(), // Only for email
-    body: z.string(),
+    subject: z.record(z.string(), z.string()).optional(), // Only for email
+    body: z.record(z.string(), z.string()),
 })
 
 export const actionSchema = z.object({
@@ -116,11 +116,15 @@ export const createDefaultAction = (type: CommunicationType): Action => ({
     template:
         type === "EMAIL"
             ? {
-                subject: "Alert: {trigger_name} - {severity}",
-                body: "A {severity} alert has been triggered.\n\nSite: {site_name}\nCommodity: {commodity_type}\nMetric: {metric}\nCurrent Value: {value}{unit}\nThreshold: {threshold}{unit}\nTime: {timestamp}",
+                subject: {
+                    en: "Alert: {trigger_name} - {severity}",
+                },
+                body: {
+                    en: "A {severity} alert has been triggered.\n\nSite: {site_name}\nCommodity: {commodity_type}\nMetric: {metric}\nCurrent Value: {value}{unit}\nThreshold: {threshold}{unit}\nTime: {timestamp}",
+                },
             }
             : type === "SMS"
-                ? { body: "Alert: {trigger_name} at {site_name}. {metric}: {value}{unit}. Severity: {severity}" }
+                ? { body: { en: "Alert: {trigger_name} at {site_name}. {metric}: {value}{unit}. Severity: {severity}" } }
                 : undefined,
 })
 

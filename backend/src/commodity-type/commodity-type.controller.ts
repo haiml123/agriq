@@ -6,14 +6,12 @@ import {
   Param,
   Patch,
   Post,
-  Query,
   UseGuards,
 } from '@nestjs/common';
 import { CommodityTypeService } from './commodity-type.service';
 import {
   CreateCommodityTypeDto,
   UpdateCommodityTypeDto,
-  ListCommodityTypesQueryDto,
   CreateLookupTableDto,
   UpdateLookupTableDto,
 } from './dto';
@@ -39,8 +37,8 @@ export class CommodityTypeController {
 
   @Public()
   @Get()
-  findAll(@Query() query: ListCommodityTypesQueryDto) {
-    return this.commodityTypeService.findAll(query);
+  findAll() {
+    return this.commodityTypeService.findAll();
   }
 
   @Get(':id')

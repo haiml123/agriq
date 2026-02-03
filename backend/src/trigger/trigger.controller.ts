@@ -13,7 +13,10 @@ import {
 } from '@nestjs/common';
 import { TriggerService } from './trigger.service';
 import { JwtAuthGuard } from '../auth/guards';
-import { CurrentUser, Public } from '../auth/decorators';
+import { CurrentUser } from '../auth/decorators';
+import { Roles } from '../auth/decorators/roles.decorator';
+import { RolesGuard } from '../auth/guards/roles.guard';
+import { user_role } from '@prisma/client';
 import {
   CreateTriggerDto,
   ListTriggersQueryDto,
@@ -21,7 +24,8 @@ import {
 } from './dto';
 
 @Controller('triggers')
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, RolesGuard)
+@Roles(user_role.SUPER_ADMIN)
 export class TriggerController {
   constructor(private readonly triggerService: TriggerService) {}
 
@@ -31,6 +35,7 @@ export class TriggerController {
    */
   @Post()
   create(@Body() dto: CreateTriggerDto, @CurrentUser('id') userId: string) {
+    // Forward to service with creator ID.
     return this.triggerService.create(dto, userId);
   }
 
@@ -38,9 +43,9 @@ export class TriggerController {
    * Get all triggers with filtering and pagination
    * GET /triggers
    */
-  @Public()
   @Get()
   findAll(@Query() query: ListTriggersQueryDto) {
+    // Delegate pagination + filtering to the service.
     return this.triggerService.findAll(query);
   }
 
@@ -48,9 +53,9 @@ export class TriggerController {
    * Get a single trigger by ID
    * GET /triggers/:id
    */
-  @Public()
   @Get(':id')
   findOne(@Param('id') id: string) {
+    // Fetch a single trigger by ID.
     return this.triggerService.findOne(id);
   }
 
@@ -64,6 +69,7 @@ export class TriggerController {
     @Body() dto: UpdateTriggerDto,
     @CurrentUser('id') userId: string,
   ) {
+    // Update selected fields.
     return this.triggerService.update(id, dto, userId);
   }
 
@@ -77,6 +83,7 @@ export class TriggerController {
     @Body('isActive') isActive: boolean,
     @CurrentUser('id') userId: string,
   ) {
+    // Toggle trigger activation.
     return this.triggerService.toggleActive(id, isActive, userId);
   }
 
@@ -87,6 +94,7 @@ export class TriggerController {
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   async remove(@Param('id') id: string, @CurrentUser('id') userId: string) {
+    // Soft-delete by disabling the trigger.
     await this.triggerService.remove(id, userId);
   }
 }

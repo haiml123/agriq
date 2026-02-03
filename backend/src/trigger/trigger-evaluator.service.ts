@@ -7,22 +7,18 @@ import {
   MetricType,
   Operator,
 } from './dto';
-import { TriggerCondition } from './trigger-condition.utils';
 import { parseTriggerConditions } from './trigger-condition.utils';
-
-export interface TriggerEvaluationContext {
-  metrics: Partial<Record<MetricType, number>>;
-  previousMetrics?: Partial<Record<MetricType, number>>;
-}
-
-export interface TriggerEvaluationResult {
-  matches: boolean;
-  matchedConditions: string[];
-  failedConditions: string[];
-}
+import type {
+  TriggerCondition,
+  TriggerEvaluationContext,
+  TriggerEvaluationResult,
+} from './trigger.type';
 
 @Injectable()
 export class TriggerEvaluatorService {
+  /**
+   * Evaluate a trigger against the provided metric context.
+   */
   evaluateTrigger(
     trigger: Pick<EventTrigger, 'conditions' | 'conditionLogic'>,
     context: TriggerEvaluationContext,
@@ -41,6 +37,7 @@ export class TriggerEvaluatorService {
     const matchedConditions: string[] = [];
     const failedConditions: string[] = [];
 
+    // Evaluate each condition independently.
     conditions.forEach((condition) => {
       const isMatch = this.evaluateCondition(condition, context);
       if (isMatch) {
@@ -58,6 +55,9 @@ export class TriggerEvaluatorService {
     return { matches, matchedConditions, failedConditions };
   }
 
+  /**
+   * Dispatch evaluation by condition type.
+   */
   private evaluateCondition(
     condition: TriggerCondition,
     context: TriggerEvaluationContext,
@@ -74,6 +74,9 @@ export class TriggerEvaluatorService {
     );
   }
 
+  /**
+   * Evaluate a condition given current + previous metric values.
+   */
   evaluateConditionForValue(
     condition: TriggerCondition,
     current: number,
@@ -90,7 +93,13 @@ export class TriggerEvaluatorService {
     return false;
   }
 
-  private evaluateThreshold(condition: TriggerCondition, current: number): boolean {
+  /**
+   * Evaluate threshold comparisons (ABOVE/BELOW/BETWEEN/etc).
+   */
+  private evaluateThreshold(
+    condition: TriggerCondition,
+    current: number,
+  ): boolean {
     const { operator, value, secondaryValue } = condition;
 
     if (!operator || value === undefined) {
@@ -117,6 +126,9 @@ export class TriggerEvaluatorService {
     }
   }
 
+  /**
+   * Evaluate change-over-time conditions against a baseline.
+   */
   private evaluateChange(
     condition: TriggerCondition,
     current: number,

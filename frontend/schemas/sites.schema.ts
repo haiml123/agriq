@@ -295,6 +295,9 @@ export const createGatewayReadingSchema = z.object({
 
 export const createGatewayReadingsBatchSchema = z.object({
   readings: z.array(createGatewayReadingSchema).min(1),
+  saveReadings: z.boolean().optional(),
+  saveAlerts: z.boolean().optional(),
+  sendAlerts: z.boolean().optional(),
 });
 
 export const simulatedAlertSchema = z.object({

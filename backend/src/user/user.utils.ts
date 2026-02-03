@@ -10,13 +10,6 @@ export function isAdmin(user: AppUser): boolean {
   return user.userRole === user_role.ADMIN;
 }
 
-export function getAdminOrganizationIds(user: AppUser): string[] {
-  if (isAdmin(user) && user.organizationId) {
-    return [user.organizationId];
-  }
-  return [];
-}
-
 /**
  * Returns organization filter for Prisma where clause
  * - Super admin: returns requestedOrgId or undefined (no filter)
@@ -86,15 +79,19 @@ export function validateUserManagementPermission(params: {
   }
 }
 
-// In your role utils file
 export function canAccessOrganization(
   user: AppUser,
-  organizationId: string,
+  organizationId?: string | null,
 ): boolean {
   if (isSuperAdmin(user)) {
     return true;
   }
 
+  if (!organizationId) {
+    return false;
+  }
+
+  // TODO maybe not needed.
   if (isAdmin(user) && user.organizationId === organizationId) {
     return true;
   }

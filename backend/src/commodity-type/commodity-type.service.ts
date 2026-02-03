@@ -6,7 +6,6 @@ import {
 import { PrismaService } from '../prisma/prisma.service';
 import {
   CreateCommodityTypeDto,
-  ListCommodityTypesQueryDto,
   UpdateCommodityTypeDto,
   CreateLookupTableDto,
   UpdateLookupTableDto,
@@ -35,62 +34,14 @@ export class CommodityTypeService {
         description: dto.description,
         status: entity_status.ACTIVE,
         createdBy: userId,
-      } as any,
+      },
     });
   }
 
-  async findAll(query: ListCommodityTypesQueryDto) {
-    const page = query.page || 1;
-    const limit = query.limit || 10;
-    const skip = (page - 1) * limit;
-
-    const where = {
-      ...(query.search && {
-        OR: [
-          {
-            name: {
-              contains: query.search,
-              mode: 'insensitive' as const,
-            },
-          },
-          {
-            description: {
-              contains: query.search,
-              mode: 'insensitive' as const,
-            },
-          },
-        ],
-      }),
-      ...(query.status !== undefined && {
-        status: query.status,
-      }),
-    };
-
-    const [items, total] = await Promise.all([
-      this.prisma.commodityType.findMany({
-        where,
-        skip,
-        orderBy: { createdAt: 'desc' },
-        include: {
-          _count: {
-            select: { commodities: true },
-          },
-        },
-      }),
-      this.prisma.commodityType.count({ where }),
-    ]);
-
-    return {
-      items: items.map((item) => ({
-        ...item,
-        commoditiesCount: item._count.commodities,
-        _count: undefined,
-      })),
-      total,
-      page,
-      limit,
-      totalPages: Math.ceil(total / limit),
-    };
+  async findAll() {
+    return this.prisma.commodityType.findMany({
+      orderBy: { createdAt: 'desc' },
+    });
   }
 
   async findOne(id: string) {

@@ -8,6 +8,7 @@ import {
 import { PrismaService } from '../prisma/prisma.service';
 import { SiteAccessService } from '../site';
 import type { AppUser } from '../types/user.type';
+import { Retryable } from '../utils/retry.decorator';
 
 const WEATHER_API_URL = 'https://api.weatherapi.com/v1/current.json';
 const WEATHER_HISTORY_URL = 'https://api.weatherapi.com/v1/history.json';
@@ -68,7 +69,8 @@ export class WeatherService {
     }
 
     const now = new Date();
-    const effectiveStartDate = startDate || new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+    const effectiveStartDate =
+      startDate || new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
     const effectiveEndDate = endDate || now;
 
     await this.ensureWeatherObservationsForRange(
@@ -101,7 +103,9 @@ export class WeatherService {
     });
 
     if (!site || site.latitude == null || site.longitude == null) {
-      this.logger.warn(`getCurrentObservationForSite: site ${siteId} missing lat/lng`);
+      this.logger.warn(
+        `getCurrentObservationForSite: site ${siteId} missing lat/lng`,
+      );
       return null;
     }
 
@@ -136,7 +140,9 @@ export class WeatherService {
       date,
     );
     if (!current) {
-      this.logger.warn(`getCurrentObservationForSite: no weather data for site ${siteId}`);
+      this.logger.warn(
+        `getCurrentObservationForSite: no weather data for site ${siteId}`,
+      );
       return null;
     }
 
@@ -243,7 +249,12 @@ export class WeatherService {
       }
     }
 
-    await this.refreshCurrentWeatherIfNeeded(siteId, latitude, longitude, endDate);
+    await this.refreshCurrentWeatherIfNeeded(
+      siteId,
+      latitude,
+      longitude,
+      endDate,
+    );
   }
 
   private async refreshCurrentWeatherIfNeeded(
@@ -271,7 +282,10 @@ export class WeatherService {
       orderBy: { recordedAt: 'desc' },
     });
 
-    if (latestObservation && now.getTime() - latestObservation.recordedAt.getTime() < cacheMs) {
+    if (
+      latestObservation &&
+      now.getTime() - latestObservation.recordedAt.getTime() < cacheMs
+    ) {
       this.logger.debug(
         `refreshCurrentWeatherIfNeeded: cache hit site=${siteId}`,
       );
@@ -280,7 +294,9 @@ export class WeatherService {
 
     const current = await this.fetchCurrentWeather(latitude, longitude);
     if (!current) {
-      this.logger.warn(`refreshCurrentWeatherIfNeeded: no weather data site=${siteId}`);
+      this.logger.warn(
+        `refreshCurrentWeatherIfNeeded: no weather data site=${siteId}`,
+      );
       return;
     }
 
@@ -306,7 +322,9 @@ export class WeatherService {
         },
       });
     } catch (error) {
-      this.logger.warn(`Failed to store weather observation for site ${siteId}: ${error}`);
+      this.logger.warn(
+        `Failed to store weather observation for site ${siteId}: ${error}`,
+      );
     }
   }
 
@@ -332,7 +350,11 @@ export class WeatherService {
       }
     }
 
-    if (closest.temp_c == null || closest.humidity == null || closest.time_epoch == null) {
+    if (
+      closest.temp_c == null ||
+      closest.humidity == null ||
+      closest.time_epoch == null
+    ) {
       return null;
     }
 
@@ -344,6 +366,48 @@ export class WeatherService {
   }
 
   private async fetchCurrentWeather(
+    latitude: number,
+    longitude: number,
+    date?: Date,
+  ) {
+    try {
+      return await this.fetchCurrentWeatherWithRetry(
+        latitude,
+        longitude,
+        date,
+      );
+    } catch (error) {
+      this.logger.warn(`Failed to fetch weather data: ${error}`);
+      return null;
+    }
+  }
+
+  @Retryable({
+    retries: 2,
+    delayMs: 300,
+    backoff: 2,
+    maxDelayMs: 2000,
+    shouldRetry: (error: unknown) => {
+      const status = (error as { status?: number }).status;
+      if (status === 400 || status === 408 || status === 429) {
+        return true;
+      }
+      if (typeof status === 'number' && status >= 500 && status < 600) {
+        return true;
+      }
+      const name = (error as { name?: string }).name;
+      if (name === 'AbortError') {
+        return true;
+      }
+      return error instanceof TypeError || error instanceof SyntaxError;
+    },
+    onRetry: function (error, attempt, delayMs) {
+      this.logger.warn(
+        `Weather API retry attempt=${attempt} delayMs=${delayMs} error=${error}`,
+      );
+    },
+  })
+  private async fetchCurrentWeatherWithRetry(
     latitude: number,
     longitude: number,
     date?: Date,
@@ -365,50 +429,71 @@ export class WeatherService {
     safeUrl.searchParams.set('key', 'REDACTED');
     this.logger.debug(`fetchCurrentWeather url=${safeUrl.toString()}`);
 
-    try {
-      const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 5000);
-      const response = await fetch(url.toString(), {
-        signal: controller.signal,
-      });
-      clearTimeout(timeout);
-      if (!response.ok) {
-        this.logger.warn(
-          `Weather API responded with status ${response.status}`,
-        );
-        return null;
-      }
-
-      const data = (await response.json()) as WeatherApiResponse;
-
-      if (date) {
-        const historyPoint = this.extractNearestHistoryPoint(data, date);
-        if (!historyPoint) {
-          this.logger.warn('Weather history response missing hourly data');
-          return null;
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 20000);
+    const response = await fetch(url.toString(), {
+      signal: controller.signal,
+    });
+    clearTimeout(timeout);
+    if (!response.ok) {
+      const statusText = response.statusText;
+      let bodyText = '';
+      let bodyJson: unknown = null;
+      try {
+        const contentType = response.headers.get('content-type') || '';
+        if (contentType.includes('application/json')) {
+          bodyJson = await response.json();
+        } else {
+          bodyText = await response.text();
         }
-        return historyPoint;
+      } catch {
+        // Ignore parse errors.
       }
+      const apiMessage =
+        typeof bodyJson === 'object' && bodyJson !== null
+          ? (bodyJson as { error?: { message?: string } }).error?.message
+          : undefined;
+      const error = new Error(
+        `Weather API responded with status ${response.status} ${statusText}${
+          apiMessage
+            ? ` message=${apiMessage}`
+            : bodyJson
+              ? ` body=${JSON.stringify(bodyJson)}`
+              : bodyText
+                ? ` body=${bodyText}`
+                : ''
+        }`,
+      ) as Error & { status?: number };
+      error.status = response.status;
+      throw error;
+    }
 
-      const temperature = data.current?.temp_c;
-      const humidity = data.current?.humidity;
-      if (typeof temperature !== 'number' || typeof humidity !== 'number') {
-        this.logger.warn('Weather API response missing temperature/humidity');
+    const data = (await response.json()) as WeatherApiResponse;
+
+    if (date) {
+      const historyPoint = this.extractNearestHistoryPoint(data, date);
+      if (!historyPoint) {
+        this.logger.warn('Weather history response missing hourly data');
         return null;
       }
+      return historyPoint;
+    }
 
-      const recordedAt = data.current?.last_updated_epoch
-        ? new Date(data.current.last_updated_epoch * 1000)
-        : undefined;
-
-      return {
-        temperature,
-        humidity,
-        recordedAt,
-      };
-    } catch (error) {
-      this.logger.warn(`Failed to fetch weather data: ${error}`);
+    const temperature = data.current?.temp_c;
+    const humidity = data.current?.humidity;
+    if (typeof temperature !== 'number' || typeof humidity !== 'number') {
+      this.logger.warn('Weather API response missing temperature/humidity');
       return null;
     }
+
+    const recordedAt = data.current?.last_updated_epoch
+      ? new Date(data.current.last_updated_epoch * 1000)
+      : undefined;
+
+    return {
+      temperature,
+      humidity,
+      recordedAt,
+    };
   }
 }

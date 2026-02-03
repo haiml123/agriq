@@ -10,6 +10,7 @@ import {
 import { AlertService } from './alert.service';
 import { JwtAuthGuard } from '../auth/guards';
 import { Public } from '../auth/decorators';
+import { parsePagination } from '../utils/pagination';
 
 @Controller('alerts')
 @UseGuards(JwtAuthGuard)
@@ -32,6 +33,11 @@ export class AlertController {
     @Query('startDate') startDate?: string,
     @Query('limit') limit?: string,
   ) {
+    const { limit: parsedLimit } = parsePagination({
+      limit,
+      defaultLimit: 100,
+    });
+
     return this.alertService.findAll({
       organizationId,
       userId,
@@ -40,7 +46,7 @@ export class AlertController {
       status,
       severity,
       startDate,
-      limit: limit ? parseInt(limit) : 100,
+      limit: parsedLimit,
     });
   }
 

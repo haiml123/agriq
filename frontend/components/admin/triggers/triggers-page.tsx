@@ -3,9 +3,12 @@
 import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Bell, Pencil, Plus, Power, PowerOff, Trash2 } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { getCommodityLabel } from '@/schemas/trigger.schema';
 import { SidebarTrigger } from '@/components/layout/app-sidebar-layout';
 import { useModal } from '@/components/providers/modal-provider';
 import { TriggerModal } from '@/components/modals/trigger.modal';
+import { DeleteConfirmModal } from '@/components/modals/delete-confirm.modal';
 import { useTriggerApi } from '@/hooks/use-trigger-api';
 import { useOrganizationApi } from '@/hooks/use-organization-api';
 import { toast } from 'sonner';
@@ -25,6 +28,9 @@ export function TriggersPage() {
         const response = await getList({ page: 1, limit: 100 });
         if (response?.data?.items) {
             setTriggers(response.data.items as Trigger[]);
+        } else if (response?.error) {
+            toast.error(response.error);
+            setTriggers([]);
         }
     };
 
@@ -47,20 +53,26 @@ export function TriggersPage() {
         try {
             const result = await toggleActive(trigger.id, !trigger.isActive);
             if (result?.data) {
-                toast.success(t('statusChangeSuccess'));
+                toast.success(t('toggleSuccess'));
                 await refreshList();
             } else {
-                toast.error(result?.error || t('statusChangeError'));
+                toast.error(result?.error || t('toggleError'));
             }
         } catch (error) {
-            toast.error(t('statusChangeError'));
+            toast.error(t('toggleError'));
         }
     };
 
-    const handleDeleteTrigger = async (id: string) => {
+    const handleDeleteTrigger = async (trigger: Trigger) => {
+        const confirmed = await modal.open<boolean>((onClose) => (
+            <DeleteConfirmModal itemType="Trigger" itemName={trigger.name} onClose={onClose} />
+        ));
+        if (!confirmed) {
+            return;
+        }
         try {
-            const result = await remove(id);
-            if (result?.data) {
+            const result = await remove(trigger.id);
+            if (!result?.error && result.status >= 200 && result.status < 300) {
                 toast.success(t('deleteSuccess'));
                 await refreshList();
             } else {
@@ -136,7 +148,17 @@ export function TriggersPage() {
                                         <Bell className="w-5 h-5 text-emerald-500" />
                                     </div>
                                     <div className="min-w-0">
-                                        <h3 className="font-medium text-foreground truncate">{trigger.name}</h3>
+                                        <div className="flex items-center gap-2 min-w-0">
+                                            <h3 className="font-medium text-foreground truncate">{trigger.name}</h3>
+                                            {trigger.commodityTypeId && (
+                                                <Badge
+                                                    variant="outline"
+                                                    className="shrink-0 bg-emerald-500/10 text-emerald-700 border-emerald-300 dark:bg-emerald-400/15 dark:text-emerald-200 dark:border-emerald-500/40"
+                                                >
+                                                    {getCommodityLabel(trigger.commodityTypeId, trigger.commodityType)}
+                                                </Badge>
+                                            )}
+                                        </div>
                                     </div>
                                 </div>
 
@@ -160,7 +182,7 @@ export function TriggersPage() {
                                         <Button
                                             variant="ghost"
                                             size="icon"
-                                            onClick={() => handleDeleteTrigger(trigger.id)}
+                                            onClick={() => handleDeleteTrigger(trigger)}
                                             disabled={isDeleting}
                                             className="text-destructive hover:text-destructive"
                                         >

@@ -10,73 +10,26 @@ import {
 } from './dto';
 import { TriggerContextService } from './trigger-context.service';
 import { TriggerEvaluatorService } from './trigger-evaluator.service';
-import {
-  parseTriggerConditions,
-  TriggerCondition,
-} from './trigger-condition.utils';
+import { parseTriggerConditions } from './trigger-condition.utils';
 import {
   calculateEmc,
   calculateMedian,
   getMetricUnit,
   getMetricValueFromReading,
 } from './trigger-metrics.util';
-
-type LookupTableData = {
-  tempRanges: number[];
-  humidityRanges: number[];
-  values: number[][];
-};
-
-type Reading = { temperature: number; humidity: number; recordedAt: Date };
-type BallReading = Reading & { id: string; macId?: string };
-
-type TriggerScope = {
-  organizationId?: string;
-  commodityTypeId?: string;
-  siteId?: string;
-  compoundId?: string;
-  cellId?: string;
-  sensorId?: string;
-  gatewayId?: string;
-};
-
-type EvaluationInputs = {
-  gateway?: Reading;
-  outside?: Reading;
-  balls?: BallReading[];
-  sensorIdByExternal?: Map<string, string>;
-  recordedAt: Date;
-};
-
-type SourceWindow = {
-  sensorHours: number;
-  gatewayHours: number;
-  outsideHours: number;
-};
-
-type HistoryCache = {
-  sensorHistoryById: Map<string, Reading[]>;
-  gatewayHistory: Reading[];
-  outsideHistory: Reading[];
-};
-
-type AlertCandidate = {
-  triggerId: string;
-  siteId: string;
-  compoundId?: string | null;
-  cellId?: string | null;
-  sensorId?: string | null;
-  organizationId?: string | null;
-  title: string;
-  description: string;
-  descriptionKey: string;
-  descriptionParams: Record<string, unknown>;
-  severity: string;
-  thresholdValue?: number;
-  unit?: string;
-};
-
-type AlertWriter = (candidate: AlertCandidate) => Promise<void> | void;
+import type {
+  AlertCandidate,
+  AlertWriter,
+  BallReading,
+  EvaluationInputs,
+  HistoryCache,
+  LocalHistory,
+  LookupTableData,
+  Reading,
+  SourceWindow,
+  TriggerCondition,
+  TriggerScope,
+} from './trigger.type';
 
 @Injectable()
 export class TriggerEngineService {
@@ -91,102 +44,6 @@ export class TriggerEngineService {
   ) {}
 
   /**
-   * Evaluate sensor-specific triggers for a single sensor reading.
-   * This is used for the sensor ingestion endpoint (single sensor).
-   */
-  async evaluateSensorReading(
-    scope: TriggerScope,
-    reading: Reading,
-  ): Promise<void> {
-    if (!scope.sensorId || !scope.cellId || !scope.siteId) {
-      return;
-    }
-
-    const triggers = await this.triggerContext.findMatchingTriggers(
-      {
-        organizationId: scope.organizationId,
-        commodityTypeId: scope.commodityTypeId,
-        sensorId: scope.sensorId,
-      },
-      { sensorMatch: 'specific' },
-    );
-
-    if (triggers.length === 0) {
-      return;
-    }
-
-    const lookupTable = scope.commodityTypeId
-      ? await this.getLookupTable(scope.commodityTypeId)
-      : undefined;
-    const emc = lookupTable
-      ? calculateEmc(lookupTable, reading.temperature, reading.humidity)
-      : undefined;
-
-    const metrics: Partial<Record<MetricType, number>> = {
-      [MetricType.TEMPERATURE]: reading.temperature,
-      [MetricType.MEDIAN_TEMPERATURE]: reading.temperature,
-      [MetricType.HUMIDITY]: reading.humidity,
-      [MetricType.MEDIAN_HUMIDITY]: reading.humidity,
-      ...(emc !== undefined && { [MetricType.EMC]: emc }),
-    };
-
-    for (const trigger of triggers) {
-      const changeWindows = this.triggerContext.getChangeMetricWindows(trigger);
-      const previousMetrics: Partial<Record<MetricType, number>> = {};
-
-      for (const [metric, windowHours] of changeWindows.entries()) {
-        const baseline = await this.triggerContext.loadBaselineMetrics({
-          source: 'SENSOR',
-          sourceId: scope.sensorId,
-          since: new Date(reading.recordedAt.getTime() - windowHours * 60 * 60 * 1000),
-          before: reading.recordedAt,
-          metrics: [metric],
-        });
-
-        if (baseline[metric] !== undefined) {
-          previousMetrics[metric] = baseline[metric] as number;
-        }
-
-        if (
-          metric === MetricType.EMC &&
-          baseline[MetricType.TEMPERATURE] !== undefined &&
-          baseline[MetricType.HUMIDITY] !== undefined &&
-          lookupTable
-        ) {
-          const baselineEmc = calculateEmc(
-            lookupTable,
-            baseline[MetricType.TEMPERATURE] as number,
-            baseline[MetricType.HUMIDITY] as number,
-          );
-          if (baselineEmc !== undefined) {
-            previousMetrics[MetricType.EMC] = baselineEmc;
-          }
-        }
-      }
-
-      const evaluation = this.evaluator.evaluateTrigger(trigger, {
-        metrics,
-        previousMetrics:
-          Object.keys(previousMetrics).length > 0 ? previousMetrics : undefined,
-      });
-
-      if (!evaluation.matches) {
-        continue;
-      }
-
-      await this.ensureAlertForTrigger({
-        trigger,
-        siteId: scope.siteId,
-        compoundId: scope.compoundId,
-        cellId: scope.cellId,
-        sensorId: scope.sensorId,
-        organizationId: scope.organizationId,
-        matchedConditionIds: evaluation.matchedConditions,
-      });
-    }
-  }
-
-  /**
    * Evaluate triggers for a gateway payload that may include multiple balls,
    * plus gateway and outside readings. This covers SENSOR/GATEWAY/OUTSIDE sources.
    */
@@ -196,6 +53,8 @@ export class TriggerEngineService {
     options?: {
       alertWriter?: AlertWriter;
       skipExistingCheck?: boolean;
+      persistAlerts?: boolean;
+      localHistory?: LocalHistory;
     },
   ): Promise<void> {
     if (!scope.cellId || !scope.siteId) {
@@ -206,6 +65,7 @@ export class TriggerEngineService {
       `engine: evaluate gateway payload cell=${scope.cellId} site=${scope.siteId} gateway=${scope.gatewayId ?? 'none'} recordedAt=${inputs.recordedAt.toISOString()}`,
     );
 
+    // Fetch triggers scoped to this org/commodity/site.
     const triggers = await this.triggerContext.findMatchingTriggers(
       {
         organizationId: scope.organizationId,
@@ -221,12 +81,19 @@ export class TriggerEngineService {
 
     this.logger.debug(`engine: triggers=${triggers.length}`);
 
+    // Preload lookup table (EMC) and histories for change conditions.
     const lookupTable = scope.commodityTypeId
       ? await this.getLookupTable(scope.commodityTypeId)
       : undefined;
     const maxWindows = this.getMaxWindows(triggers);
-    const histories = await this.loadHistories(scope, inputs, maxWindows);
+    const histories = await this.loadHistories(
+      scope,
+      inputs,
+      maxWindows,
+      options?.localHistory,
+    );
 
+    const candidates: AlertCandidate[] = [];
     for (const trigger of triggers) {
       const conditions = parseTriggerConditions(trigger.conditions);
       const matchedConditionIds: string[] = [];
@@ -236,6 +103,7 @@ export class TriggerEngineService {
         const sources = this.resolveSources(condition);
         let conditionMatched = false;
 
+        // Evaluate the condition against each applicable source.
         for (const source of sources) {
           const match = await this.evaluateConditionForSource({
             condition,
@@ -279,17 +147,53 @@ export class TriggerEngineService {
         `engine: trigger=${trigger.id} matched (conditions=${matchedConditionIds.length})`,
       );
 
-      await this.ensureAlertForTrigger({
-        trigger,
-        siteId: scope.siteId,
-        compoundId: scope.compoundId,
-        cellId: scope.cellId,
-        organizationId: scope.organizationId,
-        matchedConditionIds,
-      }, options);
+      const candidate = await this.ensureAlertForTrigger(
+        {
+          trigger,
+          siteId: scope.siteId,
+          compoundId: scope.compoundId,
+          cellId: scope.cellId,
+          organizationId: scope.organizationId,
+          matchedConditionIds,
+        },
+        options,
+      );
+      if (candidate) {
+        candidates.push(candidate);
+      }
+    }
+
+    if (options?.alertWriter) {
+      for (const candidate of candidates) {
+        await options.alertWriter(candidate);
+      }
+    }
+
+    const shouldPersist = options?.persistAlerts ?? true;
+    if (shouldPersist && candidates.length > 0) {
+      await this.prisma.alert.createMany({
+        data: candidates.map((candidate) => ({
+          triggerId: candidate.triggerId,
+          siteId: candidate.siteId,
+          compoundId: candidate.compoundId ?? undefined,
+          cellId: candidate.cellId ?? undefined,
+          sensorId: candidate.sensorId ?? undefined,
+          organizationId: candidate.organizationId ?? undefined,
+          title: candidate.title,
+          description: candidate.description,
+          descriptionKey: candidate.descriptionKey,
+          descriptionParams: candidate.descriptionParams as any,
+          severity: candidate.severity as any,
+          thresholdValue: candidate.thresholdValue,
+          unit: candidate.unit,
+        })),
+      });
     }
   }
 
+  /**
+   * Expand a condition into the concrete sources it applies to.
+   */
   private resolveSources(condition: TriggerCondition): ConditionSourceType[] {
     if (condition.sourceType) {
       return [condition.sourceType];
@@ -305,6 +209,9 @@ export class TriggerEngineService {
     return [ConditionSourceType.SENSOR];
   }
 
+  /**
+   * Evaluate a condition against a single source (SENSOR/GATEWAY/OUTSIDE).
+   */
   private async evaluateConditionForSource(params: {
     condition: TriggerCondition;
     source: ConditionSourceType;
@@ -316,6 +223,7 @@ export class TriggerEngineService {
     const { condition, source, lookupTable, inputs, scope, histories } = params;
 
     if (source === ConditionSourceType.SENSOR) {
+      // Sensor source uses ball readings (per-sensor history).
       return this.evaluateSensorCondition(
         condition,
         inputs,
@@ -325,6 +233,7 @@ export class TriggerEngineService {
     }
 
     if (source === ConditionSourceType.OUTSIDE) {
+      // Outside source uses site-level weather observations.
       if (!inputs.outside) {
         return false;
       }
@@ -344,6 +253,7 @@ export class TriggerEngineService {
     if (!inputs.gateway) {
       return false;
     }
+    // Gateway source uses the gateway reading stream.
     return this.evaluateScalarCondition(
       condition,
       inputs.gateway,
@@ -357,6 +267,9 @@ export class TriggerEngineService {
     );
   }
 
+  /**
+   * Evaluate a condition for a single sensor, including change-over-time.
+   */
   private async evaluateSensorCondition(
     condition: TriggerCondition,
     inputs: EvaluationInputs,
@@ -369,6 +282,7 @@ export class TriggerEngineService {
     }
 
     if (condition.type === ConditionType.CHANGE) {
+      // Change conditions compare to a baseline within a time window.
       return this.evaluateSensorChangeCondition(
         condition,
         inputs,
@@ -377,6 +291,7 @@ export class TriggerEngineService {
       );
     }
 
+    // Threshold conditions use the current values.
     const values = this.getBallMetricValues(
       condition.metric,
       balls,
@@ -399,12 +314,15 @@ export class TriggerEngineService {
     );
   }
 
-  private async evaluateSensorChangeCondition(
+  /**
+   * Evaluate a change condition for a sensor using history + baseline.
+   */
+  private evaluateSensorChangeCondition(
     condition: TriggerCondition,
     inputs: EvaluationInputs,
     lookupTable?: LookupTableData,
     historyBySensorId?: Map<string, Reading[]>,
-  ): Promise<boolean> {
+  ): boolean {
     const balls = inputs.balls ?? [];
     if (balls.length === 0) {
       return false;
@@ -482,10 +400,7 @@ export class TriggerEngineService {
       }
 
       const baselineReading = historyBySensorId?.size
-        ? this.findBaselineReading(
-            historyBySensorId.get(sensorId),
-            windowStart,
-          )
+        ? this.findBaselineReading(historyBySensorId.get(sensorId), windowStart)
         : undefined;
       if (!baselineReading) {
         continue;
@@ -534,7 +449,10 @@ export class TriggerEngineService {
     return false;
   }
 
-  private async evaluateScalarCondition(
+  /**
+   * Evaluate a condition against a single scalar value stream.
+   */
+  private evaluateScalarCondition(
     condition: TriggerCondition,
     reading: Reading,
     lookupTable: LookupTableData | undefined,
@@ -544,8 +462,9 @@ export class TriggerEngineService {
       sourceId: string;
       recordedAt: Date;
     },
-  ): Promise<boolean> {
+  ): boolean {
     if (condition.type === ConditionType.THRESHOLD) {
+      // Compare the current scalar value to the threshold.
       const current = this.getScalarMetricValue(
         condition.metric,
         reading,
@@ -557,6 +476,7 @@ export class TriggerEngineService {
       return this.evaluator.evaluateConditionForValue(condition, current);
     }
 
+    // For change conditions, compute a baseline within the window.
     const windowHours = condition.timeWindowHours ?? 1;
     if (!baselineRequest.sourceId) {
       return false;
@@ -600,6 +520,9 @@ export class TriggerEngineService {
     });
   }
 
+  /**
+   * Resolve the numeric value for a metric from a single reading.
+   */
   private getScalarMetricValue(
     metric: MetricType,
     reading: Reading,
@@ -618,6 +541,9 @@ export class TriggerEngineService {
     });
   }
 
+  /**
+   * Resolve metric values for all balls (used for median/aggregate).
+   */
   private getBallMetricValues(
     metric: MetricType,
     balls: BallReading[],
@@ -637,6 +563,9 @@ export class TriggerEngineService {
       .filter((value): value is number => value !== undefined);
   }
 
+  /**
+   * Identify metrics that should use median aggregation.
+   */
   private isMedianMetric(metric: MetricType): boolean {
     return (
       metric === MetricType.MEDIAN_TEMPERATURE ||
@@ -644,6 +573,9 @@ export class TriggerEngineService {
     );
   }
 
+  /**
+   * Load the lookup table (EMC) with simple in-memory caching.
+   */
   private async getLookupTable(
     commodityTypeId: string,
   ): Promise<LookupTableData | undefined> {
@@ -672,6 +604,9 @@ export class TriggerEngineService {
     return data;
   }
 
+  /**
+   * Compute the max history window needed per source.
+   */
   private getMaxWindows(triggers: Array<{ conditions: any }>): SourceWindow {
     const max: SourceWindow = {
       sensorHours: 0,
@@ -702,10 +637,15 @@ export class TriggerEngineService {
     return max;
   }
 
+  /**
+   * Load the historical readings required for change conditions.
+   * Local history is merged in for in-batch evaluation when provided.
+   */
   private async loadHistories(
     scope: TriggerScope,
     inputs: EvaluationInputs,
     windows: SourceWindow,
+    localHistory?: LocalHistory,
   ): Promise<HistoryCache> {
     const sensorHistoryById = new Map<string, Reading[]>();
     const gatewayHistory: Reading[] = [];
@@ -713,6 +653,7 @@ export class TriggerEngineService {
 
     const end = inputs.recordedAt;
 
+    // Load sensor history for change conditions.
     if (windows.sensorHours > 0 && inputs.sensorIdByExternal) {
       const sensorIds = Array.from(inputs.sensorIdByExternal.values());
       if (sensorIds.length > 0) {
@@ -748,6 +689,7 @@ export class TriggerEngineService {
       }
     }
 
+    // Load gateway history for change conditions.
     if (windows.gatewayHours > 0 && scope.gatewayId) {
       const start = new Date(
         end.getTime() - windows.gatewayHours * 60 * 60 * 1000,
@@ -776,6 +718,7 @@ export class TriggerEngineService {
       });
     }
 
+    // Load outside history for change conditions (with fallback).
     if (windows.outsideHours > 0 && scope.siteId) {
       const start = new Date(
         end.getTime() - windows.outsideHours * 60 * 60 * 1000,
@@ -787,9 +730,90 @@ export class TriggerEngineService {
       );
     }
 
-    return { sensorHistoryById, gatewayHistory, outsideHistory };
+    const mergedSensorHistory = this.mergeSensorHistory(
+      sensorHistoryById,
+      localHistory?.sensorHistoryById,
+      end,
+      windows.sensorHours,
+    );
+    const mergedGatewayHistory = this.mergeHistory(
+      gatewayHistory,
+      localHistory?.gatewayHistory,
+      end,
+      windows.gatewayHours,
+    );
+    const mergedOutsideHistory = this.mergeHistory(
+      outsideHistory,
+      localHistory?.outsideHistory,
+      end,
+      windows.outsideHours,
+    );
+
+    return {
+      sensorHistoryById: mergedSensorHistory,
+      gatewayHistory: mergedGatewayHistory,
+      outsideHistory: mergedOutsideHistory,
+    };
   }
 
+  /**
+   * Merge DB history with local in-batch history for a single source.
+   */
+  private mergeHistory(
+    base: Reading[],
+    local: Reading[] | undefined,
+    end: Date,
+    windowHours: number,
+  ): Reading[] {
+    if (!local || local.length === 0) {
+      return base;
+    }
+
+    const start = new Date(end.getTime() - windowHours * 60 * 60 * 1000);
+    const filteredLocal = local.filter(
+      (reading) => reading.recordedAt >= start && reading.recordedAt <= end,
+    );
+
+    const merged = [...base, ...filteredLocal];
+    merged.sort((a, b) => a.recordedAt.getTime() - b.recordedAt.getTime());
+    return merged;
+  }
+
+  /**
+   * Merge DB sensor history with local in-batch history per sensor ID.
+   */
+  private mergeSensorHistory(
+    base: Map<string, Reading[]>,
+    local: Map<string, Reading[]> | undefined,
+    end: Date,
+    windowHours: number,
+  ): Map<string, Reading[]> {
+    if (!local || local.size === 0) {
+      return base;
+    }
+
+    const start = new Date(end.getTime() - windowHours * 60 * 60 * 1000);
+    const merged = new Map(base);
+
+    for (const [sensorId, readings] of local.entries()) {
+      const filtered = readings.filter(
+        (reading) => reading.recordedAt >= start && reading.recordedAt <= end,
+      );
+      if (filtered.length === 0) {
+        continue;
+      }
+      const existing = merged.get(sensorId) ?? [];
+      const combined = [...existing, ...filtered];
+      combined.sort((a, b) => a.recordedAt.getTime() - b.recordedAt.getTime());
+      merged.set(sensorId, combined);
+    }
+
+    return merged;
+  }
+
+  /**
+   * Find the earliest reading at/after a time cutoff.
+   */
   private findBaselineReading(
     readings: Reading[] | undefined,
     windowStart: Date,
@@ -800,6 +824,9 @@ export class TriggerEngineService {
     return readings.find((reading) => reading.recordedAt >= windowStart);
   }
 
+  /**
+   * Load outside history or fall back to the latest available.
+   */
   private async loadOutsideHistoryWithFallback(
     siteId: string,
     start: Date,
@@ -867,6 +894,9 @@ export class TriggerEngineService {
     }));
   }
 
+  /**
+   * Build description payload for alert localization.
+   */
   private buildAlertDescriptionPayload(
     triggerName: string,
     matchedConditions: TriggerCondition[],
@@ -894,8 +924,7 @@ export class TriggerEngineService {
         unit: getMetricUnit((condition.metric ?? raw.metric) as any),
         valueSources:
           condition.valueSources ?? raw.valueSources ?? raw.value_sources,
-        sourceType:
-          condition.sourceType ?? raw.sourceType ?? raw.source_type,
+        sourceType: condition.sourceType ?? raw.sourceType ?? raw.source_type,
       };
     });
 
@@ -920,9 +949,13 @@ export class TriggerEngineService {
     };
   }
 
-  private getAlertThreshold(
-    matchedConditions: TriggerCondition[],
-  ): { value?: number; unit?: string } {
+  /**
+   * Extract a representative threshold for alert display.
+   */
+  private getAlertThreshold(matchedConditions: TriggerCondition[]): {
+    value?: number;
+    unit?: string;
+  } {
     const threshold = matchedConditions.find(
       (condition) =>
         condition.type === 'THRESHOLD' && condition.value !== undefined,
@@ -938,6 +971,9 @@ export class TriggerEngineService {
     };
   }
 
+  /**
+   * Create an alert for a trigger if not already present.
+   */
   private async ensureAlertForTrigger(
     params: {
       trigger: { id: string; name: string; severity: string; conditions: any };
@@ -951,8 +987,10 @@ export class TriggerEngineService {
     options?: {
       alertWriter?: AlertWriter;
       skipExistingCheck?: boolean;
+      persistAlerts?: boolean;
     },
-  ) {
+  ): Promise<AlertCandidate | null> {
+    // Avoid duplicate open alerts unless explicitly skipped.
     if (!options?.skipExistingCheck) {
       const existing = await this.prisma.alert.findFirst({
         where: {
@@ -967,20 +1005,18 @@ export class TriggerEngineService {
       });
 
       if (existing) {
-        return existing;
+        return null;
       }
     }
 
+    // Build description + threshold for alert payload.
     const conditions = parseTriggerConditions(params.trigger.conditions);
     const matchedConditions = conditions.filter((condition) =>
       params.matchedConditionIds.includes(condition.id),
     );
 
     const { description, descriptionKey, descriptionParams } =
-      this.buildAlertDescriptionPayload(
-        params.trigger.name,
-        matchedConditions,
-      );
+      this.buildAlertDescriptionPayload(params.trigger.name, matchedConditions);
     const threshold = this.getAlertThreshold(matchedConditions);
 
     const candidate: AlertCandidate = {
@@ -999,27 +1035,6 @@ export class TriggerEngineService {
       unit: threshold.unit,
     };
 
-    if (options?.alertWriter) {
-      await options.alertWriter(candidate);
-      return candidate;
-    }
-
-    return this.prisma.alert.create({
-      data: {
-        triggerId: candidate.triggerId,
-        siteId: candidate.siteId,
-        compoundId: candidate.compoundId ?? undefined,
-        cellId: candidate.cellId ?? undefined,
-        sensorId: candidate.sensorId ?? undefined,
-        organizationId: candidate.organizationId ?? undefined,
-        title: candidate.title,
-        description: candidate.description,
-        descriptionKey: candidate.descriptionKey,
-        descriptionParams: candidate.descriptionParams as any,
-        severity: candidate.severity as any,
-        thresholdValue: candidate.thresholdValue,
-        unit: candidate.unit,
-      },
-    });
+    return candidate;
   }
 }

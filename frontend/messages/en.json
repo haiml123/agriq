@@ -131,6 +131,10 @@
       "transferSensorError": "Failed to transfer sensor",
       "batchReadingsSuccess": "Sensor readings created",
       "batchReadingsError": "Failed to create sensor readings",
+      "saveAlertsSuccess": "Alerts saved",
+      "saveAlertsError": "Failed to save alerts",
+      "simulateAlertsSuccess": "Alerts simulated",
+      "simulateAlertsError": "Failed to simulate alerts",
       "clearReadingsSuccess": "Readings deleted",
       "clearReadingsError": "Failed to delete readings"
     }
@@ -196,9 +200,9 @@
   "language": {
     "label": "Language",
     "english": "English",
-    "hebrew": "עברית",
-    "arabic": "العربية",
-    "thai": "ไทย"
+    "hebrew": "Hebrew",
+    "arabic": "Arabic",
+    "thai": "Thai"
   },
   "navigation": {
     "menu": "Menu",
@@ -313,6 +317,9 @@
     "createSensorButton": "Create sensor",
     "transferSensorButton": "Transfer sensor",
     "batchReadingsButton": "Generate readings",
+    "saveReadingsToggle": "Save readings",
+    "saveAlertsToggle": "Save alerts",
+    "sendAlertsToggle": "Send alerts",
     "gatewayBatchButton": "Generate gateway readings",
     "gatewayIncludeBallsLabel": "Include balls",
     "gatewayIncludeBallsYes": "Yes",

@@ -12,10 +12,7 @@ import { BlobServiceClient } from '@azure/storage-blob';
 import { PrismaService } from '../prisma/prisma.service';
 import { SiteAccessService } from '../site';
 import { AppUser } from '../types/user.type';
-import {
-  CreateGatewayVersionDto,
-  SetActiveGatewayVersionDto,
-} from './dto';
+import { CreateGatewayVersionDto, SetActiveGatewayVersionDto } from './dto';
 
 @Injectable()
 export class GatewayVersionService {
@@ -195,7 +192,9 @@ export class GatewayVersionService {
     const md5 = createHash('md5').update(file.buffer).digest('hex');
     const originalName = file.originalname?.trim() || 'gateway-bundle.tar';
     const isTarGz = originalName.endsWith('.tar.gz');
-    const extension = isTarGz ? '.tar.gz' : path.extname(originalName) || '.tar';
+    const extension = isTarGz
+      ? '.tar.gz'
+      : path.extname(originalName) || '.tar';
 
     const storageDir = this.getGatewayStorageDir();
     const tempDir = path.join(storageDir, 'tmp');

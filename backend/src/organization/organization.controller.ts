@@ -16,9 +16,14 @@ import {
 } from './dto';
 import { JwtAuthGuard } from '../auth/guards';
 import { CurrentUser, Public } from '../auth/decorators';
+import { Roles } from '../auth/decorators/roles.decorator';
+import { RolesGuard } from '../auth/guards/roles.guard';
+import { entity_status, user_role } from '@prisma/client';
+import type { AppUser } from '../types/user.type';
+import { parsePagination } from '../utils/pagination';
 
 @Controller('organizations')
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, RolesGuard)
 export class OrganizationController {
   constructor(private readonly organizationService: OrganizationService) {
     console.log('organization controller');
@@ -33,19 +38,31 @@ export class OrganizationController {
     return this.organizationService.create(dto, userId);
   }
 
-  @Public()
   @Get()
+  @Roles(user_role.SUPER_ADMIN)
   findAll(
     @Query('page') page?: string,
     @Query('limit') limit?: string,
     @Query('search') search?: string,
     @Query('status') status?: string,
   ) {
+    const { page: parsedPage, limit: parsedLimit } = parsePagination({
+      page,
+      limit,
+      defaultPage: 1,
+      defaultLimit: 10,
+    });
+
+    const parsedStatus =
+      status && Object.values(entity_status).includes(status as entity_status)
+        ? (status as entity_status)
+        : undefined;
+
     return this.organizationService.findAll({
-      page: page ? parseInt(page, 10) : undefined,
-      limit: limit ? parseInt(limit, 10) : undefined,
+      page: parsedPage,
+      limit: parsedLimit,
       search,
-      status,
+      status: parsedStatus,
     });
   }
 
@@ -55,20 +72,22 @@ export class OrganizationController {
   }
 
   @Patch(':id')
+  @Roles(user_role.SUPER_ADMIN, user_role.ADMIN)
   update(
     @Param('id') id: string,
     @Body() dto: UpdateOrganizationDto,
-    @CurrentUser('id') userId: string,
+    @CurrentUser() user: AppUser,
   ) {
-    return this.organizationService.update(id, dto, userId);
+    return this.organizationService.update(id, dto, user);
   }
 
   @Patch(':id/status')
+  @Roles(user_role.SUPER_ADMIN, user_role.ADMIN)
   changeStatus(
     @Param('id') id: string,
     @Body() dto: ChangeStatusDto,
-    @CurrentUser('id') userId: string,
+    @CurrentUser() user: AppUser,
   ) {
-    return this.organizationService.changeStatus(id, dto, userId);
+    return this.organizationService.changeStatus(id, dto, user);
   }
 }

@@ -21,9 +21,7 @@ export function CommoditiesPage() {
 
     const refreshList = async () => {
         const response = await getList();
-        if (response?.data?.items) {
-            setCommodityTypes(response.data.items);
-        }
+        setCommodityTypes(response?.data ?? []);
     };
 
     useEffect(() => {

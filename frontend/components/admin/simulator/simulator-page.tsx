@@ -11,6 +11,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Checkbox } from '@/components/ui/checkbox';
 import { useCurrentUser } from '@/hooks';
 import { useGatewayApi } from '@/hooks/use-gateway-api';
 import { useTriggerApi } from '@/hooks/use-trigger-api';
@@ -127,6 +128,9 @@ export function SimulatorPage() {
   const [batchBatteryVariance, setBatchBatteryVariance] = useState(1);
   const [batchIncludeBalls, setBatchIncludeBalls] = useState(true);
   const [batchPreview, setBatchPreview] = useState<CreateGatewayReadingDto[]>([]);
+  const [saveReadings, setSaveReadings] = useState(false);
+  const [saveAlerts, setSaveAlerts] = useState(false);
+  const [sendAlerts, setSendAlerts] = useState(false);
   const [simulationAlerts, setSimulationAlerts] = useState<SimulatedAlert[]>([]);
   const [isSimulating, setIsSimulating] = useState(false);
   const [sensorTableTab, setSensorTableTab] = useState<'gateway' | 'sensors'>('gateway');
@@ -353,10 +357,30 @@ export function SimulatorPage() {
         Math.min(100, Math.max(0, batchBaseBattery + batteryVariance)).toFixed(2),
       );
       const balls: GatewayBallReadingDto[] | undefined = batchIncludeBalls
-        ? gatewaySensors.map((sensor) => ({
+        ? gatewaySensors.map((sensor, sensorIndex) => ({
             id: sensor.externalId,
-            temperature,
-            humidity,
+            temperature: (() => {
+              const ballVariance = batchTemperatureVariance
+                ? (Math.random() * batchTemperatureVariance * 2 - batchTemperatureVariance)
+                : 0;
+              const indexOffset = (sensorIndex + 1) * 0.2;
+              let value = Number((temperature + ballVariance + indexOffset).toFixed(2));
+              if (value === temperature) {
+                value = Number((temperature + indexOffset + 0.5).toFixed(2));
+              }
+              return value;
+            })(),
+            humidity: (() => {
+              const ballVariance = batchHumidityVariance
+                ? (Math.random() * batchHumidityVariance * 2 - batchHumidityVariance)
+                : 0;
+              const indexOffset = (sensorIndex + 1) * 0.5;
+              let value = Number((humidity + ballVariance + indexOffset).toFixed(2));
+              if (value === humidity) {
+                value = Number((humidity + indexOffset + 1).toFixed(2));
+              }
+              return value;
+            })(),
             batteryPercent,
             recordedAt: recordedAt.toISOString(),
           }))
@@ -386,10 +410,6 @@ export function SimulatorPage() {
         return {
           ...reading,
           [field]: numeric === '' || Number.isNaN(numeric) ? reading[field] : numeric,
-          balls: reading.balls?.map((ball) => ({
-            ...ball,
-            [field]: numeric === '' || Number.isNaN(numeric) ? ball[field] : numeric,
-          })),
         };
       }),
     );
@@ -440,12 +460,25 @@ export function SimulatorPage() {
     try {
       const result = await simulateGatewayReadingsBatch(batchGatewayId, {
         readings: batchPreview,
+        saveReadings,
+        saveAlerts,
+        sendAlerts,
       });
-      if (result?.data) {
-        setSimulationAlerts(result.data.alerts ?? []);
-        toast.success(tToast('batchReadingsSuccess'));
-      } else {
+      if (!result?.data) {
         toast.error(result?.error || tToast('batchReadingsError'));
+        return;
+      }
+
+      setSimulationAlerts(result.data.alerts ?? []);
+      if (!saveReadings && !saveAlerts) {
+        toast.success(tToast('simulateAlertsSuccess'));
+      }
+
+      if (saveReadings) {
+        toast.success(tToast('batchReadingsSuccess'));
+      }
+      if (saveAlerts) {
+        toast.success(tToast('saveAlertsSuccess'));
       }
     } finally {
       setIsSimulating(false);
@@ -855,6 +888,29 @@ export function SimulatorPage() {
                 {t('batchReadingsButton')}
               </Button>
             </div>
+            <div className="grid gap-3 pt-2 md:grid-cols-3">
+              <label className="flex items-center gap-2 text-sm">
+                <Checkbox
+                  checked={saveReadings}
+                  onCheckedChange={(value) => setSaveReadings(Boolean(value))}
+                />
+                <span>{t('saveReadingsToggle')}</span>
+              </label>
+              <label className="flex items-center gap-2 text-sm">
+                <Checkbox
+                  checked={saveAlerts}
+                  onCheckedChange={(value) => setSaveAlerts(Boolean(value))}
+                />
+                <span>{t('saveAlertsToggle')}</span>
+              </label>
+              <label className="flex items-center gap-2 text-sm">
+                <Checkbox
+                  checked={sendAlerts}
+                  onCheckedChange={(value) => setSendAlerts(Boolean(value))}
+                />
+                <span>{t('sendAlertsToggle')}</span>
+              </label>
+            </div>
           </CardContent>
         </Card>
 
@@ -1088,13 +1144,14 @@ export function SimulatorPage() {
                         <TableCell>{alert.triggerName}</TableCell>
                         <TableCell>
                           <div className="space-y-1 text-sm">
-                            <span>{description.text}</span>
-                            {description.lines.length > 0 && (
-                              <div className="space-y-1 text-xs text-muted-foreground">
+                            {description.lines.length > 0 ? (
+                              <div className="space-y-1 text-sm">
                                 {description.lines.map((line, idx) => (
                                   <div key={`${alert.triggerId}-${idx}`}>{line}</div>
                                 ))}
                               </div>
+                            ) : (
+                              <span>{description.text}</span>
                             )}
                           </div>
                         </TableCell>

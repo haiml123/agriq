@@ -6,24 +6,27 @@ import {
   UpdateTriggerDto,
 } from './dto';
 import { Prisma, trigger_scope } from '@prisma/client';
+import { parsePagination } from '../utils/pagination';
 
 @Injectable()
 export class TriggerService {
   constructor(private readonly prisma: PrismaService) {}
 
+  /**
+   * Create a trigger and return it with related display data.
+   */
   async create(dto: CreateTriggerDto, userId: string) {
     return this.prisma.eventTrigger.create({
       data: {
+        // Persist structured conditions/actions as JSON.
         name: dto.name,
         description: dto.description,
-        // @ts-ignore
         scopeType: dto.scopeType,
         commodityTypeId: dto.commodityTypeId,
         organizationId: dto.organizationId,
         siteId: dto.siteId,
         compoundId: dto.compoundId,
         conditions: dto.conditions as unknown as Prisma.InputJsonValue,
-        // @ts-ignore
         conditionLogic: dto.conditionLogic || 'AND',
         actions: dto.actions as unknown as Prisma.InputJsonValue,
         severity: dto.severity,
@@ -44,8 +47,11 @@ export class TriggerService {
     });
   }
 
+  /**
+   * List triggers with filters + pagination.
+   */
   async findAll(query: ListTriggersQueryDto) {
-    let {
+    const {
       organizationId,
       siteId,
       compoundId,
@@ -54,16 +60,19 @@ export class TriggerService {
       severity,
       isActive,
       search,
-      page = 1,
-      limit = 10,
     } = query;
 
-    if (typeof page === 'string') page = parseInt(page, 10) || 1;
-    if (typeof limit === 'string') limit = parseInt(limit, 10) || 10;
+    // Normalize pagination inputs from query params.
+    const { page, limit, skip } = parsePagination({
+      page: query.page,
+      limit: query.limit,
+      defaultPage: 1,
+      defaultLimit: 10,
+    });
 
-    const skip = (page - 1) * limit;
-
+    // Build Prisma filters from optional query inputs.
     const where: Prisma.EventTriggerWhereInput = {
+      status: { not: 'DELETED' },
       ...(organizationId && { organizationId }),
       ...(siteId && { siteId }),
       ...(compoundId && { compoundId }),
@@ -79,6 +88,7 @@ export class TriggerService {
       }),
     };
 
+    // Fetch rows and count in parallel.
     const [items, total] = await Promise.all([
       this.prisma.eventTrigger.findMany({
         where,
@@ -100,6 +110,7 @@ export class TriggerService {
       this.prisma.eventTrigger.count({ where }),
     ]);
 
+    // Return paginated response.
     return {
       items,
       total,
@@ -109,6 +120,9 @@ export class TriggerService {
     };
   }
 
+  /**
+   * Fetch a single trigger with related scope entities.
+   */
   async findOne(id: string) {
     const trigger = await this.prisma.eventTrigger.findUnique({
       where: { id },
@@ -135,9 +149,14 @@ export class TriggerService {
     return trigger;
   }
 
+  /**
+   * Update a trigger's properties and JSON fields.
+   */
   async update(id: string, dto: UpdateTriggerDto, userId: string) {
+    // Ensure it exists before updating.
     await this.findOne(id);
 
+    // Build a partial update from only provided fields.
     const data: Prisma.EventTriggerUpdateInput = {
       // @ts-ignore
       updatedBy: userId,
@@ -183,7 +202,11 @@ export class TriggerService {
     });
   }
 
+  /**
+   * Toggle active status for a trigger.
+   */
   async toggleActive(id: string, isActive: boolean, userId: string) {
+    // Ensure it exists before updating.
     await this.findOne(id);
 
     return this.prisma.eventTrigger.update({
@@ -206,7 +229,11 @@ export class TriggerService {
     });
   }
 
+  /**
+   * Soft-delete a trigger by disabling it.
+   */
   async remove(id: string, userId: string) {
+    // Ensure it exists before updating.
     await this.findOne(id);
 
     // Soft delete
@@ -214,6 +241,7 @@ export class TriggerService {
       where: { id },
       data: {
         isActive: false,
+        status: 'DELETED',
         updatedBy: userId,
       },
     });

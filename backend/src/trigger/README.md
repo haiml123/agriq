@@ -2,6 +2,31 @@
 
 This folder includes a comprehensive unit test suite for the trigger engine logic.
 
+## End-to-end flow (high level)
+
+1. Receive new readings from a gateway:
+   - Gateway device payloads: `GatewayService.ingestGatewayPayloadFromDevice`.
+   - Simulator payloads: `GatewaySimulatorService.createGatewayReadingsBatch`
+     or `GatewaySimulatorService.simulateGatewayReadingsBatch`.
+2. Normalize and persist readings:
+   - Normalize + create ball sensors: `GatewayService.normalizeBallReadings`,
+     `GatewayService.ensureSensorsForBalls`.
+   - Persist gateway + sensor readings: `GatewayService.persistGatewayAndSensorReadings`.
+3. Resolve trigger scope:
+   - Load active triggers for scope: `TriggerContextService.findMatchingTriggers`.
+4. Prepare evaluation inputs:
+   - Build current metric snapshot: `TriggerEngineService.evaluateGatewayPayload`.
+   - Load lookup table (EMC): `TriggerEngineService.getLookupTable`.
+   - Compute max history windows: `TriggerEngineService.getMaxWindows`.
+   - Load histories: `TriggerEngineService.loadHistories`.
+5. Evaluate triggers:
+   - Gateway + balls + outside: `TriggerEngineService.evaluateGatewayPayload`.
+   - Condition evaluation: `TriggerEvaluatorService.evaluateTrigger`.
+6. Create alerts:
+   - Build alert description payload: `TriggerEngineService.buildAlertDescriptionPayload`.
+   - Deduplicate open alerts: `TriggerEngineService.ensureAlertForTrigger`.
+   - Persist alert or return via `alertWriter` (simulator).
+
 ## How to run
 
 ```bash
@@ -46,9 +71,6 @@ In addition, a matrix test suite validates multi-trigger/multi-reading flows.
   - valueSources = [OUTSIDE, GATEWAY] (outside match)
   - no match across sources
 
-- Sensor ingestion
-  - evaluateSensorReading threshold match (scope/description assertions)
-  - evaluateSensorReading change-over-time uses baseline metrics
 
 ## Assertions
 

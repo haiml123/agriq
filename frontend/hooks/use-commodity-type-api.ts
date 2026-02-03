@@ -4,12 +4,10 @@ import { useCallback, useState } from 'react';
 import { useApi } from './use-api';
 import {
     CommodityType,
-    CommodityTypeListParams,
     CreateCommodityTypeDto,
     UpdateCommodityTypeDto,
 } from '@/schemas/commodity-type.schema';
 import { EntityStatus } from '@/schemas/common.schema';
-import { PaginatedResponse } from '@/schemas/organization.schema';
 
 export function useCommodityTypeApi() {
     const { get, post, patch, del } = useApi();
@@ -20,10 +18,10 @@ export function useCommodityTypeApi() {
     const [isDeleting, setIsDeleting] = useState(false);
 
     const getList = useCallback(
-        async (params?: CommodityTypeListParams) => {
+        async () => {
             setIsLoading(true);
             try {
-                return await get<PaginatedResponse<CommodityType>>('/commodity-types', params);
+                return await get<CommodityType[]>('/commodity-types');
             } finally {
                 setIsLoading(false);
             }
