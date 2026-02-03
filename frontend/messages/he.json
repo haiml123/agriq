@@ -215,7 +215,16 @@
   },
   "admin": {
     "menu": "תפריט",
-    "organizations": "ארגונים",
+    "organizations": {
+      "title": "ארגונים",
+      "description": "ניהול ארגונים וההגדרות שלהם",
+      "createOrganization": "צור ארגון",
+      "allOrganizations": "כל הארגונים",
+      "organizationsCount": "{count} ארגונים רשומים",
+      "created": "נוצר בתאריך {date}",
+      "sitesCount": "{count} אתרים",
+      "usersCount": "{count} משתמשים"
+    },
     "triggers": "טריגרים",
     "commodities": "סחורות",
     "lookupTables": "טבלאות חיפוש",

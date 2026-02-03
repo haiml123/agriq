@@ -215,7 +215,16 @@
   },
   "admin": {
     "menu": "القائمة",
-    "organizations": "المؤسسات",
+    "organizations": {
+      "title": "المؤسسات",
+      "description": "إدارة المؤسسات وإعداداتها",
+      "createOrganization": "إنشاء مؤسسة",
+      "allOrganizations": "كل المؤسسات",
+      "organizationsCount": "{count} مؤسسة مسجلة",
+      "created": "تم الإنشاء {date}",
+      "sitesCount": "{count} مواقع",
+      "usersCount": "{count} مستخدمين"
+    },
     "triggers": "المحفزات",
     "commodities": "السلع",
     "lookupTables": "جداول البحث",

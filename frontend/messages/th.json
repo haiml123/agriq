@@ -215,7 +215,16 @@
   },
   "admin": {
     "menu": "เมนู",
-    "organizations": "องค์กร",
+    "organizations": {
+      "title": "องค์กร",
+      "description": "จัดการองค์กรและการตั้งค่า",
+      "createOrganization": "สร้างองค์กร",
+      "allOrganizations": "องค์กรทั้งหมด",
+      "organizationsCount": "มีองค์กรลงทะเบียน {count} รายการ",
+      "created": "สร้างเมื่อ {date}",
+      "sitesCount": "{count} ไซต์",
+      "usersCount": "{count} ผู้ใช้"
+    },
     "triggers": "ทริกเกอร์",
     "commodities": "สินค้า",
     "lookupTables": "ตารางค้นหา",

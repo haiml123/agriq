@@ -215,7 +215,16 @@
   },
   "admin": {
     "menu": "Menu",
-    "organizations": "Organizations",
+    "organizations": {
+      "title": "Organizations",
+      "description": "Manage organizations and their settings",
+      "createOrganization": "Create Organization",
+      "allOrganizations": "All Organizations",
+      "organizationsCount": "{count} organization{count, plural, =1 {} other {s}} registered",
+      "created": "Created {date}",
+      "sitesCount": "{count} sites",
+      "usersCount": "{count} users"
+    },
     "triggers": "Triggers",
     "commodities": "Commodities",
     "lookupTables": "Lookup tables",
