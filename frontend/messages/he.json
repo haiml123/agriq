@@ -223,7 +223,9 @@
       "organizationsCount": "{count} ארגונים רשומים",
       "created": "נוצר בתאריך {date}",
       "sitesCount": "{count} אתרים",
-      "usersCount": "{count} משתמשים"
+      "usersCount": "{count} משתמשים",
+      "noOrganizations": "אין ארגונים עדיין",
+      "getStarted": "צור את הארגון הראשון שלך כדי להתחיל."
     },
     "triggers": "טריגרים",
     "commodities": "סחורות",

@@ -125,15 +125,15 @@ export function ConditionEditor({
             onChange({
                 ...condition,
                 type: ConditionTypeEnum.THRESHOLD,
-                operator: condition.operator || 'ABOVE',
+                operator: condition.operator || OperatorEnum.ABOVE,
                 value: condition.value ?? 30,
             });
         }
     }, [condition, isLocal, onChange]);
 
     const allowedOperators = isLocal
-        ? ['ABOVE', 'BELOW', 'BETWEEN']
-        : ['ABOVE', 'BELOW', 'EQUALS', 'BETWEEN'];
+        ? [OperatorEnum.ABOVE, OperatorEnum.BELOW, OperatorEnum.BETWEEN]
+        : [OperatorEnum.ABOVE, OperatorEnum.BELOW, OperatorEnum.EQUALS, OperatorEnum.BETWEEN];
     const allowedChangeDirections = isLocal
         ? ['INCREASE', 'DECREASE']
         : ['ANY', 'INCREASE', 'DECREASE'];
@@ -224,17 +224,17 @@ export function ConditionEditor({
                             <Select
                                 value={condition.type}
                                 onValueChange={(v) => {
-                                    if (v === 'THRESHOLD') {
+                                    if (v === ConditionTypeEnum.THRESHOLD) {
                                         onChange({
                                             ...condition,
-                                            type: 'THRESHOLD',
-                                            operator: 'ABOVE',
+                                            type: ConditionTypeEnum.THRESHOLD,
+                                            operator: OperatorEnum.ABOVE,
                                             value: 30,
                                         });
                                     } else {
                                         onChange({
                                             ...condition,
-                                            type: 'CHANGE',
+                                            type: ConditionTypeEnum.CHANGE,
                                             changeDirection: 'ANY',
                                             changeAmount: 5,
                                             timeWindowHours: 168,
@@ -262,23 +262,23 @@ export function ConditionEditor({
                                             <SelectValue />
                                         </SelectTrigger>
                                         <SelectContent>
-                                            {allowedOperators.includes('ABOVE') && (
-                                                <SelectItem value="ABOVE">Above</SelectItem>
+                                    {allowedOperators.includes(OperatorEnum.ABOVE) && (
+                                                <SelectItem value={OperatorEnum.ABOVE}>Above</SelectItem>
                                             )}
-                                            {allowedOperators.includes('BELOW') && (
-                                                <SelectItem value="BELOW">Below</SelectItem>
+                                            {allowedOperators.includes(OperatorEnum.BELOW) && (
+                                                <SelectItem value={OperatorEnum.BELOW}>Below</SelectItem>
                                             )}
-                                            {allowedOperators.includes('EQUALS') && (
-                                                <SelectItem value="EQUALS">Equals</SelectItem>
+                                            {allowedOperators.includes(OperatorEnum.EQUALS) && (
+                                                <SelectItem value={OperatorEnum.EQUALS}>Equals</SelectItem>
                                             )}
-                                            {allowedOperators.includes('BETWEEN') && (
-                                                <SelectItem value="BETWEEN">Between</SelectItem>
+                                            {allowedOperators.includes(OperatorEnum.BETWEEN) && (
+                                                <SelectItem value={OperatorEnum.BETWEEN}>Between</SelectItem>
                                             )}
                                         </SelectContent>
                                     </Select>
                                 </div>
                                 <div className="space-y-2">
-                                    <Label>{condition.operator === 'BETWEEN' ? 'Min Value' : 'Value'}</Label>
+                                    <Label>{condition.operator === OperatorEnum.BETWEEN ? 'Min Value' : 'Value'}</Label>
                                     <div className="flex flex-wrap items-center gap-3">
                                         <Input
                                             type="number"

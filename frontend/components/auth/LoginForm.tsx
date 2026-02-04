@@ -15,7 +15,6 @@ export function LoginForm() {
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState('');
 
-   console.log('login page rendered');
     const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         setError('');

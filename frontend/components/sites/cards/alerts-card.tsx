@@ -3,6 +3,7 @@
 import { useTranslations } from 'next-intl';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { ConditionTypeEnum, OperatorEnum } from '@/schemas/trigger.schema';
 import type { Alert } from '../types';
 
 type AlertCondition = {
@@ -39,12 +40,12 @@ export function AlertsCard({ alerts }: AlertsCardProps) {
     const metricLabel = tMetric(condition.metric);
     const unit = condition.unit || '';
 
-    if (condition.type === 'THRESHOLD') {
+    if (condition.type === ConditionTypeEnum.THRESHOLD) {
       if (condition.valueSources && condition.valueSources.length > 0) {
         return '';
       }
 
-      if (condition.operator === 'BETWEEN') {
+      if (condition.operator === OperatorEnum.BETWEEN) {
         return tAlertCondition('between', {
           metric: metricLabel,
           min: condition.value ?? '',
@@ -61,7 +62,7 @@ export function AlertsCard({ alerts }: AlertsCardProps) {
       });
     }
 
-    if (condition.type === 'CHANGE') {
+    if (condition.type === ConditionTypeEnum.CHANGE) {
       let windowText = '';
       if (condition.timeWindowDays) {
         windowText = tAlertWindow('days', { count: condition.timeWindowDays });

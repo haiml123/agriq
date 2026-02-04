@@ -9,10 +9,6 @@ import {
 } from '@/schemas/lookup-table.schema';
 import type { CommodityType } from '@/schemas/commodity-type.schema';
 
-type LookupTableListResponse = {
-    items: LookupTable[];
-};
-
 type LookupTableListError = {
     error: string;
     status: number;

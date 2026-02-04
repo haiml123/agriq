@@ -1,3 +1,4 @@
+import { ConditionTypeEnum, OperatorEnum } from '@/schemas/trigger.schema';
 import type { Condition } from '@/schemas/trigger.schema';
 
 interface ConditionDisplayProps {
@@ -30,7 +31,7 @@ export function ConditionDisplay({ condition, valueSources }: ConditionDisplayPr
     const metricLabel = metricLabelMap[condition.metric] ?? condition.metric;
     const unit = unitMap[condition.metric] ?? '';
 
-    if (condition.type === 'THRESHOLD') {
+    if (condition.type === ConditionTypeEnum.THRESHOLD) {
         if (resolvedValueSources && resolvedValueSources.length > 0) {
             const formattedSources = resolvedValueSources.map((source) => {
                 if (source === 'GATEWAY') return 'Gateway';
@@ -50,10 +51,10 @@ export function ConditionDisplay({ condition, valueSources }: ConditionDisplayPr
             const sourceMetricSuffix = suffixMap[condition.metric];
 
             const operatorText: Record<string, string> = {
-                ABOVE: 'is above',
-                BELOW: 'is below',
-                EQUALS: 'equals',
-                BETWEEN: 'is between',
+                [OperatorEnum.ABOVE]: 'is above',
+                [OperatorEnum.BELOW]: 'is below',
+                [OperatorEnum.EQUALS]: 'equals',
+                [OperatorEnum.BETWEEN]: 'is between',
             };
 
             return (
@@ -61,7 +62,7 @@ export function ConditionDisplay({ condition, valueSources }: ConditionDisplayPr
                     <span className="text-blue-600 dark:text-blue-400 font-medium">{sourceLabel} </span>
                     <span className="font-medium text-foreground">{metricLabel}</span>{' '}
                     <span className="text-muted-foreground">
-                        {operatorText[condition.operator || 'ABOVE']} from
+                        {operatorText[condition.operator || OperatorEnum.ABOVE]} from
                     </span>{' '}
                     <span className="font-semibold text-emerald-600 dark:text-emerald-400">
                         {sourceText}
@@ -74,13 +75,13 @@ export function ConditionDisplay({ condition, valueSources }: ConditionDisplayPr
         }
 
         const operatorText: Record<string, string> = {
-            ABOVE: 'is above',
-            BELOW: 'is below',
-            EQUALS: 'equals',
-            BETWEEN: 'is between',
+            [OperatorEnum.ABOVE]: 'is above',
+            [OperatorEnum.BELOW]: 'is below',
+            [OperatorEnum.EQUALS]: 'equals',
+            [OperatorEnum.BETWEEN]: 'is between',
         };
 
-        if (condition.operator === 'BETWEEN') {
+        if (condition.operator === OperatorEnum.BETWEEN) {
             return (
                 <span className="text-sm">
                     <span className="font-medium text-foreground">{metricLabel}</span>{' '}
@@ -100,7 +101,7 @@ export function ConditionDisplay({ condition, valueSources }: ConditionDisplayPr
             <span className="text-sm">
                 <span className="text-blue-600 dark:text-blue-400 font-medium">{sourceLabel} </span>
                 <span className="font-medium text-foreground">{metricLabel}</span>{' '}
-                <span className="text-muted-foreground">{operatorText[condition.operator || 'ABOVE']}</span>{' '}
+                <span className="text-muted-foreground">{operatorText[condition.operator || OperatorEnum.ABOVE]}</span>{' '}
                 <span className="font-semibold text-emerald-600 dark:text-emerald-400">
                     {condition.value}{unit}
                 </span>
@@ -108,7 +109,7 @@ export function ConditionDisplay({ condition, valueSources }: ConditionDisplayPr
         );
     }
 
-    if (condition.type === 'CHANGE') {
+    if (condition.type === ConditionTypeEnum.CHANGE) {
         const directionText: Record<string, string> = {
             INCREASE: 'increases by',
             DECREASE: 'decreases by',
@@ -119,7 +120,9 @@ export function ConditionDisplay({ condition, valueSources }: ConditionDisplayPr
             <span className="text-sm">
                 <span className="text-blue-600 dark:text-blue-400 font-medium">{sourceLabel} </span>
                 <span className="font-medium text-foreground">{metricLabel}</span>{' '}
-                <span className="text-muted-foreground">{directionText[condition.changeDirection || 'ANY']}</span>{' '}
+                <span className="text-muted-foreground">
+                    {directionText[condition.changeDirection || 'ANY']}
+                </span>{' '}
                 <span className="font-semibold text-emerald-600 dark:text-emerald-400">
                     {condition.changeAmount}{unit}
                 </span>

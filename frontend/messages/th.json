@@ -223,7 +223,9 @@
       "organizationsCount": "มีองค์กรลงทะเบียน {count} รายการ",
       "created": "สร้างเมื่อ {date}",
       "sitesCount": "{count} ไซต์",
-      "usersCount": "{count} ผู้ใช้"
+      "usersCount": "{count} ผู้ใช้",
+      "noOrganizations": "ยังไม่มีองค์กร",
+      "getStarted": "สร้างองค์กรแรกของคุณเพื่อเริ่มต้น"
     },
     "triggers": "ทริกเกอร์",
     "commodities": "สินค้า",

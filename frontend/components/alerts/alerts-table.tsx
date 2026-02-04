@@ -16,6 +16,7 @@ import { useApp } from '@/providers/app-provider';
 import type { ApiAlert } from './types';
 import { getSeverityColor, getStatusColor } from './utils/alert-utils';
 import { AlertStatusEnum } from './types';
+import { ConditionTypeEnum, OperatorEnum } from '@/schemas/trigger.schema';
 import { AlertTriangle } from 'lucide-react';
 import { useLocale } from 'next-intl';
 import { resolveLocaleText } from '@/utils/locale';
@@ -58,12 +59,12 @@ export function AlertsTable({ alerts, onAcknowledge }: AlertsTableProps) {
     const metricLabel = tMetric(condition.metric);
     const unit = condition.unit || '';
 
-    if (condition.type === 'THRESHOLD') {
+    if (condition.type === ConditionTypeEnum.THRESHOLD) {
       if (condition.valueSources && condition.valueSources.length > 0) {
         return '';
       }
 
-      if (condition.operator === 'BETWEEN') {
+      if (condition.operator === OperatorEnum.BETWEEN) {
         return tAlertCondition('between', {
           metric: metricLabel,
           min: condition.value ?? '',
@@ -80,7 +81,7 @@ export function AlertsTable({ alerts, onAcknowledge }: AlertsTableProps) {
       });
     }
 
-    if (condition.type === 'CHANGE') {
+    if (condition.type === ConditionTypeEnum.CHANGE) {
       let windowText = '';
       if (condition.timeWindowDays) {
         windowText = tAlertWindow('days', { count: condition.timeWindowDays });

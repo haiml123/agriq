@@ -4,6 +4,7 @@ import { useAlertApi } from '@/hooks/use-alert-api';
 import { useTradeApi } from '@/hooks/use-trade-api';
 import type { DashboardAlert } from '@/schemas/alert.schema';
 import type { DashboardTrade } from '@/schemas/trade.schema';
+import { ConditionTypeEnum, OperatorEnum } from '@/schemas/trigger.schema';
 import { resolveLocaleText } from '@/utils/locale';
 
 type AlertCondition = {
@@ -44,8 +45,8 @@ export function useDashboardData(filters?: DashboardFilters) {
     const metricLabel = tMetric(condition.metric);
     const unit = condition.unit || '';
 
-    if (condition.type === 'THRESHOLD') {
-      if (condition.operator === 'BETWEEN') {
+    if (condition.type === ConditionTypeEnum.THRESHOLD) {
+      if (condition.operator === OperatorEnum.BETWEEN) {
         return tAlertCondition('between', {
           metric: metricLabel,
           min: condition.value ?? '',
@@ -62,7 +63,7 @@ export function useDashboardData(filters?: DashboardFilters) {
       });
     }
 
-    if (condition.type === 'CHANGE') {
+    if (condition.type === ConditionTypeEnum.CHANGE) {
       let windowText = '';
       if (condition.timeWindowDays) {
         windowText = tAlertWindow('days', { count: condition.timeWindowDays });

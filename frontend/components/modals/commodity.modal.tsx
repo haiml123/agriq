@@ -18,7 +18,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { CellSelect, type CellSelectSite } from '@/components/ui/cell-select';
+import { CellSelect, type CellSelectSite } from '@/components/select/cell-select';
 import { CommodityTypeSelect } from '@/components/select/commodity-type-select';
 import { useTradeApi } from '@/hooks/use-trade-api';
 import { useCommodityTypeApi } from '@/hooks/use-commodity-type-api';

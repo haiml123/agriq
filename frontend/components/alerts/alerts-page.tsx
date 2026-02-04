@@ -15,32 +15,45 @@ export function AlertsPage() {
   const t = useTranslations('pages.alerts');
   const { user, isSuperAdmin, isAdmin, isOperator } = useApp();
 
-  const filters = useAlertsFilters();
+  const {
+    statusFilter,
+    severityFilter,
+    timeFilter,
+    organizationFilter,
+    userFilter,
+    siteFilter,
+    setStatusFilter,
+    setSeverityFilter,
+    setTimeFilter,
+    setOrganizationFilter,
+    setUserFilter,
+    setSiteFilter,
+  } = useAlertsFilters();
 
   const { organizations } = useOrganizations();
-  const { users } = useUsers(filters.organizationFilter, isSuperAdmin, isAdmin, user);
-  const { sites } = useSites(filters.organizationFilter, isSuperAdmin, isAdmin, isOperator, user);
+  const { users } = useUsers(organizationFilter, isSuperAdmin, isAdmin, user);
+  const { sites } = useSites(organizationFilter, isSuperAdmin, isAdmin, isOperator, user);
 
   const { alerts, loading, handleAcknowledge } = useAlertsData({
-    statusFilter: filters.statusFilter,
-    severityFilter: filters.severityFilter,
-    timeFilter: filters.timeFilter,
-    organizationFilter: filters.organizationFilter,
-    userFilter: filters.userFilter,
-    siteFilter: filters.siteFilter,
+    statusFilter,
+    severityFilter,
+    timeFilter,
+    organizationFilter,
+    userFilter,
+    siteFilter,
   });
 
   // Reset site filter when organization changes
   useEffect(() => {
-    filters.setSiteFilter('all');
-  }, [filters.organizationFilter]);
+    setSiteFilter('all');
+  }, [organizationFilter, setSiteFilter]);
 
   // Reset user filter when organization changes
   useEffect(() => {
-    if (isSuperAdmin && filters.organizationFilter !== 'all') {
-      filters.setUserFilter('all');
+    if (isSuperAdmin && organizationFilter !== 'all') {
+      setUserFilter('all');
     }
-  }, [filters.organizationFilter, isSuperAdmin]);
+  }, [organizationFilter, isSuperAdmin, setUserFilter]);
 
   return (
     <div className="min-h-screen bg-background p-6">
@@ -52,7 +65,18 @@ export function AlertsPage() {
         organizations={organizations}
         users={users}
         sites={sites}
-        {...filters}
+        statusFilter={statusFilter}
+        severityFilter={severityFilter}
+        timeFilter={timeFilter}
+        organizationFilter={organizationFilter}
+        userFilter={userFilter}
+        siteFilter={siteFilter}
+        setStatusFilter={setStatusFilter}
+        setSeverityFilter={setSeverityFilter}
+        setTimeFilter={setTimeFilter}
+        setOrganizationFilter={setOrganizationFilter}
+        setUserFilter={setUserFilter}
+        setSiteFilter={setSiteFilter}
       />
 
       <Card>

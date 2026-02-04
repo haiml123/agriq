@@ -223,7 +223,9 @@
       "organizationsCount": "{count} مؤسسة مسجلة",
       "created": "تم الإنشاء {date}",
       "sitesCount": "{count} مواقع",
-      "usersCount": "{count} مستخدمين"
+      "usersCount": "{count} مستخدمين",
+      "noOrganizations": "لا توجد منظمات بعد",
+      "getStarted": "أنشئ مؤسستك الأولى للبدء."
     },
     "triggers": "المحفزات",
     "commodities": "السلع",

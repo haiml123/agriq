@@ -1,0 +1,1797 @@
+[
+  {
+    "id": "sensor_threshold_above",
+    "raw_condition": {
+      "metric": "TEMPERATURE",
+      "sourceType": "SENSOR",
+      "type": "THRESHOLD",
+      "operator": "ABOVE",
+      "value": 20
+    },
+    "human_readable": "Balls temperature is above 20.",
+    "example": {
+      "given": [
+        "Ball temps: [20, 20, 20, 20, 20, 20]",
+        "Threshold: > 20"
+      ],
+      "steps": [
+        "Step 1: Current ball temps = [20, 20, 20, 20, 20, 20]",
+        "Step 2: Any ball satisfies condition? No",
+        "Step 3: Condition \u2192 false"
+      ],
+      "result": false
+    },
+    "test_data": {
+      "source": "SENSOR",
+      "currentBalls": [
+        {
+          "id": "ball-1",
+          "temperature": 20
+        },
+        {
+          "id": "ball-2",
+          "temperature": 20
+        },
+        {
+          "id": "ball-3",
+          "temperature": 20
+        },
+        {
+          "id": "ball-4",
+          "temperature": 20
+        },
+        {
+          "id": "ball-5",
+          "temperature": 20
+        },
+        {
+          "id": "ball-6",
+          "temperature": 20
+        }
+      ],
+      "gateway": {
+        "temperature": 22
+      },
+      "outside": {
+        "temperature": 33
+      }
+    },
+    "result": false
+  },
+  {
+    "id": "sensor_threshold_below",
+    "raw_condition": {
+      "metric": "TEMPERATURE",
+      "sourceType": "SENSOR",
+      "type": "THRESHOLD",
+      "operator": "BELOW",
+      "value": 20
+    },
+    "human_readable": "Balls temperature is below 20.",
+    "example": {
+      "given": [
+        "Ball temps: [20, 20, 20, 20, 20, 20]",
+        "Threshold: < 20"
+      ],
+      "steps": [
+        "Step 1: Current ball temps = [20, 20, 20, 20, 20, 20]",
+        "Step 2: Any ball satisfies condition? No",
+        "Step 3: Condition \u2192 false"
+      ],
+      "result": false
+    },
+    "test_data": {
+      "source": "SENSOR",
+      "currentBalls": [
+        {
+          "id": "ball-1",
+          "temperature": 20
+        },
+        {
+          "id": "ball-2",
+          "temperature": 20
+        },
+        {
+          "id": "ball-3",
+          "temperature": 20
+        },
+        {
+          "id": "ball-4",
+          "temperature": 20
+        },
+        {
+          "id": "ball-5",
+          "temperature": 20
+        },
+        {
+          "id": "ball-6",
+          "temperature": 20
+        }
+      ],
+      "gateway": {
+        "temperature": 22
+      },
+      "outside": {
+        "temperature": 33
+      }
+    },
+    "result": false
+  },
+  {
+    "id": "sensor_threshold_equals",
+    "raw_condition": {
+      "metric": "TEMPERATURE",
+      "sourceType": "SENSOR",
+      "type": "THRESHOLD",
+      "operator": "EQUALS",
+      "value": 15
+    },
+    "human_readable": "Balls temperature equals 15.",
+    "example": {
+      "given": [
+        "Ball temps: [16, 16, 16, 16, 16, 16]",
+        "Threshold: = 15"
+      ],
+      "steps": [
+        "Step 1: Current ball temps = [16, 16, 16, 16, 16, 16]",
+        "Step 2: Any ball satisfies condition? No",
+        "Step 3: Condition \u2192 false"
+      ],
+      "result": false
+    },
+    "test_data": {
+      "source": "SENSOR",
+      "currentBalls": [
+        {
+          "id": "ball-1",
+          "temperature": 16
+        },
+        {
+          "id": "ball-2",
+          "temperature": 16
+        },
+        {
+          "id": "ball-3",
+          "temperature": 16
+        },
+        {
+          "id": "ball-4",
+          "temperature": 16
+        },
+        {
+          "id": "ball-5",
+          "temperature": 16
+        },
+        {
+          "id": "ball-6",
+          "temperature": 16
+        }
+      ],
+      "gateway": {
+        "temperature": 22
+      },
+      "outside": {
+        "temperature": 33
+      }
+    },
+    "result": false
+  },
+  {
+    "id": "sensor_threshold_between",
+    "raw_condition": {
+      "metric": "TEMPERATURE",
+      "sourceType": "SENSOR",
+      "type": "THRESHOLD",
+      "operator": "BETWEEN",
+      "value": 12,
+      "secondaryValue": 18
+    },
+    "human_readable": "Balls temperature is between 12 and 18.",
+    "example": {
+      "given": [
+        "Ball temps: [19, 19, 19, 19, 19, 19]",
+        "Threshold: between 12 and 18"
+      ],
+      "steps": [
+        "Step 1: Current ball temps = [19, 19, 19, 19, 19, 19]",
+        "Step 2: Any ball satisfies condition? No",
+        "Step 3: Condition \u2192 false"
+      ],
+      "result": false
+    },
+    "test_data": {
+      "source": "SENSOR",
+      "currentBalls": [
+        {
+          "id": "ball-1",
+          "temperature": 19
+        },
+        {
+          "id": "ball-2",
+          "temperature": 19
+        },
+        {
+          "id": "ball-3",
+          "temperature": 19
+        },
+        {
+          "id": "ball-4",
+          "temperature": 19
+        },
+        {
+          "id": "ball-5",
+          "temperature": 19
+        },
+        {
+          "id": "ball-6",
+          "temperature": 19
+        }
+      ],
+      "gateway": {
+        "temperature": 22
+      },
+      "outside": {
+        "temperature": 33
+      }
+    },
+    "result": false
+  },
+  {
+    "id": "sensor_change_any",
+    "raw_condition": {
+      "metric": "TEMPERATURE",
+      "sourceType": "SENSOR",
+      "type": "CHANGE",
+      "changeDirection": "ANY",
+      "changeAmount": 5,
+      "timeWindowHours": 24
+    },
+    "human_readable": "Balls temperature change (any direction) is at least 5 over 24 hours.",
+    "example": {
+      "given": [
+        "Ball A baseline temp (24h ago): 10",
+        "Ball A current temp: 14",
+        "Change amount: 5",
+        "Time window: 24h"
+      ],
+      "steps": [
+        "Step 1: Current = 14, Baseline = 10",
+        "Step 2: \u0394 = 14 - 10 = 4",
+        "Step 3: Condition \u2192 false"
+      ],
+      "result": false
+    },
+    "test_data": {
+      "source": "SENSOR",
+      "currentBalls": [
+        {
+          "id": "ball-1",
+          "temperature": 14
+        },
+        {
+          "id": "ball-2",
+          "temperature": 12
+        },
+        {
+          "id": "ball-3",
+          "temperature": 15
+        },
+        {
+          "id": "ball-4",
+          "temperature": 18
+        },
+        {
+          "id": "ball-5",
+          "temperature": 90
+        },
+        {
+          "id": "ball-6",
+          "temperature": 95
+        }
+      ],
+      "baselineBalls": [
+        {
+          "id": "ball-1",
+          "temperature": 10
+        },
+        {
+          "id": "ball-2",
+          "temperature": 12
+        },
+        {
+          "id": "ball-3",
+          "temperature": 15
+        },
+        {
+          "id": "ball-4",
+          "temperature": 18
+        },
+        {
+          "id": "ball-5",
+          "temperature": 90
+        },
+        {
+          "id": "ball-6",
+          "temperature": 95
+        }
+      ],
+      "timeWindowHours": 24
+    },
+    "result": false
+  },
+  {
+    "id": "sensor_change_increase",
+    "raw_condition": {
+      "metric": "TEMPERATURE",
+      "sourceType": "SENSOR",
+      "type": "CHANGE",
+      "changeDirection": "INCREASE",
+      "changeAmount": 5,
+      "timeWindowHours": 24
+    },
+    "human_readable": "Balls temperature increase is at least 5 over 24 hours.",
+    "example": {
+      "given": [
+        "Ball A baseline temp (24h ago): 10",
+        "Ball A current temp: 14",
+        "Change amount: 5",
+        "Time window: 24h"
+      ],
+      "steps": [
+        "Step 1: Current = 14, Baseline = 10",
+        "Step 2: \u0394 = 14 - 10 = 4",
+        "Step 3: Condition \u2192 false"
+      ],
+      "result": false
+    },
+    "test_data": {
+      "source": "SENSOR",
+      "currentBalls": [
+        {
+          "id": "ball-1",
+          "temperature": 14
+        },
+        {
+          "id": "ball-2",
+          "temperature": 12
+        },
+        {
+          "id": "ball-3",
+          "temperature": 15
+        },
+        {
+          "id": "ball-4",
+          "temperature": 18
+        },
+        {
+          "id": "ball-5",
+          "temperature": 90
+        },
+        {
+          "id": "ball-6",
+          "temperature": 95
+        }
+      ],
+      "baselineBalls": [
+        {
+          "id": "ball-1",
+          "temperature": 10
+        },
+        {
+          "id": "ball-2",
+          "temperature": 12
+        },
+        {
+          "id": "ball-3",
+          "temperature": 15
+        },
+        {
+          "id": "ball-4",
+          "temperature": 18
+        },
+        {
+          "id": "ball-5",
+          "temperature": 90
+        },
+        {
+          "id": "ball-6",
+          "temperature": 95
+        }
+      ],
+      "timeWindowHours": 24
+    },
+    "result": false
+  },
+  {
+    "id": "sensor_change_decrease",
+    "raw_condition": {
+      "metric": "TEMPERATURE",
+      "sourceType": "SENSOR",
+      "type": "CHANGE",
+      "changeDirection": "DECREASE",
+      "changeAmount": 5,
+      "timeWindowHours": 24
+    },
+    "human_readable": "Balls temperature decrease is at least 5 over 24 hours.",
+    "example": {
+      "given": [
+        "Ball A baseline temp (24h ago): 30",
+        "Ball A current temp: 26",
+        "Change amount: 5",
+        "Time window: 24h"
+      ],
+      "steps": [
+        "Step 1: Current = 26, Baseline = 30",
+        "Step 2: \u0394 = 26 - 30 = -4",
+        "Step 3: Condition \u2192 false"
+      ],
+      "result": false
+    },
+    "result": false,
+    "test_data": {
+      "source": "SENSOR",
+      "currentBalls": [
+        {
+          "id": "ball-1",
+          "temperature": 26
+        },
+        {
+          "id": "ball-2",
+          "temperature": 12
+        },
+        {
+          "id": "ball-3",
+          "temperature": 15
+        },
+        {
+          "id": "ball-4",
+          "temperature": 18
+        },
+        {
+          "id": "ball-5",
+          "temperature": 90
+        },
+        {
+          "id": "ball-6",
+          "temperature": 95
+        }
+      ],
+      "baselineBalls": [
+        {
+          "id": "ball-1",
+          "temperature": 30
+        },
+        {
+          "id": "ball-2",
+          "temperature": 12
+        },
+        {
+          "id": "ball-3",
+          "temperature": 15
+        },
+        {
+          "id": "ball-4",
+          "temperature": 18
+        },
+        {
+          "id": "ball-5",
+          "temperature": 90
+        },
+        {
+          "id": "ball-6",
+          "temperature": 95
+        }
+      ],
+      "timeWindowHours": 24
+    }
+  },
+  {
+    "id": "sensor_threshold_above_gateway_source",
+    "raw_condition": {
+      "metric": "TEMPERATURE",
+      "type": "THRESHOLD",
+      "operator": "ABOVE",
+      "value": 30,
+      "valueSources": [
+        "GATEWAY"
+      ]
+    },
+    "human_readable": "Gateway temperature is above 30 (as threshold source).",
+    "example": {
+      "given": [
+        "Gateway temp: 30",
+        "Outside temp: 30",
+        "Threshold: > 30",
+        "valueSources: ['GATEWAY']"
+      ],
+      "steps": [
+        "Step 1: Evaluate sources",
+        "Step 2: No source satisfies the threshold",
+        "Step 3: Condition \u2192 false"
+      ],
+      "result": false
+    },
+    "result": false,
+    "test_data": {
+      "valueSources": [
+        "GATEWAY"
+      ],
+      "gateway": {
+        "temperature": 30
+      },
+      "outside": {
+        "temperature": 30
+      }
+    }
+  },
+  {
+    "id": "sensor_threshold_above_outside_source",
+    "raw_condition": {
+      "metric": "TEMPERATURE",
+      "type": "THRESHOLD",
+      "operator": "ABOVE",
+      "value": 30,
+      "valueSources": [
+        "OUTSIDE"
+      ]
+    },
+    "human_readable": "Outside temperature is above 30 (as threshold source).",
+    "example": {
+      "given": [
+        "Gateway temp: 30",
+        "Outside temp: 30",
+        "Threshold: > 30",
+        "valueSources: ['OUTSIDE']"
+      ],
+      "steps": [
+        "Step 1: Evaluate sources",
+        "Step 2: No source satisfies the threshold",
+        "Step 3: Condition \u2192 false"
+      ],
+      "result": false
+    },
+    "test_data": {
+      "valueSources": [
+        "OUTSIDE"
+      ],
+      "gateway": {
+        "temperature": 30
+      },
+      "outside": {
+        "temperature": 30
+      }
+    },
+    "result": false
+  },
+  {
+    "id": "sensor_threshold_above_gateway_outside_sources",
+    "raw_condition": {
+      "metric": "TEMPERATURE",
+      "type": "THRESHOLD",
+      "operator": "ABOVE",
+      "value": 30,
+      "valueSources": [
+        "GATEWAY",
+        "OUTSIDE"
+      ]
+    },
+    "human_readable": "Gateway or outside temperature is above 30 (any source).",
+    "example": {
+      "given": [
+        "Gateway temp: 30",
+        "Outside temp: 30",
+        "Threshold: > 30",
+        "valueSources: ['GATEWAY', 'OUTSIDE']"
+      ],
+      "steps": [
+        "Step 1: Evaluate sources",
+        "Step 2: No source satisfies the threshold",
+        "Step 3: Condition \u2192 false"
+      ],
+      "result": false
+    },
+    "test_data": {
+      "valueSources": [
+        "GATEWAY",
+        "OUTSIDE"
+      ],
+      "gateway": {
+        "temperature": 30
+      },
+      "outside": {
+        "temperature": 30
+      }
+    },
+    "result": false
+  },
+  {
+    "id": "sensor_threshold_below_gateway_source",
+    "raw_condition": {
+      "metric": "TEMPERATURE",
+      "type": "THRESHOLD",
+      "operator": "BELOW",
+      "value": 25,
+      "valueSources": [
+        "GATEWAY"
+      ]
+    },
+    "human_readable": "Gateway temperature is below 25 (as threshold source).",
+    "example": {
+      "given": [
+        "Gateway temp: 25",
+        "Outside temp: 25",
+        "Threshold: < 25",
+        "valueSources: ['GATEWAY']"
+      ],
+      "steps": [
+        "Step 1: Evaluate sources",
+        "Step 2: No source satisfies the threshold",
+        "Step 3: Condition \u2192 false"
+      ],
+      "result": false
+    },
+    "test_data": {
+      "valueSources": [
+        "GATEWAY"
+      ],
+      "gateway": {
+        "temperature": 25
+      },
+      "outside": {
+        "temperature": 25
+      }
+    },
+    "result": false
+  },
+  {
+    "id": "sensor_threshold_below_outside_source",
+    "raw_condition": {
+      "metric": "TEMPERATURE",
+      "type": "THRESHOLD",
+      "operator": "BELOW",
+      "value": 25,
+      "valueSources": [
+        "OUTSIDE"
+      ]
+    },
+    "human_readable": "Outside temperature is below 25 (as threshold source).",
+    "example": {
+      "given": [
+        "Gateway temp: 25",
+        "Outside temp: 25",
+        "Threshold: < 25",
+        "valueSources: ['OUTSIDE']"
+      ],
+      "steps": [
+        "Step 1: Evaluate sources",
+        "Step 2: No source satisfies the threshold",
+        "Step 3: Condition \u2192 false"
+      ],
+      "result": false
+    },
+    "result": false,
+    "test_data": {
+      "valueSources": [
+        "OUTSIDE"
+      ],
+      "gateway": {
+        "temperature": 25
+      },
+      "outside": {
+        "temperature": 25
+      }
+    }
+  },
+  {
+    "id": "sensor_threshold_below_gateway_outside_sources",
+    "raw_condition": {
+      "metric": "TEMPERATURE",
+      "type": "THRESHOLD",
+      "operator": "BELOW",
+      "value": 25,
+      "valueSources": [
+        "GATEWAY",
+        "OUTSIDE"
+      ]
+    },
+    "human_readable": "Gateway or outside temperature is below 25 (any source).",
+    "example": {
+      "given": [
+        "Gateway temp: 25",
+        "Outside temp: 25",
+        "Threshold: < 25",
+        "valueSources: ['GATEWAY', 'OUTSIDE']"
+      ],
+      "steps": [
+        "Step 1: Evaluate sources",
+        "Step 2: No source satisfies the threshold",
+        "Step 3: Condition \u2192 false"
+      ],
+      "result": false
+    },
+    "test_data": {
+      "valueSources": [
+        "GATEWAY",
+        "OUTSIDE"
+      ],
+      "gateway": {
+        "temperature": 25
+      },
+      "outside": {
+        "temperature": 25
+      }
+    },
+    "result": false
+  },
+  {
+    "id": "sensor_threshold_equals_gateway_source",
+    "raw_condition": {
+      "metric": "TEMPERATURE",
+      "type": "THRESHOLD",
+      "operator": "EQUALS",
+      "value": 22,
+      "valueSources": [
+        "GATEWAY"
+      ]
+    },
+    "human_readable": "Gateway temperature equals 22 (as threshold source).",
+    "example": {
+      "given": [
+        "Gateway temp: 23",
+        "Outside temp: 23",
+        "Threshold: = 22",
+        "valueSources: ['GATEWAY']"
+      ],
+      "steps": [
+        "Step 1: Evaluate sources",
+        "Step 2: No source satisfies the threshold",
+        "Step 3: Condition \u2192 false"
+      ],
+      "result": false
+    },
+    "test_data": {
+      "valueSources": [
+        "GATEWAY"
+      ],
+      "gateway": {
+        "temperature": 23
+      },
+      "outside": {
+        "temperature": 23
+      }
+    },
+    "result": false
+  },
+  {
+    "id": "sensor_threshold_equals_outside_source",
+    "raw_condition": {
+      "metric": "TEMPERATURE",
+      "type": "THRESHOLD",
+      "operator": "EQUALS",
+      "value": 22,
+      "valueSources": [
+        "OUTSIDE"
+      ]
+    },
+    "human_readable": "Outside temperature equals 22 (as threshold source).",
+    "example": {
+      "given": [
+        "Gateway temp: 23",
+        "Outside temp: 23",
+        "Threshold: = 22",
+        "valueSources: ['OUTSIDE']"
+      ],
+      "steps": [
+        "Step 1: Evaluate sources",
+        "Step 2: No source satisfies the threshold",
+        "Step 3: Condition \u2192 false"
+      ],
+      "result": false
+    },
+    "result": false,
+    "test_data": {
+      "valueSources": [
+        "OUTSIDE"
+      ],
+      "gateway": {
+        "temperature": 23
+      },
+      "outside": {
+        "temperature": 23
+      }
+    }
+  },
+  {
+    "id": "sensor_threshold_equals_gateway_outside_sources",
+    "raw_condition": {
+      "metric": "TEMPERATURE",
+      "type": "THRESHOLD",
+      "operator": "EQUALS",
+      "value": 22,
+      "valueSources": [
+        "GATEWAY",
+        "OUTSIDE"
+      ]
+    },
+    "human_readable": "Gateway or outside temperature equals 22 (any source).",
+    "example": {
+      "given": [
+        "Gateway temp: 23",
+        "Outside temp: 23",
+        "Threshold: = 22",
+        "valueSources: ['GATEWAY', 'OUTSIDE']"
+      ],
+      "steps": [
+        "Step 1: Evaluate sources",
+        "Step 2: No source satisfies the threshold",
+        "Step 3: Condition \u2192 false"
+      ],
+      "result": false
+    },
+    "test_data": {
+      "valueSources": [
+        "GATEWAY",
+        "OUTSIDE"
+      ],
+      "gateway": {
+        "temperature": 23
+      },
+      "outside": {
+        "temperature": 23
+      }
+    },
+    "result": false
+  },
+  {
+    "id": "sensor_threshold_between_gateway_source",
+    "raw_condition": {
+      "metric": "TEMPERATURE",
+      "type": "THRESHOLD",
+      "operator": "BETWEEN",
+      "value": 20,
+      "secondaryValue": 30,
+      "valueSources": [
+        "GATEWAY"
+      ]
+    },
+    "human_readable": "Gateway temperature is between 20 and 30 (as threshold source).",
+    "example": {
+      "given": [
+        "Gateway temp: 31",
+        "Outside temp: 31",
+        "Threshold: between 20 and 30",
+        "valueSources: ['GATEWAY']"
+      ],
+      "steps": [
+        "Step 1: Evaluate sources",
+        "Step 2: No source satisfies the threshold",
+        "Step 3: Condition \u2192 false"
+      ],
+      "result": false
+    },
+    "test_data": {
+      "valueSources": [
+        "GATEWAY"
+      ],
+      "gateway": {
+        "temperature": 31
+      },
+      "outside": {
+        "temperature": 31
+      }
+    },
+    "result": false
+  },
+  {
+    "id": "sensor_threshold_between_outside_source",
+    "raw_condition": {
+      "metric": "TEMPERATURE",
+      "type": "THRESHOLD",
+      "operator": "BETWEEN",
+      "value": 20,
+      "secondaryValue": 30,
+      "valueSources": [
+        "OUTSIDE"
+      ]
+    },
+    "human_readable": "Outside temperature is between 20 and 30 (as threshold source).",
+    "example": {
+      "given": [
+        "Gateway temp: 31",
+        "Outside temp: 31",
+        "Threshold: between 20 and 30",
+        "valueSources: ['OUTSIDE']"
+      ],
+      "steps": [
+        "Step 1: Evaluate sources",
+        "Step 2: No source satisfies the threshold",
+        "Step 3: Condition \u2192 false"
+      ],
+      "result": false
+    },
+    "result": false,
+    "test_data": {
+      "valueSources": [
+        "OUTSIDE"
+      ],
+      "gateway": {
+        "temperature": 31
+      },
+      "outside": {
+        "temperature": 31
+      }
+    }
+  },
+  {
+    "id": "sensor_threshold_between_gateway_outside_sources",
+    "raw_condition": {
+      "metric": "TEMPERATURE",
+      "type": "THRESHOLD",
+      "operator": "BETWEEN",
+      "value": 20,
+      "secondaryValue": 30,
+      "valueSources": [
+        "GATEWAY",
+        "OUTSIDE"
+      ]
+    },
+    "human_readable": "Gateway or outside temperature is between 20 and 30 (any source).",
+    "example": {
+      "given": [
+        "Gateway temp: 31",
+        "Outside temp: 31",
+        "Threshold: between 20 and 30",
+        "valueSources: ['GATEWAY', 'OUTSIDE']"
+      ],
+      "steps": [
+        "Step 1: Evaluate sources",
+        "Step 2: No source satisfies the threshold",
+        "Step 3: Condition \u2192 false"
+      ],
+      "result": false
+    },
+    "test_data": {
+      "valueSources": [
+        "GATEWAY",
+        "OUTSIDE"
+      ],
+      "gateway": {
+        "temperature": 31
+      },
+      "outside": {
+        "temperature": 31
+      }
+    },
+    "result": false
+  },
+  {
+    "id": "sensor_local_threshold_above",
+    "raw_condition": {
+      "metric": "TEMPERATURE",
+      "sourceType": "SENSOR",
+      "isLocal": true,
+      "type": "THRESHOLD",
+      "operator": "ABOVE",
+      "value": 20
+    },
+    "human_readable": "Local balls temperature is above 20.",
+    "example": {
+      "given": [
+        "Ball temps: [20, 20, 20, 20, 20, 20]",
+        "Threshold: > 20"
+      ],
+      "steps": [
+        "Step 1: Current ball temps = [20, 20, 20, 20, 20, 20]",
+        "Step 2: Any ball satisfies condition? No",
+        "Step 3: Condition \u2192 false"
+      ],
+      "result": false
+    },
+    "test_data": {
+      "source": "SENSOR",
+      "currentBalls": [
+        {
+          "id": "ball-1",
+          "temperature": 20
+        },
+        {
+          "id": "ball-2",
+          "temperature": 20
+        },
+        {
+          "id": "ball-3",
+          "temperature": 20
+        },
+        {
+          "id": "ball-4",
+          "temperature": 20
+        },
+        {
+          "id": "ball-5",
+          "temperature": 20
+        },
+        {
+          "id": "ball-6",
+          "temperature": 20
+        }
+      ],
+      "gateway": {
+        "temperature": 22
+      },
+      "outside": {
+        "temperature": 33
+      }
+    },
+    "result": false
+  },
+  {
+    "id": "sensor_local_threshold_below",
+    "raw_condition": {
+      "metric": "TEMPERATURE",
+      "sourceType": "SENSOR",
+      "isLocal": true,
+      "type": "THRESHOLD",
+      "operator": "BELOW",
+      "value": 20
+    },
+    "human_readable": "Local balls temperature is below 20.",
+    "example": {
+      "given": [
+        "Ball temps: [20, 20, 20, 20, 20, 20]",
+        "Threshold: < 20"
+      ],
+      "steps": [
+        "Step 1: Current ball temps = [20, 20, 20, 20, 20, 20]",
+        "Step 2: Any ball satisfies condition? No",
+        "Step 3: Condition \u2192 false"
+      ],
+      "result": false
+    },
+    "test_data": {
+      "source": "SENSOR",
+      "currentBalls": [
+        {
+          "id": "ball-1",
+          "temperature": 20
+        },
+        {
+          "id": "ball-2",
+          "temperature": 20
+        },
+        {
+          "id": "ball-3",
+          "temperature": 20
+        },
+        {
+          "id": "ball-4",
+          "temperature": 20
+        },
+        {
+          "id": "ball-5",
+          "temperature": 20
+        },
+        {
+          "id": "ball-6",
+          "temperature": 20
+        }
+      ],
+      "gateway": {
+        "temperature": 22
+      },
+      "outside": {
+        "temperature": 33
+      }
+    },
+    "result": false
+  },
+  {
+    "id": "sensor_local_threshold_between",
+    "raw_condition": {
+      "metric": "TEMPERATURE",
+      "sourceType": "SENSOR",
+      "isLocal": true,
+      "type": "THRESHOLD",
+      "operator": "BETWEEN",
+      "value": 12,
+      "secondaryValue": 18
+    },
+    "human_readable": "Local balls temperature is between 12 and 18.",
+    "example": {
+      "given": [
+        "Ball temps: [19, 19, 19, 19, 19, 19]",
+        "Threshold: between 12 and 18"
+      ],
+      "steps": [
+        "Step 1: Current ball temps = [19, 19, 19, 19, 19, 19]",
+        "Step 2: Any ball satisfies condition? No",
+        "Step 3: Condition \u2192 false"
+      ],
+      "result": false
+    },
+    "test_data": {
+      "source": "SENSOR",
+      "currentBalls": [
+        {
+          "id": "ball-1",
+          "temperature": 19
+        },
+        {
+          "id": "ball-2",
+          "temperature": 19
+        },
+        {
+          "id": "ball-3",
+          "temperature": 19
+        },
+        {
+          "id": "ball-4",
+          "temperature": 19
+        },
+        {
+          "id": "ball-5",
+          "temperature": 19
+        },
+        {
+          "id": "ball-6",
+          "temperature": 19
+        }
+      ],
+      "gateway": {
+        "temperature": 22
+      },
+      "outside": {
+        "temperature": 33
+      }
+    },
+    "result": false
+  },
+  {
+    "id": "gateway_threshold_above",
+    "raw_condition": {
+      "metric": "TEMPERATURE",
+      "sourceType": "GATEWAY",
+      "type": "THRESHOLD",
+      "operator": "ABOVE",
+      "value": 20
+    },
+    "human_readable": "Gateway temperature is above 20.",
+    "example": {
+      "given": [
+        "Gateway temp: 20",
+        "Threshold: > 20"
+      ],
+      "steps": [
+        "Step 1: Current gateway temp = 20",
+        "Step 2: Compare to threshold",
+        "Step 3: Condition \u2192 false"
+      ],
+      "result": false
+    },
+    "test_data": {
+      "source": "GATEWAY",
+      "current": {
+        "temperature": 20
+      }
+    },
+    "result": false
+  },
+  {
+    "id": "gateway_threshold_below",
+    "raw_condition": {
+      "metric": "TEMPERATURE",
+      "sourceType": "GATEWAY",
+      "type": "THRESHOLD",
+      "operator": "BELOW",
+      "value": 20
+    },
+    "human_readable": "Gateway temperature is below 20.",
+    "example": {
+      "given": [
+        "Gateway temp: 20",
+        "Threshold: < 20"
+      ],
+      "steps": [
+        "Step 1: Current gateway temp = 20",
+        "Step 2: Compare to threshold",
+        "Step 3: Condition \u2192 false"
+      ],
+      "result": false
+    },
+    "result": false,
+    "test_data": {
+      "source": "GATEWAY",
+      "current": {
+        "temperature": 20
+      }
+    }
+  },
+  {
+    "id": "gateway_threshold_equals",
+    "raw_condition": {
+      "metric": "TEMPERATURE",
+      "sourceType": "GATEWAY",
+      "type": "THRESHOLD",
+      "operator": "EQUALS",
+      "value": 22
+    },
+    "human_readable": "Gateway temperature equals 22.",
+    "example": {
+      "given": [
+        "Gateway temp: 23",
+        "Threshold: = 22"
+      ],
+      "steps": [
+        "Step 1: Current gateway temp = 23",
+        "Step 2: Compare to threshold",
+        "Step 3: Condition \u2192 false"
+      ],
+      "result": false
+    },
+    "test_data": {
+      "source": "GATEWAY",
+      "current": {
+        "temperature": 23
+      }
+    },
+    "result": false
+  },
+  {
+    "id": "gateway_threshold_between",
+    "raw_condition": {
+      "metric": "TEMPERATURE",
+      "sourceType": "GATEWAY",
+      "type": "THRESHOLD",
+      "operator": "BETWEEN",
+      "value": 20,
+      "secondaryValue": 30
+    },
+    "human_readable": "Gateway temperature is between 20 and 30.",
+    "example": {
+      "given": [
+        "Gateway temp: 31",
+        "Threshold: between 20 and 30"
+      ],
+      "steps": [
+        "Step 1: Current gateway temp = 31",
+        "Step 2: Compare to threshold",
+        "Step 3: Condition \u2192 false"
+      ],
+      "result": false
+    },
+    "test_data": {
+      "source": "GATEWAY",
+      "current": {
+        "temperature": 31
+      }
+    },
+    "result": false
+  },
+  {
+    "id": "gateway_change_any",
+    "raw_condition": {
+      "metric": "TEMPERATURE",
+      "sourceType": "GATEWAY",
+      "type": "CHANGE",
+      "changeDirection": "ANY",
+      "changeAmount": 5,
+      "timeWindowHours": 24
+    },
+    "human_readable": "Gateway temperature change (any direction) is at least 5 over 24 hours.",
+    "example": {
+      "given": [
+        "Gateway baseline temp (24h ago): 10",
+        "Gateway current temp: 14",
+        "Change amount: 5",
+        "Time window: 24h"
+      ],
+      "steps": [
+        "Step 1: Current = 14, Baseline = 10",
+        "Step 2: \u0394 = 14 - 10 = 4",
+        "Step 3: Condition \u2192 false"
+      ],
+      "result": false
+    },
+    "test_data": {
+      "source": "GATEWAY",
+      "current": {
+        "temperature": 14
+      },
+      "baseline": {
+        "temperature": 10
+      },
+      "timeWindowHours": 24
+    },
+    "result": false
+  },
+  {
+    "id": "gateway_change_increase",
+    "raw_condition": {
+      "metric": "TEMPERATURE",
+      "sourceType": "GATEWAY",
+      "type": "CHANGE",
+      "changeDirection": "INCREASE",
+      "changeAmount": 5,
+      "timeWindowHours": 24
+    },
+    "human_readable": "Gateway temperature increase is at least 5 over 24 hours.",
+    "example": {
+      "given": [
+        "Gateway baseline temp (24h ago): 10",
+        "Gateway current temp: 14",
+        "Change amount: 5",
+        "Time window: 24h"
+      ],
+      "steps": [
+        "Step 1: Current = 14, Baseline = 10",
+        "Step 2: \u0394 = 14 - 10 = 4",
+        "Step 3: Condition \u2192 false"
+      ],
+      "result": false
+    },
+    "test_data": {
+      "source": "GATEWAY",
+      "current": {
+        "temperature": 14
+      },
+      "baseline": {
+        "temperature": 10
+      },
+      "timeWindowHours": 24
+    },
+    "result": false
+  },
+  {
+    "id": "gateway_change_decrease",
+    "raw_condition": {
+      "metric": "TEMPERATURE",
+      "sourceType": "GATEWAY",
+      "type": "CHANGE",
+      "changeDirection": "DECREASE",
+      "changeAmount": 5,
+      "timeWindowHours": 24
+    },
+    "human_readable": "Gateway temperature decrease is at least 5 over 24 hours.",
+    "example": {
+      "given": [
+        "Gateway baseline temp (24h ago): 30",
+        "Gateway current temp: 26",
+        "Change amount: 5",
+        "Time window: 24h"
+      ],
+      "steps": [
+        "Step 1: Current = 26, Baseline = 30",
+        "Step 2: \u0394 = 26 - 30 = -4",
+        "Step 3: Condition \u2192 false"
+      ],
+      "result": false
+    },
+    "result": false,
+    "test_data": {
+      "source": "GATEWAY",
+      "current": {
+        "temperature": 26
+      },
+      "baseline": {
+        "temperature": 30
+      },
+      "timeWindowHours": 24
+    }
+  },
+  {
+    "id": "outside_threshold_above",
+    "raw_condition": {
+      "metric": "TEMPERATURE",
+      "sourceType": "OUTSIDE",
+      "type": "THRESHOLD",
+      "operator": "ABOVE",
+      "value": 30
+    },
+    "human_readable": "Outside temperature is above 30.",
+    "example": {
+      "given": [
+        "Outside temp: 30",
+        "Threshold: > 30"
+      ],
+      "steps": [
+        "Step 1: Current outside temp = 30",
+        "Step 2: Compare to threshold",
+        "Step 3: Condition \u2192 false"
+      ],
+      "result": false
+    },
+    "test_data": {
+      "source": "OUTSIDE",
+      "current": {
+        "temperature": 30
+      }
+    },
+    "result": false
+  },
+  {
+    "id": "outside_threshold_below",
+    "raw_condition": {
+      "metric": "TEMPERATURE",
+      "sourceType": "OUTSIDE",
+      "type": "THRESHOLD",
+      "operator": "BELOW",
+      "value": 30
+    },
+    "human_readable": "Outside temperature is below 30.",
+    "example": {
+      "given": [
+        "Outside temp: 30",
+        "Threshold: < 30"
+      ],
+      "steps": [
+        "Step 1: Current outside temp = 30",
+        "Step 2: Compare to threshold",
+        "Step 3: Condition \u2192 false"
+      ],
+      "result": false
+    },
+    "result": false,
+    "test_data": {
+      "source": "OUTSIDE",
+      "current": {
+        "temperature": 30
+      }
+    }
+  },
+  {
+    "id": "outside_threshold_equals",
+    "raw_condition": {
+      "metric": "TEMPERATURE",
+      "sourceType": "OUTSIDE",
+      "type": "THRESHOLD",
+      "operator": "EQUALS",
+      "value": 33
+    },
+    "human_readable": "Outside temperature equals 33.",
+    "example": {
+      "given": [
+        "Outside temp: 34",
+        "Threshold: = 33"
+      ],
+      "steps": [
+        "Step 1: Current outside temp = 34",
+        "Step 2: Compare to threshold",
+        "Step 3: Condition \u2192 false"
+      ],
+      "result": false
+    },
+    "test_data": {
+      "source": "OUTSIDE",
+      "current": {
+        "temperature": 34
+      }
+    },
+    "result": false
+  },
+  {
+    "id": "outside_threshold_between",
+    "raw_condition": {
+      "metric": "TEMPERATURE",
+      "sourceType": "OUTSIDE",
+      "type": "THRESHOLD",
+      "operator": "BETWEEN",
+      "value": 20,
+      "secondaryValue": 30
+    },
+    "human_readable": "Outside temperature is between 20 and 30.",
+    "example": {
+      "given": [
+        "Outside temp: 31",
+        "Threshold: between 20 and 30"
+      ],
+      "steps": [
+        "Step 1: Current outside temp = 31",
+        "Step 2: Compare to threshold",
+        "Step 3: Condition \u2192 false"
+      ],
+      "result": false
+    },
+    "result": false,
+    "test_data": {
+      "source": "OUTSIDE",
+      "current": {
+        "temperature": 31
+      }
+    }
+  },
+  {
+    "id": "outside_change_any",
+    "raw_condition": {
+      "metric": "TEMPERATURE",
+      "sourceType": "OUTSIDE",
+      "type": "CHANGE",
+      "changeDirection": "ANY",
+      "changeAmount": 5,
+      "timeWindowHours": 24
+    },
+    "human_readable": "Outside temperature change (any direction) is at least 5 over 24 hours.",
+    "example": {
+      "given": [
+        "Outside baseline temp (24h ago): 10",
+        "Outside current temp: 14",
+        "Change amount: 5",
+        "Time window: 24h"
+      ],
+      "steps": [
+        "Step 1: Current = 14, Baseline = 10",
+        "Step 2: \u0394 = 14 - 10 = 4",
+        "Step 3: Condition \u2192 false"
+      ],
+      "result": false
+    },
+    "test_data": {
+      "source": "OUTSIDE",
+      "current": {
+        "temperature": 14
+      },
+      "baseline": {
+        "temperature": 10
+      },
+      "timeWindowHours": 24
+    },
+    "result": false
+  },
+  {
+    "id": "outside_change_increase",
+    "raw_condition": {
+      "metric": "TEMPERATURE",
+      "sourceType": "OUTSIDE",
+      "type": "CHANGE",
+      "changeDirection": "INCREASE",
+      "changeAmount": 5,
+      "timeWindowHours": 24
+    },
+    "human_readable": "Outside temperature increase is at least 5 over 24 hours.",
+    "example": {
+      "given": [
+        "Outside baseline temp (24h ago): 10",
+        "Outside current temp: 14",
+        "Change amount: 5",
+        "Time window: 24h"
+      ],
+      "steps": [
+        "Step 1: Current = 14, Baseline = 10",
+        "Step 2: \u0394 = 14 - 10 = 4",
+        "Step 3: Condition \u2192 false"
+      ],
+      "result": false
+    },
+    "result": false,
+    "test_data": {
+      "source": "OUTSIDE",
+      "current": {
+        "temperature": 14
+      },
+      "baseline": {
+        "temperature": 10
+      },
+      "timeWindowHours": 24
+    }
+  },
+  {
+    "id": "outside_change_decrease",
+    "raw_condition": {
+      "metric": "TEMPERATURE",
+      "sourceType": "OUTSIDE",
+      "type": "CHANGE",
+      "changeDirection": "DECREASE",
+      "changeAmount": 5,
+      "timeWindowHours": 24
+    },
+    "human_readable": "Outside temperature decrease is at least 5 over 24 hours.",
+    "example": {
+      "given": [
+        "Outside baseline temp (24h ago): 30",
+        "Outside current temp: 26",
+        "Change amount: 5",
+        "Time window: 24h"
+      ],
+      "steps": [
+        "Step 1: Current = 26, Baseline = 30",
+        "Step 2: \u0394 = 26 - 30 = -4",
+        "Step 3: Condition \u2192 false"
+      ],
+      "result": false
+    },
+    "test_data": {
+      "source": "OUTSIDE",
+      "current": {
+        "temperature": 26
+      },
+      "baseline": {
+        "temperature": 30
+      },
+      "timeWindowHours": 24
+    },
+    "result": false
+  },
+  {
+    "id": "sensor_median_threshold_above_false",
+    "raw_condition": {
+      "metric": "MEDIAN_TEMPERATURE",
+      "sourceType": "SENSOR",
+      "type": "THRESHOLD",
+      "operator": "ABOVE",
+      "value": 20
+    },
+    "human_readable": "Median balls temperature is above 20.",
+    "example": {
+      "given": [
+        "Ball temps: [20, 20, 20, 20, 20, 20]",
+        "Threshold: > 20"
+      ],
+      "steps": [
+        "Step 1: Median = 20",
+        "Step 2: 20 > 20 \u2192 false"
+      ],
+      "result": false
+    },
+    "result": false,
+    "test_data": {
+      "source": "SENSOR",
+      "currentBalls": [
+        {
+          "id": "ball-1",
+          "temperature": 20
+        },
+        {
+          "id": "ball-2",
+          "temperature": 20
+        },
+        {
+          "id": "ball-3",
+          "temperature": 20
+        },
+        {
+          "id": "ball-4",
+          "temperature": 20
+        },
+        {
+          "id": "ball-5",
+          "temperature": 20
+        },
+        {
+          "id": "ball-6",
+          "temperature": 20
+        }
+      ]
+    }
+  },
+  {
+    "id": "sensor_median_threshold_below_false",
+    "raw_condition": {
+      "metric": "MEDIAN_TEMPERATURE",
+      "sourceType": "SENSOR",
+      "type": "THRESHOLD",
+      "operator": "BELOW",
+      "value": 20
+    },
+    "human_readable": "Median balls temperature is below 20.",
+    "example": {
+      "given": [
+        "Ball temps: [20, 20, 20, 20, 20, 20]",
+        "Threshold: < 20"
+      ],
+      "steps": [
+        "Step 1: Median = 20",
+        "Step 2: 20 < 20 \u2192 false"
+      ],
+      "result": false
+    },
+    "result": false,
+    "test_data": {
+      "source": "SENSOR",
+      "currentBalls": [
+        {
+          "id": "ball-1",
+          "temperature": 20
+        },
+        {
+          "id": "ball-2",
+          "temperature": 20
+        },
+        {
+          "id": "ball-3",
+          "temperature": 20
+        },
+        {
+          "id": "ball-4",
+          "temperature": 20
+        },
+        {
+          "id": "ball-5",
+          "temperature": 20
+        },
+        {
+          "id": "ball-6",
+          "temperature": 20
+        }
+      ]
+    }
+  },
+  {
+    "id": "sensor_median_change_increase_false",
+    "raw_condition": {
+      "metric": "MEDIAN_TEMPERATURE",
+      "sourceType": "SENSOR",
+      "type": "CHANGE",
+      "changeDirection": "INCREASE",
+      "changeAmount": 5,
+      "timeWindowHours": 24
+    },
+    "human_readable": "Median balls temperature increase is at least 5 over 24 hours.",
+    "example": {
+      "given": [
+        "Baseline median: 10",
+        "Current median: 14",
+        "Change amount: 5"
+      ],
+      "steps": [
+        "Step 1: \u0394 = 14 - 10 = 4",
+        "Step 2: 4 \u2265 5 \u2192 false"
+      ],
+      "result": false
+    },
+    "result": false,
+    "test_data": {
+      "source": "SENSOR",
+      "currentBalls": [
+        {
+          "id": "ball-1",
+          "temperature": 14
+        },
+        {
+          "id": "ball-2",
+          "temperature": 14
+        },
+        {
+          "id": "ball-3",
+          "temperature": 14
+        },
+        {
+          "id": "ball-4",
+          "temperature": 14
+        },
+        {
+          "id": "ball-5",
+          "temperature": 14
+        },
+        {
+          "id": "ball-6",
+          "temperature": 14
+        }
+      ],
+      "baselineBalls": [
+        {
+          "id": "ball-1",
+          "temperature": 10
+        },
+        {
+          "id": "ball-2",
+          "temperature": 10
+        },
+        {
+          "id": "ball-3",
+          "temperature": 10
+        },
+        {
+          "id": "ball-4",
+          "temperature": 10
+        },
+        {
+          "id": "ball-5",
+          "temperature": 10
+        },
+        {
+          "id": "ball-6",
+          "temperature": 10
+        }
+      ],
+      "timeWindowHours": 24
+    }
+  }
+]

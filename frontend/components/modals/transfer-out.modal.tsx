@@ -11,7 +11,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { CellSelect, type CellSelectSite } from '@/components/ui/cell-select';
+import { CellSelect, type CellSelectSite } from '@/components/select/cell-select';
 import { useState, useEffect } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
 import { useTradeApi } from '@/hooks/use-trade-api';

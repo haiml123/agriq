@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useSiteApi } from '@/hooks/use-site-api';
 import { useApi } from '@/hooks/use-api';
-import type { CellSelectSite } from '@/components/ui/cell-select';
+import type { CellSelectSite } from '@/components/select/cell-select';
 import type { MultipleCellsDetails, DateRange } from '../types';
 import { getDateRangeParams } from '../utils/date-utils';
 

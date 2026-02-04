@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { storage, STORAGE_KEYS } from '@/lib/local-storage';
 import type { DateRange } from '../types';
-import type { CellSelectSite } from '@/components/ui/cell-select';
+import type { CellSelectSite } from '@/components/select/cell-select';
 
 export function useSitesFilters(sites: CellSelectSite[]) {
   const [selectedSiteId, setSelectedSiteId] = useState<string>(() => {

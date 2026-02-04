@@ -28,6 +28,7 @@ import { resolveLocaleText } from '@/utils/locale';
 import { OrganizationSelect } from '@/components/select/organization-select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { getSeverityColor } from '@/components/alerts/utils/alert-utils';
+import { ConditionTypeEnum, OperatorEnum } from '@/schemas/trigger.schema';
 
 type GatewayOption = {
   id: string;
@@ -43,7 +44,8 @@ const formatDateTimeLocal = (date: Date) => {
   return `${date.getFullYear()}-${month}-${day}T${hours}:${minutes}`;
 };
 
-const getDefaultStartAt = () => formatDateTimeLocal(new Date());
+const getDefaultStartAt = () =>
+  formatDateTimeLocal(new Date(Date.now() - 5 * 24 * 60 * 60 * 1000));
 
 const getDefaultRange = () => {
   const end = new Date();
@@ -119,11 +121,11 @@ export function SimulatorPage() {
   const [batchGatewayId, setBatchGatewayId] = useState('');
   const batchCount = 24;
   const [batchStartAt, setBatchStartAt] = useState(getDefaultStartAt());
-  const [batchIntervalHours, setBatchIntervalHours] = useState(1);
+  const [batchIntervalHours, setBatchIntervalHours] = useState(12);
   const [batchBaseTemperature, setBatchBaseTemperature] = useState(20);
-  const [batchTemperatureVariance, setBatchTemperatureVariance] = useState(2);
+  const [batchTemperatureVariance, setBatchTemperatureVariance] = useState(15);
   const [batchBaseHumidity, setBatchBaseHumidity] = useState(12);
-  const [batchHumidityVariance, setBatchHumidityVariance] = useState(1);
+  const [batchHumidityVariance, setBatchHumidityVariance] = useState(15);
   const [batchBaseBattery, setBatchBaseBattery] = useState(95);
   const [batchBatteryVariance, setBatchBatteryVariance] = useState(1);
   const [batchIncludeBalls, setBatchIncludeBalls] = useState(true);
@@ -532,12 +534,12 @@ export function SimulatorPage() {
     const metricLabel = tMetric(condition.metric);
     const unit = condition.unit || '';
 
-    if (condition.type === 'THRESHOLD') {
+    if (condition.type === ConditionTypeEnum.THRESHOLD) {
       if (condition.valueSources && condition.valueSources.length > 0) {
         return '';
       }
 
-      if (condition.operator === 'BETWEEN') {
+      if (condition.operator === OperatorEnum.BETWEEN) {
         return tAlertCondition('between', {
           metric: metricLabel,
           min: condition.value ?? '',
@@ -554,7 +556,7 @@ export function SimulatorPage() {
       });
     }
 
-    if (condition.type === 'CHANGE') {
+    if (condition.type === ConditionTypeEnum.CHANGE) {
       let windowText = '';
       if (condition.timeWindowDays) {
         windowText = tAlertWindow('days', { count: condition.timeWindowDays });

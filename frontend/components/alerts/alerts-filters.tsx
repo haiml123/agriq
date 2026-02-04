@@ -1,6 +1,7 @@
 import { useLocale, useTranslations } from 'next-intl';
 import { Card, CardContent } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { OrganizationSelect } from '@/components/select/organization-select';
 import type { StatusFilter, SeverityFilter, TimeFilter } from './types';
 import { AlertStatusEnum, SeverityEnum } from './types';
 import { resolveLocaleText } from '@/utils/locale';
@@ -56,19 +57,14 @@ export function AlertsFilters({
           {isSuperAdmin && (
             <div className="flex flex-col w-48">
               <label className="text-sm font-medium mb-2">{t('organization')}</label>
-              <Select value={organizationFilter} onValueChange={setOrganizationFilter}>
-                <SelectTrigger className="w-full h-10">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">{t('allOrganizations')}</SelectItem>
-                  {organizations.map((org) => (
-                    <SelectItem key={org.id} value={org.id}>
-                      {org.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <OrganizationSelect
+                value={organizationFilter}
+                onChange={setOrganizationFilter}
+                includeAll
+                allLabel={t('allOrganizations')}
+                className="w-48"
+                organizations={organizations}
+              />
             </div>
           )}
 

@@ -35,7 +35,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                 email: { label: "Email", type: "email" },
                 password: { label: "Password", type: "password" },
             },
-            // @ts-ignore
+
             async authorize(credentials) {
                 if (!credentials?.email || !credentials?.password) {
                     return null;
@@ -79,7 +79,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         async jwt({ token, user }) {
             if (user) {
                 token.id = user.id;
-                token.accessToken = (user as any).accessToken;
+                token.accessToken = user.accessToken;
                 token.userRole = (user as any).userRole;
                 token.siteUsers = (user as any).siteUsers;
                 token.organizationId = (user as any).organizationId;

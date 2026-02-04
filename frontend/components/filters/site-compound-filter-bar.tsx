@@ -2,7 +2,7 @@
 
 import { useLocale, useTranslations } from 'next-intl';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import type { CellSelectSite } from '@/components/ui/cell-select';
+import type { CellSelectSite } from '@/components/select/cell-select';
 import type { ReactNode } from 'react';
 import { resolveLocaleText } from '@/utils/locale';
 

@@ -1,5 +1,5 @@
 import { useLocale, useTranslations } from 'next-intl';
-import { CellSelect, type CellSelectSite } from '@/components/ui/cell-select';
+import { CellSelect, type CellSelectSite } from '@/components/select/cell-select';
 import { DateRangeSelector } from './date-range-selector';
 import { SiteCompoundFilterBar } from '@/components/filters/site-compound-filter-bar';
 import type { DateRange } from './types';
