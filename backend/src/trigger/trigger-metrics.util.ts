@@ -50,8 +50,7 @@ export function calculateEmc(
   if (!row) {
     return undefined;
   }
-  const value = row[tempIndex];
-  return value;
+  return row[tempIndex];
 }
 
 /**
